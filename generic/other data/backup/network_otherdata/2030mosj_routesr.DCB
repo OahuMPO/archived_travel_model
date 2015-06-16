@@ -1,0 +1,18 @@
+
+261
+"Route_ID",I,1,4,0,9,0,,"","",,"Blank",
+"Route_Name",C,5,32,0,32,0,,"","",,"Blank",
+"MOSHeadCheck",C,37,4,0,4,0,,"","",,"Blank",
+"TheBUSName",C,41,16,0,16,0,,"","",,"Blank",
+"RouteNumber",C,57,16,0,16,0,,"","",,"Blank",
+"Mode",R,73,8,0,8,2,,"","",,"Blank",
+"AM_Headway",R,81,8,0,8,2,,"","",,"Blank",
+"MD_Headway",R,89,8,0,8,2,,"","",,"Blank",
+"PM_Headway",R,97,8,0,8,2,,"","",,"Blank",
+"future year flag",C,105,5,0,5,0,,"","",,"Blank",
+"begin year",I,110,4,0,8,0,,"","",,"Blank",
+"end year",I,114,4,0,8,0,,"","",,"Blank",
+"NODENUMBER",I,118,4,0,8,0,,"","",,"Blank",
+"Route Description",C,122,60,0,60,0,,"","",,"Blank",
+"Project Group",C,182,40,0,40,0,,"","",,"Blank",
+"New_Rt_Name",C,222,40,0,40,0,,"","",,"Blank",

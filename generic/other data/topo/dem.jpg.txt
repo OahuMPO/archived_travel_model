@@ -1,0 +1,42 @@
+Layer Name:	Hillshade Images
+
+Coverage Name:	hill<isl>.jpg
+
+Layer Type:	JPEG
+
+Geog. Extent:	Main Hawaiian Islands
+
+Projection:	Universal Trans Mercator, Zone 4 (Meters)
+
+Datum:		NAD83
+
+Description:	Georeferenced hillshade images.
+		
+Source:		Used ArcToolBox, GRID to Image command, Colormap None,
+		JFIF Format.
+
+		Hillshade GRIDs created by OP using USGS 10 meter DEMs, 
+		2003.  
+
+		Used the following Arc commands:
+
+		GRID: OUTGRID = ingrid * 0.3048 
+		{to convert from feet to meters for GRID cells in feet}
+
+		GRID: OUTGRID = MERGE(ingrid1, ingrid2,...)  
+		{to append grids to one islandwide grid}
+
+		GRID: GRIDCLIP <in_grid> <out_grid> COVER <clip_cover>  
+		{to clip the GRID file to remove blank cells}
+
+		ARC: HILLSHADE <in_grid> <out_grid> 315 45 SHADE <0.3048>
+		{used 0.3048 for GRIDs with cell values in feet}
+		
+
+
+
+Contact:	Joan Esposo, Office of Planning, State of Hawaii, 
+		PO Box 2359, Honolulu, Hi.  96804; (808) 587-2895.
+		email:  jesposo@dbedt.hawaii.gov
+
+

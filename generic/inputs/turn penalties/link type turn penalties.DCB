@@ -1,0 +1,8 @@
+
+24
+"FROM",I,1,4,0,8,0,,,"This uses the FAC TYPE coded on the network links",,Blank,
+"TO",I,5,4,0,8,0,,,"This uses the FAC TYPE coded on the network links",,Blank,
+"LEFT",I,9,4,0,8,0,,,"",,Blank,
+"RIGHT",I,21,4,0,8,0,,,"",,Blank,
+"STRAIGHT",I,13,4,0,8,0,,,"",,Blank,
+"UTURN",I,17,4,0,8,0,,,"",,Blank,

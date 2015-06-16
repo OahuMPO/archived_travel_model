@@ -1,0 +1,5 @@
+
+24
+"FACTYPE",I,1,4,0,8,0,,,"1 – Freeways;  2 – Expressways;  3 – Class I arterials;  4 – Class II arterials;  5 – Class III arterials;  6 – Class I collectors;  7 – Class II collectors; 8 – local streets; 9 – High speed Ramps;  10 – Low Speed Ramps; 12 – centroid connectors;  13 – HOV lanes; 14 - Transit-Only Links.||",,Blank,
+"Description",C,5,16,0,16,0,,,"",,Blank,
+"Alpha",F,21,4,0,10,2,,,"Conical VDF Alpha Parameter",,Blank,
