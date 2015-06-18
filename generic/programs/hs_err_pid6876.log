@@ -1,0 +1,213 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x000007fef781aa48, pid=6876, tid=6212
+#
+# JRE version: 7.0-b147
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (21.0-b17 mixed mode windows-amd64 compressed oops)
+# Problematic frame:
+# C  [CaliperMTX.dll+0x1aa48]
+#
+# Failed to write core dump. Minidumps are not enabled by default on client versions of Windows
+#
+# If you would like to submit a bug report, please visit:
+#   http://bugreport.sun.com/bugreport/crash.jsp
+# The crash happened outside the Java Virtual Machine in native code.
+# See problematic frame for where to report the bug.
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x000000000b66c800):  JavaThread "ForkJoinPool-1-worker-15" daemon [_thread_in_native, id=6212, stack(0x0000000010af0000,0x0000000010bf0000)]
+
+siginfo: ExceptionCode=0xc0000005, reading address 0x0000000000000078
+
+Registers:
+RAX=0x0000000000000000, RBX=0x0000000100000000, RCX=0x0000000000000000, RDX=0x0000000000000000
+RSP=0x0000000010bee340, RBP=0x0000000010bee440, RSI=0x000000000000002e, RDI=0x000000000b6baa50
+R8 =0x0000000000000002, R9 =0x0000000000000000, R10=0x000000000b6baa50, R11=0x0000000000000000
+R12=0x000000000d2d4310, R13=0x0000000000000000, R14=0x00000000ffffffff, R15=0x0000000000000000
+RIP=0x000007fef781aa48, EFLAGS=0x0000000000010256
+
+Top of Stack: (sp=0x0000000010bee340)
+0x0000000010bee340:   0000000100000000 0000000010bee440
+0x0000000010bee350:   000000000000002e 0000000000000000
+0x0000000010bee360:   0000000010bee378 0000000000000004
+0x0000000010bee370:   1f9cfba700000000 000000000d2d4310
+0x0000000010bee380:   0000000100000000 0000000000254340
+0x0000000010bee390:   0000000000000000 0000000000000037
+0x0000000010bee3a0:   000000000070006e 000000000be8b650
+0x0000000010bee3b0:   0000000002080004 0000000000000000
+0x0000000010bee3c0:   0000000000254340 0000000010bee592
+0x0000000010bee3d0:   000000000be8b650 000007fe00000208
+0x0000000010bee3e0:   0000000702080072 0000000010bee520
+0x0000000010bee3f0:   0000000400000072 000000000b6f02b8
+0x0000000010bee400:   000000000b66c800 0000000010bee780
+0x0000000010bee410:   0000000589f75d48 0000000000000000
+0x0000000010bee420:   000000000be8b650 0000000010bee790
+0x0000000010bee430:   0000000010bee850 00000000774f3de6 
+
+Instructions: (pc=0x000007fef781aa48)
+0x000007fef781aa28:   66 45 3b f8 7d 41 41 0f b7 cf 66 66 66 66 66 66
+0x000007fef781aa38:   0f 1f 84 00 00 00 00 00 48 0f bf c1 48 c1 e0 07
+0x000007fef781aa48:   42 f6 44 08 78 02 74 0b 0f b7 c2 66 ff ca 66 85
+0x000007fef781aa58:   c0 74 09 66 ff c1 66 41 3b c8 7c dc 66 41 3b c8 
+
+
+Register to memory mapping:
+
+RAX=0x0000000000000000 is an unknown value
+RBX=0x0000000100000000 is an unknown value
+RCX=0x0000000000000000 is an unknown value
+RDX=0x0000000000000000 is an unknown value
+RSP=0x0000000010bee340 is pointing into the stack for thread: 0x000000000b66c800
+RBP=0x0000000010bee440 is pointing into the stack for thread: 0x000000000b66c800
+RSI=0x000000000000002e is an unknown value
+RDI=0x000000000b6baa50 is an unknown value
+R8 =0x0000000000000002 is an unknown value
+R9 =0x0000000000000000 is an unknown value
+R10=0x000000000b6baa50 is an unknown value
+R11=0x0000000000000000 is an unknown value
+R12=0x000000000d2d4310 is an unknown value
+R13=0x0000000000000000 is an unknown value
+R14=0x00000000ffffffff is an unknown value
+R15=0x0000000000000000 is an unknown value
+
+
+Stack: [0x0000000010af0000,0x0000000010bf0000],  sp=0x0000000010bee340,  free space=1016k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+C  [CaliperMTX.dll+0x1aa48]  MATRIX_Done+0x4b8
+
+Java frames: (J=compiled Java code, j=interpreted, Vv=VM code)
+j  transcad.Matrix.MLoadFromFile(Ljava/lang/String;B)J+0
+j  transcad.Matrix.OpenMatrix(Ljava/lang/String;)V+57
+j  transcad.Matrix.<init>(Ljava/lang/String;)V+93
+j  com.pb.common.matrix.TranscadIO.openMatrix(Ljava/lang/String;)V+54
+j  com.pb.common.matrix.TranscadIO.<init>(Ljava/lang/String;)V+6
+j  com.pb.common.matrix.TranscadMatrixReader.readMatrix(Ljava/lang/String;)Lcom/pb/common/matrix/Matrix;+11
+j  com.pb.common.matrix.MatrixReader.readMatrix(Ljava/io/File;Ljava/lang/String;)Lcom/pb/common/matrix/Matrix;+169
+j  com.pb.ompo.residentmodel.ResidentAutoOwnershipModel.setup()V+226
+J  com.pb.ompo.residentmodel.ResidentModelRunner.runAutoOwnershipModels([Lcom/pb/ompo/residentmodel/ResidentHousehold;JJZ)V
+j  com.pb.ompo.residentmodel.ResidentModelRunner.runModelComponent([Lcom/pb/ompo/residentmodel/ResidentHousehold;JJ)V+50
+j  com.pb.ompo.residentmodel.ResidentModelRunner$ResidentModelAction.computeAction(JJ)V+12
+j  com.pb.sawdust.util.concurrent.DnCRecursiveAction.compute()V+71
+j  com.pb.sawdust.util.concurrent.DnCRecursiveAction.compute()V+97
+j  java.util.concurrent.RecursiveAction.exec()Z+1
+j  java.util.concurrent.ForkJoinTask.doExec()V+8
+j  java.util.concurrent.ForkJoinWorkerThread.execTask(Ljava/util/concurrent/ForkJoinTask;)V+10
+j  java.util.concurrent.ForkJoinPool.scan(Ljava/util/concurrent/ForkJoinWorkerThread;I)Z+226
+j  java.util.concurrent.ForkJoinPool.work(Ljava/util/concurrent/ForkJoinWorkerThread;)V+38
+j  java.util.concurrent.ForkJoinWorkerThread.run()V+11
+v  ~StubRoutines::call_stub
+
+---------------  P R O C E S S  ---------------
+
+Java Threads: ( => current thread )
+=>0x000000000b66c800 JavaThread "ForkJoinPool-1-worker-15" daemon [_thread_in_native, id=6212, stack(0x0000000010af0000,0x0000000010bf0000)]
+  0x000000000b66c000 JavaThread "ForkJoinPool-1-worker-14" daemon [_thread_in_Java, id=1200, stack(0x0000000010880000,0x0000000010980000)]
+  0x000000000b66b000 JavaThread "ForkJoinPool-1-worker-12" daemon [_thread_in_Java, id=6336, stack(0x00000000109a0000,0x0000000010aa0000)]
+  0x000000000b66a800 JavaThread "ForkJoinPool-1-worker-11" daemon [_thread_in_Java, id=6420, stack(0x00000000105f0000,0x00000000106f0000)]
+  0x0000000009884800 JavaThread "ForkJoinPool-1-worker-9" daemon [_thread_in_Java, id=6408, stack(0x0000000010740000,0x0000000010840000)]
+  0x0000000009884000 JavaThread "ForkJoinPool-1-worker-13" daemon [_thread_in_Java, id=5972, stack(0x00000000104c0000,0x00000000105c0000)]
+  0x000000000bc4e000 JavaThread "ForkJoinPool-1-worker-8" daemon [_thread_in_Java, id=6236, stack(0x00000000103a0000,0x00000000104a0000)]
+  0x000000000bc4d800 JavaThread "ForkJoinPool-1-worker-7" daemon [_thread_in_Java, id=4480, stack(0x0000000010220000,0x0000000010320000)]
+  0x000000000d2d7000 JavaThread "ForkJoinPool-1-worker-10" daemon [_thread_blocked, id=1704, stack(0x0000000010020000,0x0000000010120000)]
+  0x000000000dc4d800 JavaThread "ForkJoinPool-1-worker-5" daemon [_thread_blocked, id=4884, stack(0x000000000c4f0000,0x000000000c5f0000)]
+  0x000000000d3fa000 JavaThread "ForkJoinPool-1-worker-6" daemon [_thread_blocked, id=6680, stack(0x000000000fe40000,0x000000000ff40000)]
+  0x000000000c710800 JavaThread "ForkJoinPool-1-worker-4" daemon [_thread_in_Java, id=4372, stack(0x000000000fc60000,0x000000000fd60000)]
+  0x000000000be98000 JavaThread "ForkJoinPool-1-worker-3" daemon [_thread_blocked, id=4860, stack(0x000000000e9e0000,0x000000000eae0000)]
+  0x000000000ee43800 JavaThread "ForkJoinPool-1-worker-2" daemon [_thread_in_Java, id=4684, stack(0x000000000d740000,0x000000000d840000)]
+  0x000000000d504800 JavaThread "ForkJoinPool-1-worker-1" daemon [_thread_blocked, id=6044, stack(0x000000000e8c0000,0x000000000e9c0000)]
+  0x00000000097e4000 JavaThread "Service Thread" daemon [_thread_blocked, id=1044, stack(0x000000000b3c0000,0x000000000b4c0000)]
+  0x00000000097e1800 JavaThread "C2 CompilerThread1" daemon [_thread_blocked, id=4192, stack(0x000000000afb0000,0x000000000b0b0000)]
+  0x00000000097d6800 JavaThread "C2 CompilerThread0" daemon [_thread_blocked, id=6848, stack(0x000000000b130000,0x000000000b230000)]
+  0x00000000097d1800 JavaThread "Attach Listener" daemon [_thread_blocked, id=1700, stack(0x000000000ae60000,0x000000000af60000)]
+  0x00000000097d0800 JavaThread "Signal Dispatcher" daemon [_thread_blocked, id=6916, stack(0x000000000abd0000,0x000000000acd0000)]
+  0x000000000974b000 JavaThread "Finalizer" daemon [_thread_blocked, id=5092, stack(0x000000000acd0000,0x000000000add0000)]
+  0x0000000009745000 JavaThread "Reference Handler" daemon [_thread_blocked, id=2664, stack(0x000000000aa40000,0x000000000ab40000)]
+  0x000000000235f000 JavaThread "main" [_thread_blocked, id=5044, stack(0x0000000002610000,0x0000000002710000)]
+
+Other Threads:
+  0x000000000973c800 VMThread [stack: 0x000000000a8f0000,0x000000000a9f0000] [id=4356]
+  0x00000000097fd000 WatcherThread [stack: 0x000000000b2c0000,0x000000000b3c0000] [id=1436]
+
+VM state:not at safepoint (normal execution)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+Heap
+ PSYoungGen      total 3328000K, used 570033K [0x000000072fab0000, 0x0000000800000000, 0x0000000800000000)
+  eden space 3248448K, 16% used [0x000000072fab0000,0x0000000750f13b50,0x00000007f5f00000)
+  from space 79552K, 31% used [0x00000007f5f00000,0x00000007f7748c30,0x00000007facb0000)
+  to   space 76160K, 0% used [0x00000007fb5a0000,0x00000007fb5a0000,0x0000000800000000)
+ PSOldGen        total 6826688K, used 2137958K [0x000000058f000000, 0x000000072fab0000, 0x000000072fab0000)
+  object space 6826688K, 31% used [0x000000058f000000,0x00000006117d9b70,0x000000072fab0000)
+ PSPermGen       total 21248K, used 8478K [0x0000000589e00000, 0x000000058b2c0000, 0x000000058f000000)
+  object space 21248K, 39% used [0x0000000589e00000,0x000000058a647928,0x000000058b2c0000)
+
+Code Cache  [0x0000000002710000, 0x0000000002a20000, 0x0000000005710000)
+ total_blobs=990 nmethods=704 adapters=237 free_code_cache=46148Kb largest_free_block=47140544
+
+Dynamic libraries:
+0x000000013f140000 - 0x000000013f173000 	C:\Progra~1\Java\jdk1.7.0\bin\java.exe
+0x00000000774a0000 - 0x000000007764c000 	C:\Windows\SYSTEM32\ntdll.dll
+0x0000000077280000 - 0x000000007739f000 	C:\Windows\system32\kernel32.dll
+0x000007fefd510000 - 0x000007fefd57c000 	C:\Windows\system32\KERNELBASE.dll
+0x000007feff630000 - 0x000007feff70b000 	C:\Windows\system32\ADVAPI32.dll
+0x000007fefde00000 - 0x000007fefde9f000 	C:\Windows\system32\msvcrt.dll
+0x000007feff710000 - 0x000007feff72f000 	C:\Windows\SYSTEM32\sechost.dll
+0x000007fefd8a0000 - 0x000007fefd9ce000 	C:\Windows\system32\RPCRT4.dll
+0x00000000773a0000 - 0x000000007749a000 	C:\Windows\system32\USER32.dll
+0x000007fefdae0000 - 0x000007fefdb47000 	C:\Windows\system32\GDI32.dll
+0x000007fefdad0000 - 0x000007fefdade000 	C:\Windows\system32\LPK.dll
+0x000007fefd7d0000 - 0x000007fefd89a000 	C:\Windows\system32\USP10.dll
+0x000007fefbea0000 - 0x000007fefc094000 	C:\Windows\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.7600.16661_none_fa62ad231704eab7\COMCTL32.dll
+0x000007fefdce0000 - 0x000007fefdd51000 	C:\Windows\system32\SHLWAPI.dll
+0x000007feff780000 - 0x000007feff7ae000 	C:\Windows\system32\IMM32.DLL
+0x000007feff520000 - 0x000007feff629000 	C:\Windows\system32\MSCTF.dll
+0x0000000070ff0000 - 0x00000000710c1000 	C:\Progra~1\Java\jdk1.7.0\jre\bin\msvcr100.dll
+0x000000006be60000 - 0x000000006c52e000 	C:\Progra~1\Java\jdk1.7.0\jre\bin\server\jvm.dll
+0x000007fef9de0000 - 0x000007fef9de9000 	C:\Windows\system32\WSOCK32.dll
+0x000007feff730000 - 0x000007feff77d000 	C:\Windows\system32\WS2_32.dll
+0x000007fefdb50000 - 0x000007fefdb58000 	C:\Windows\system32\NSI.dll
+0x000007fefb3b0000 - 0x000007fefb3eb000 	C:\Windows\system32\WINMM.dll
+0x0000000077660000 - 0x0000000077667000 	C:\Windows\system32\PSAPI.DLL
+0x0000000074ec0000 - 0x0000000074ecf000 	C:\Progra~1\Java\jdk1.7.0\jre\bin\verify.dll
+0x0000000071410000 - 0x0000000071438000 	C:\Progra~1\Java\jdk1.7.0\jre\bin\java.dll
+0x0000000072700000 - 0x0000000072715000 	C:\Progra~1\Java\jdk1.7.0\jre\bin\zip.dll
+0x00000000736d0000 - 0x00000000736e9000 	C:\Program Files\Java\jdk1.7.0\jre\bin\net.dll
+0x000007fefcc30000 - 0x000007fefcc84000 	C:\Windows\system32\mswsock.dll
+0x000007fefcc20000 - 0x000007fefcc27000 	C:\Windows\System32\wship6.dll
+0x0000000071f10000 - 0x0000000071f21000 	C:\Program Files\Java\jdk1.7.0\jre\bin\nio.dll
+0x000007fef78d0000 - 0x000007fef78e5000 	C:\Program Files\TransCAD 6.0\JavaMatrix.dll
+0x000007fef7800000 - 0x000007fef786d000 	C:\Progra~1\TransCAD 6.0\CaliperMTX.dll
+0x0000000074540000 - 0x0000000074551000 	C:\Windows\system32\VCOMP100.DLL
+0x000007fefd0e0000 - 0x000007fefd105000 	C:\Windows\system32\SspiCli.dll
+
+VM Arguments:
+jvm_args: -Xms10000m -Xmx10000m -Dlog4j.configuration=log4j.xml -Dproject.folder=/projects/ompo/2012_6_calibration 
+java_command: com.pb.ompo.residentmodel.ResidentModelRunner ompo_tbm -iteration 1 -sampleRate 1
+Launcher Type: SUN_STANDARD
+
+Environment Variables:
+CLASSPATH=C:\Progra~1\TransCAD 6.0/GISDK/Matrices/TranscadMatrix.jar;/projects/ompo/2012_6_calibration/controls;;/projects/ompo/2012_6_calibration/programs/ompo.jar;
+PATH=C:\Progra~1\TransCAD 6.0;C:\Progra~1\Java\jdk1.7.0\bin;C:\Progra~1\TransCAD 6.0;C:\Progra~1\Java\jdk1.7.0\bin;C:\Progra~1\TransCAD 6.0;C:\Progra~1\Java\jdk1.7.0\bin;C:\Progra~1\TransCAD 6.0;C:\Progra~1\Java\jdk1.7.0\bin;C:\Progra~1\TransCAD 6.0;C:\Progra~1\Java\jdk1.7.0\bin;C:\Progra~1\TransCAD 6.0;C:\Progra~1\Java\jdk1.7.0\bin;C:\Progra~1\TransCAD 6.0;C:\Progra~1\Java\jdk1.7.0\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Python27;C:\Program Files\Java\jdk1.6.0_20\bin;C:\Program Files\R\R-2.12.1\bin;C:\Program Files (x86)\Windows Imaging\;C:\Program Files\TortoiseSVN\bin
+USERNAME=Freedman
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 44 Stepping 2, GenuineIntel
+
+
+
+---------------  S Y S T E M  ---------------
+
+OS: Windows 7 , 64 bit Build 7600 
+
+CPU:total 24 (6 cores per cpu, 2 threads per core) family 6 model 44 stepping 2, cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3, sse4.1, sse4.2, popcnt, ht
+
+Memory: 4k page, physical 50322420k(40363352k free), swap 100642940k(86413236k free)
+
+vm_info: Java HotSpot(TM) 64-Bit Server VM (21.0-b17) for windows-amd64 JRE (1.7.0-b147), built on Jun 27 2011 02:19:45 by "java_re" with unknown MS VC++:1600
+
+time: Thu May 16 17:08:17 2013
+elapsed time: 98 seconds
+

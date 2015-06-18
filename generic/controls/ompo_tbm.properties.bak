@@ -1,0 +1,441 @@
+#ompo properties file
+
+Project.Directory = %project.folder%/
+scenario.path = %project.folder%/
+generic.path = %project.folder%/inputs/
+skims.path = %project.folder%/outputs/
+uec.path = %project.folder%/controls/
+
+###############################################################################
+#
+# Model Runner settings
+#
+# Default departure time for work location choice is 7:00 AM
+# Default arrival time for work location choice is 5:00 PM   
+# Default departure time for school location choice is 7:00 AM  
+# Default arrival time for school location choice is 3:00 PM   
+#
+# shadowPriceMaximumRMSE not implemented
+#
+###############################################################################
+
+ResidentModelRunner.defaultWorkDeparturePeriod = 9
+ResidentModelRunner.defaultWorkArrivalPeriod = 29
+ResidentModelRunner.defaultSchoolDeparturePeriod = 9
+ResidentModelRunner.defaultSchoolArrivalPeriod = 25
+ResidentModelRunner.shadowPriceMaximumIterations = 0
+ResidentModelRunner.shadowPriceMaximumRMSE = 999
+ResidentModelRunner.shadowPrice.input.file = %project.folder%/inputs/other/shadowPrices.csv
+ResidentModelRunner.shadowPrice.output.file = %project.folder%/outputs/shadowPrices
+
+# Following settings control program flow
+ResidentModelRunner.runThrough.TourModels = true
+ResidentModelRunner.runThrough.StopModels = false
+ResidentModelRunner.runThrough.TripModels = false
+
+# Set to true if you want all household ids logged as the models run (useful for finding problematic households to trace if model crashes)
+ResidentModelRunner.showAllHouseholdIDs = false
+
+# Multi-threading properties
+ResidentModelRunner.run.parallel = true
+ResidentModelRunner.run.numberOfThreads = 15
+
+
+###############################################################################
+#
+# Household Manager settings
+#
+###############################################################################
+ 
+# Following properties are for running\debugging 10 households
+# ResidentHouseholdManager.input.household.file = %project.folder%/inputs/taz/sampleHouseholds.csv
+# ResidentHouseholdManager.input.person.file    = %project.folder%/inputs/taz/samplePersons.csv
+# ResidentHouseholdManager.debug.HouseholdIds = 6,10,11,13,25,26,27,30
+
+ResidentHouseholdManager.input.household.file = %project.folder%/inputs/taz/households.csv
+ResidentHouseholdManager.input.person.file    = %project.folder%/inputs/taz/persons.csv
+
+ResidentHouseholdManager.input.occupationCrossWalk.file = %project.folder%/inputs/other/Census2000ToModelOccupationCrosswalk.csv
+
+ResidentHouseholdManager.debug.HouseholdIds = -1
+ResidentHouseholdManager.debug.processHouseholdsOnly = false
+ResidentHouseholdManager.randomSeed = 1004831
+
+
+ResidentHouseholdManager.output.household.file = %project.folder%/outputs/households.csv 
+ResidentHouseholdManager.output.person.file = %project.folder%/outputs/persons.csv 
+ResidentHouseholdManager.output.tour.file = %project.folder%/outputs/tours.csv 
+ResidentHouseholdManager.output.trip.file = %project.folder%/outputs/trips.csv 
+
+# CPI 1999 to 2012 from http://data.bls.gov/cgi-bin/cpicalc.pl?cost1=1&year1=1999&year2=2012
+ResidentHouseholdManager.cpiFactor = 1.38
+
+#
+# For construction of group quarters population (not in UrbanSim synthetic population)
+#
+ResidentGroupQuartersPopulation.PUMS.HouseholdFile =  %project.folder%/inputs/other/ss09hhi_withzeros.csv
+ResidentGroupQuartersPopulation.PUMS.PersonFile =  %project.folder%/inputs/other/ss09phi_withzeros.csv
+ResidentGroupQuartersPopulation.input.occupationCrossWalk.file = %project.folder%/inputs/other/Census2009ToModelOccupationCrosswalk.csv
+ResidentGroupQuartersPopulation.firstHHId = 1000000
+ResidentGroupQuartersPopulation.randomSeed = 2393427
+
+#For estimation file construction
+matrix.DistanceFileName = %project.folder%/outputs/hwyAM_sov.mtx
+matrix.DistanceMatrixName = Length (Skim)
+
+#MGRA data specified in UEC
+#
+taz.file = taz/tazData.csv
+
+#
+# Accessibility settings
+#
+Accessibilities.file = %project.folder%/outputs/accessibilities.csv
+CreateAccessibilities.UEC.file = Accessibilities.xls
+CreateAccessibilities.UEC.dataPage = 0
+CreateAccessibilities.UEC.modelPages = 1,2,3,4,5 
+CreateAccessibilities.Purposes = Escort,Maintenance,Discretionary,AtWork,AllEmp,AllHH
+CreateAccessibilities.traceTAZ = 1
+
+# A list of all resident model purposes, with numbering starting at 1
+resident.purposes = Work,University,School,Escort,Maintenance,Discretionary,AtWork
+firstPurposeNumber = 1
+resident.periods = 48
+
+#
+# following purposes used for estimation file construction
+# resident.purposes = Work,University,School,Escort,Shop,Maintenance,EatOut,Social_Rec,Discretionary,AtWork
+#
+
+
+
+#
+# Resident auto ownership model settings
+#
+ResidentAutoOwnershipModel.UEC.file      = ResidentAutoOwnership.xls
+ResidentAutoOwnershipModel.UEC.dataPage  = 0
+ResidentAutoOwnershipModel.UEC.modelPage = 1
+ResidentAutoOwnershipModel.RNG.offset    = 321110
+
+#
+# Resident mandatory tour frequency model settings
+#
+ResidentMandatoryTourFrequencyModel.UEC.file = ResidentMandatoryTourFrequency.xls
+ResidentMandatoryTourFrequencyModel.UEC.dataPage = 0
+ResidentMandatoryTourFrequencyModel.UEC.modelPage = 1
+ResidentMandatoryTourFrequency.AlternativesFile = MandatoryAlts.csv
+ResidentMandatoryTourFrequencyModel.RNG.offset = 322110
+
+#
+# Resident free parking eligibility settings
+#
+ResidentFreeParkingEligibilityModel.RNG.offset = 323311
+
+#
+# Resident non-mandatory tour frequency model settings
+#
+#   Note: model pages are by person types
+#
+ResidentNonMandatoryTourFrequencyModel.UEC.file = ResidentNonMandatoryTourFrequency.xls
+ResidentNonMandatoryTourFrequencyModel.UEC.dataPage = 0
+ResidentNonMandatoryTourFrequencyModel.UEC.modelPages = 1,2,3,4,5,6,6,6
+ResidentNonMandatoryTourFrequency.AlternativesFile = NonMandatoryAlts.csv
+ResidentNonMandatoryTourFrequencyModel.RNG.offset = 323110
+
+#
+# Resident at-work sub-tour frequency model settings
+#
+ResidentAtWorkSubTourFrequencyModel.UEC.file = ResidentAtWorkSubTourFrequency.xls
+ResidentAtWorkSubTourFrequencyModel.UEC.dataPage = 0
+ResidentAtWorkSubTourFrequencyModel.UEC.modelPage = 1
+ResidentAtWorkSubTourFrequencyModel.RNG.offset =  324110
+
+#
+# Resident tour time-of-day model settings
+#
+ResidentTourTimeOfDayChoiceModel.file = ResidentTourTimeOfDayDistributions.csv
+ResidentTourTimeOfDayChoiceModel.RNG.offset = 450931
+
+#
+# Resident size term settings (for both tour and intermediate stop destination choice models)
+#
+ResidentDestinationChoiceSizeTerms.file = ResidentTourDestinationChoiceSOA.xls
+ResidentDestinationChoiceSizeTerms.dataPage = 0
+ResidentDestinationChoiceSizeTerms.sizePage = 8
+
+#
+# Resident tour destination choice settings
+#
+ResidentTourDestinationChoiceModel.purposes = Work,University,School,Escort,Maintenance,Discretionary,AtWork
+ResidentTourDestinationChoiceModel.segments = 7,1,1,1,1,1,1
+ResidentTourDestinationChoiceModel.RNG.offset = 334021
+ResidentTourDestinationChoiceModel.sampleRate = 30
+ResidentTourDestinationChoiceModel.alternatives.file = ResidentTourDestinationChoiceAlternatives.csv
+#
+#          -Sample-of-alternatives settings
+#     
+ResidentTourDestinationChoiceModel.SOA.UEC.file = ResidentTourDestinationChoiceSOA.xls
+ResidentTourDestinationChoiceModel.SOA.dataPage = 0
+ResidentTourDestinationChoiceModel.SOA.modelPages = 1,2,3,4,5,6,7
+ResidentTourDestinationChoiceModel.SOA.alternatives.file = ResidentTourDestinationChoiceSOAAlternatives.csv
+#
+#          -Full model settings
+#
+ResidentTourDestinationChoiceModel.UEC.file = ResidentTourDestinationChoice.xls
+ResidentTourDestinationChoiceModel.dataPage = 0
+ResidentTourDestinationChoiceModel.modelPages = 1,2,3,4,5,6,7
+#
+# Resident tour mode choice settings
+#
+#  Note: model pages are by tour purpose
+#
+ResidentTourModeChoiceModel.saveUtilsAndProbs = true
+ResidentTourModeChoiceModel.UEC.file = ResidentTourModeChoice.xls
+ResidentTourModeChoiceModel.UEC.dataPage = 0
+ResidentTourModeChoiceModel.UEC.modelPages = 1,2,3,4,5,6,7
+ResidentTourModeChoiceModel.RNG.offset = 324210
+
+# following purposes used for model estimation file construction
+# ResidentTourModeChoiceModel.UEC.modelPages = 1,2,3,4,5,6,7
+
+#
+# Resident stop frequency settings
+#
+ResidentStopFrequencyModel.file = ResidentStopFrequencyDistributions.csv         
+ResidentStopFrequencyModel.maxStopsByMode = 4,4,4,4,4,4,4,4,4,4,4,1,1,1,4
+ResidentStopFrequencyModel.RNG.offset = 542398
+
+
+#
+# Resident stop purpose settings
+#
+ResidentStopPurposeModel.file = ResidentStopPurposeDistributions.csv
+ResidentStopPurposeModel.RNG.offset = 642398
+,   ,
+
+#
+# Resident stop time-of-day settings
+#
+ResidentStopTimeOfDayFrequencyModel.outbound.file = ResidentOutboundStopDurationDistributions.csv
+ResidentStopTimeOfDayFrequencyModel.inbound.file = ResidentInboundStopDurationDistributions.csv
+ResidentStopTimeOfDayFrequencyModel.RNG.offset = 738273
+
+#
+# Resident stop location choice settings
+#
+ResidentStopLocationChoiceModel.SOA.UEC.file = ResidentStopLocationChoiceSOA.xls
+ResidentStopLocationChoiceModel.SOA.dataPage = 0
+ResidentStopLocationChoiceModel.SOA.generic.modelPage = 1
+ResidentStopLocationChoiceModel.SOA.modeSpecific.modelPage = 2
+ResidentStopLocationChoiceModel.SOA.alternatives.file = ResidentTourDestinationChoiceSOAAlternatives.csv
+#
+# Following setting is an array of booleans indicating whether to use the generic or mode-specific UEC for creating a sample of alternatives.
+#
+#                                              DRIVEALONEFREE,DRIVEALONEPAY,SHARED2GP,SHARED2PAY,SHARED3GP,SHARED3PAY,WALK,BIKE,WALK_LOC,WALK_EXP,WALK_FG,KNR,PNR_IFL,PNR_FML,SCH_BUS
+#
+ResidentStopLocationChoiceModel.useGenericSOAModel = 1,1,1,1,1,1,0,0,0,0,0,0,0,0,1
+
+ResidentStopLocationChoiceModel.UEC.file = ResidentStopLocationChoice.xls
+ResidentStopLocationChoiceModel.dataPage = 0
+ResidentStopLocationChoiceModel.modelPage = 1
+ResidentStopLocationChoiceModel.RNG.offset = 452304
+ResidentStopLocationChoiceModel.alternatives.file = ResidentStopLocationChoiceAlternatives.csv
+
+
+#
+# Resident trip mode choice settings
+#
+#  Note: model pages are by tour purpose
+#
+ResidentTripModeChoiceModel.saveUtilsAndProbs = false
+ResidentTripModeChoiceModel.UEC.file  = ResidentTripModeChoice.xls
+ResidentTripModeChoiceModel.UEC.dataPage = 0
+ResidentTripModeChoiceModel.UEC.modelPages = 1,2,3,4,5,6,7
+ResidentTripModeChoiceModel.RNG.offset = 336210
+
+# following purposes used for model estimation file construction
+# ResidentTripModeChoiceModel.UEC.modelPages = 1,2,3,4,5,5,6,6,6,7
+
+#
+# Following settings for trip table construction
+#
+ResidentModel.SOVModes = 1,2
+ResidentModel.HOVModes = 3,4,5,6
+ResidentModel.NonMotorizedModes = 7,8
+ResidentModel.WalkTransitModes = 9,10,11
+ResidentModel.PNRTransitModes = 13,14
+ResidentModel.KNRTransitModes = 12
+ResidentModel.OtherModes = 15
+ResidentModel.AutoModeNames = DAFREE,DAPAY,S2FREE,S2PAY,S3FREE,S3PAY
+ResidentModel.TransitModeNames = WALK_LOC,WALK_EXP,WALK_FG,KNR,PNR_IFL,PNR_FML,SCH_BUS
+ResidentModel.NonMotorizedModeNames = WALK,BIKE
+ResidentModel.OtherModeNames = SCHLBUS
+ResidentModel.ModeOccupancies = 1,1,2,2,3.2,3.2,1,1,1,1,1,1,1,1,1
+	
+ResidentModel.output.autoTripMatrix = %project.folder%/outputs/residentAutoTrips
+ResidentModel.output.nMotTripMatrix = %project.folder%/outputs/residentNmotTrips
+ResidentModel.output.tranTripMatrix = %project.folder%/outputs/residentTranTrips
+ResidentModel.output.othrTripMatrix = %project.folder%/outputs/residentOthrTrips
+ResidentModel.output.matrixType = TRANSCAD
+#
+# Start periods: 3:00 AM, 6:00 AM, 9:00 AM, 3:00 PM, 7:00 PM
+#
+ResidentModel.SkimStartPeriods = 1,7,13,25,33
+ResidentModel.PeriodNames = EA,AM,MD,PM,EV
+
+
+
+
+################################################################################################
+#
+# Visitor model settings
+#
+#
+################################################################################################
+
+visitor.purposes = Work,Recreate,Shop,Eatout
+visitor.periods = 48
+
+VisitorModelRunner.runThrough.StopModels = true
+VisitorModelRunner.runThrough.TripModels = true
+
+VisitorTourManager.RNG.offset =  248291
+VisitorTourManager.hotel.occupancyRate = 0.846
+VisitorTourManager.household.occupancyRate = 0.022
+VisitorTourManager.hotel.businessPercent = 0.2
+VisitorTourManager.household.businessPercent = 0.01
+VisitorTourManager.business.tour.file = VisitorTourFrequencyDistributionBusiness.csv
+VisitorTourManager.personal.tour.file = VisitorTourFrequencyDistributionPersonal.csv
+VisitorTourManager.partySize.file = VisitorPartySizeFrequencyDistribution.csv
+VisitorTourManager.autoAvailable.file = VisitorAutoAvailableFrequencyDistribution.csv 
+VisitorTourManager.income.file = VisitorIncomeFrequencyDistribution.csv 
+
+VisitorTourManager.tour.output.file = %project.folder%/outputs/visitorTours.csv
+VisitorTourManager.trip.output.file = %project.folder%/outputs/visitorTrips.csv
+VisitorTourManager.seek = false
+VisitorTourManager.trace = 60485
+#,
+
+#
+# Visitor tour time-of-day model settings
+#
+VisitorTourTimeOfDayChoiceModel.file = VisitorTourTimeOfDayDistributions.csv
+VisitorTourTimeOfDayChoiceModel.RNG.offset = 232351
+
+
+#
+# Visitor model size terms (for both tour and stop location choice)
+#
+VisitorDestinationChoiceSizeTerms.file = VisitorTourDestinationChoiceSOA.xls
+VisitorDestinationChoiceSizeTerms.dataPage = 0
+VisitorDestinationChoiceSizeTerms.sizePage = 5
+
+#
+# Visitor tour destination choice model settings
+#
+VisitorTourDestinationChoiceModel.purposes = Work,Recreate,Shop,Eatout
+VisitorTourDestinationChoiceModel.segments = 1,1,1,1
+VisitorTourDestinationChoiceModel.RNG.offset = 198438
+
+#
+#   Sample of alternatives settings
+#
+VisitorTourDestinationChoiceModel.SOA.UEC.file = VisitorTourDestinationChoiceSOA.xls
+VisitorTourDestinationChoiceModel.SOA.dataPage = 0
+VisitorTourDestinationChoiceModel.SOA.modelPages = 1,2,3,4
+
+#
+#   Full model settings
+#
+VisitorTourDestinationChoiceModel.UEC.file = VisitorTourDestinationChoice.xls
+VisitorTourDestinationChoiceModel.dataPage = 0
+VisitorTourDestinationChoiceModel.modelPages = 1,2,3,4
+
+#
+# Visitor tour mode choice settings
+#
+VisitorTourModeChoiceModel.saveUtilsAndProbs = false
+VisitorTourModeChoiceModel.UEC.file = VisitorTourModeChoice.xls
+VisitorTourModeChoiceModel.UEC.dataPage = 0
+VisitorTourModeChoiceModel.UEC.modelPage = 1
+VisitorTourModeChoiceModel.RNG.offset = 434211
+
+#
+# Visitor stop frequency model settings
+#
+VisitorStopFrequencyModel.file = VisitorStopFrequencyDistributions.csv
+VisitorStopFrequencyModel.maxStopsByMode = 4,4,4,4,4,4,4,4,4,4,4,1,1,1,4,4,4,4
+VisitorStopFrequencyModel.RNG.offset = 295021
+
+#
+# Visitor stop purpose model settings
+#
+VisitorStopPurposeModel.file = VisitorStopPurposeFrequencyDistributions.csv
+VisitorStopPurposeModel.RNG.offset = 281938
+
+#
+# Visitor stop time-of-day settings
+#
+VisitorStopTimeOfDayFrequencyModel.outbound.file = VisitorOutboundStopDurationDistributions.csv
+VisitorStopTimeOfDayFrequencyModel.inbound.file = VisitorInboundStopDurationDistributions.csv
+VisitorStopTimeOfDayFrequencyModel.RNG.offset = 872891
+
+#
+# Visitor stop location choice settings
+#
+
+VisitorStopLocationChoiceModel.SOA.UEC.file = VisitorStopLocationChoiceSOA.xls
+VisitorStopLocationChoiceModel.SOA.dataPage = 0
+VisitorStopLocationChoiceModel.SOA.generic.modelPage = 1
+VisitorStopLocationChoiceModel.SOA.modeSpecific.modelPage = 2
+VisitorStopLocationChoiceModel.SOA.alternatives.file = ResidentTourDestinationChoiceSOAAlternatives.csv
+#
+#                                              DRIVEALONEFREE,DRIVEALONEPAY,SHARED2GP,SHARED2PAY,SHARED3GP,SHARED3PAY,WALK,BIKE,WALK_LOC,WALK_EXP,WALK_FG,KNR,PNR_IFL,PNR_FML,SCH_BUS,TROLLEY,TOUR_BUS,TAXI
+
+#
+VisitorStopLocationChoiceModel.useGenericSOAModel = 1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1
+
+VisitorStopLocationChoiceModel.UEC.file = VisitorStopLocationChoice.xls
+VisitorStopLocationChoiceModel.dataPage = 0
+VisitorStopLocationChoiceModel.modelPage = 1
+VisitorStopLocationChoiceModel.RNG.offset = 489271
+VisitorStopLocationChoiceModel.alternatives.file = ResidentStopLocationChoiceAlternatives.csv
+
+#
+# Visitor trip mode choice settings
+#
+#  Note: model pages are by tour purpose
+#
+VisitorTripModeChoiceModel.saveUtilsAndProbs = false
+VisitorTripModeChoiceModel.UEC.file  = VisitorTripModeChoice.xls
+VisitorTripModeChoiceModel.UEC.dataPage = 0
+VisitorTripModeChoiceModel.UEC.modelPages = 1,1,1,1
+VisitorTripModeChoiceModel.RNG.offset = 336210
+
+#
+# Following settings for trip table construction
+#
+VisitorModel.SOVModes = 1,2
+VisitorModel.HOVModes = 3,4,5,6,17,18
+VisitorModel.NonMotorizedModes = 7,8
+VisitorModel.WalkTransitModes = 9,10,11
+VisitorModel.PNRTransitModes = 13,14
+VisitorModel.KNRTransitModes = 12
+VisitorModel.OtherModes = 15,16
+VisitorModel.AutoModeNames = DAFREE,DAPAY,S2FREE,S2PAY,S3FREE,S3PAY,TOUR_BUS,TAXI
+
+VisitorModel.TransitModeNames = WALK_LOC,WALK_EXP,WALK_FG,KNR,PNR_IFL,PNR_FML,SCH_BUS
+VisitorModel.NonMotorizedModeNames = WALK,BIKE
+VisitorModel.OtherModeNames = SCHLBUS,TROLLEY
+VisitorModel.ModeOccupancies = 1,1,2,2,3.2,3.2,1,1,1,1,1,1,1,1,1,1,20,2
+	
+VisitorModel.output.autoTripMatrix = %project.folder%/outputs/visitorAutoTrips
+VisitorModel.output.nMotTripMatrix = %project.folder%/outputs/visitorNmotTrips
+VisitorModel.output.tranTripMatrix = %project.folder%/outputs/visitorTranTrips
+VisitorModel.output.othrTripMatrix = %project.folder%/outputs/visitorOthrTrips
+VisitorModel.output.matrixType = TRANSCAD
+#
+# Start periods: 3:00 AM, 6:00 AM, 9:00 AM, 3:00 PM, 7:00 PM
+#
+VisitorModel.SkimStartPeriods = 1,7,13,25,33
+VisitorModel.PeriodNames = EA,AM,MD,PM,EV
