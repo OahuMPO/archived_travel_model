@@ -11,6 +11,8 @@ SourceTree supports this structure natively through the "Git Flow" button.  For 
 
 ## Folder Structure
 
+Important Note: Spaces are not allowed in the directory path where the model files are located.  This causes the java models to fail.
+
 ### 'generic'
 This folder contains all data required to create any scenario.  This includes all availale socio-economic data, master highway and transit networks,
 control files, programs, and scripts.  The model GUI in TransCAD is used to extract individual scenarios from this folder.
