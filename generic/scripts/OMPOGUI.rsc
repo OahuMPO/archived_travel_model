@@ -529,7 +529,14 @@ Macro "SetDirectoryDefaults"
     
     uiDir = GetInterface()
     a_temp = SplitPath(uiDir)
-    genericDir = a_temp[1] + a_temp[2] + "..\\"
+    // Don't use the ".." parent directory notation because it causes problems when
+    // comparing path strings later in the model.
+    // genericDir = a_temp[1] + a_temp[2] + "..\\"
+    a_split = ParseString(a_temp[2],"\\")
+    for i = 1 to a_split.length - 1 do
+        string = string + "\\" + a_split[i]
+    end
+    genericDir = a_temp[1] + string + "\\"
     
     path[3] = genericDir
     path[4] = genericDir + "inputs\\master_network\\"
