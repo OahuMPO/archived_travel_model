@@ -19,6 +19,8 @@ Macro "Create Network"(path, Options, year)
     
     // Set the temporary directory
     tempDirectory = path[10]
+    // Kyle: reset the temp directory to be inside the scenario directory
+    tempDirectory = ScenarioDirectory + "outputs/temp/"
     
     // Set the master network directory
     masterNetworkDirectory =path[4]
@@ -162,6 +164,11 @@ Macro "Create Network"(path, Options, year)
 
     // Export the highway line layer with the fields I want
     RunMacro("Export Highway Line Layer",tempFile,scenarioLineFile)
+    
+    // Kyle: once exported, delete the temp directory
+    DeleteDatabase(tempFile)
+    DeleteDatabase(masterLine)      // this is the copy in the temp folder
+    RemoveDirectory(tempDirectory)
     
     extractRouteString = "[begin year] <= "+String(currentYear)+" and [end year]>= "+String(currentYear)
    
@@ -541,8 +548,16 @@ Macro "Export Transit Routes" (masterRouteFile,masterLineFile,scenarioLineFile,s
 
 
      // Make sure route system references master line layer
+     // Kyle: Never modify the master networks from the script.  Instead, check and throw error.
+     //       User must fix manually if there is an issue (so they know about the change).
     dbLayers = GetDBLayers(masterLineFile)
-    ModifyRouteSystem(masterRouteFile, {{"Geography", masterLineFile, dbLayers[2]}})
+    // ModifyRouteSystem(masterRouteFile, {{"Geography", masterLineFile, dbLayers[2]}})
+    a_rsInfo = GetRouteSystemInfo(masterRouteFile)
+    if a_rsInfo[1] <> masterLineFile then do
+        ShowMessage("The master route system is not based on the master highway network. Use 'Route Systems' -> 'Utilities' -> 'Move' to fix. ")
+        ShowMessage(1)
+    end
+    
     
     // Add the transit layers
     {rs_lyr, stop_lyr, ph_lyr} = RunMacro("TCB Add RS Layers",masterRouteFile, "ALL",)
