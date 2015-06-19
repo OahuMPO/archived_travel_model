@@ -20,7 +20,7 @@ Macro "Create Network"(path, Options, year)
     // Set the temporary directory
     tempDirectory = path[10]
     // Kyle: reset the temp directory to be inside the scenario directory
-    tempDirectory = ScenarioDirectory + "outputs/temp/"
+    tempDirectory = ScenarioDirectory + "/outputs/temp/"
     
     // Set the master network directory
     masterNetworkDirectory =path[4]
@@ -177,7 +177,7 @@ Macro "Create Network"(path, Options, year)
     RunMacro("Export Transit Routes",masterRoute,originalMasterLine,scenarioLineFile,scenarioNetworkDirectory,extractRouteString)
     
     RunMacro("Fill Stop Attributes" , hwyfile, scenarioNetworkDirectory+"\\Scenario Route System.rts", scenarioNetworkDirectory+"\\Scenario Route SystemS.bin")
-    
+
     RunMacro("Copy Layer Settings", originalMasterLine,scenarioLineFile)
     
     Return(1)
@@ -569,10 +569,10 @@ Macro "Export Transit Routes" (masterRouteFile,masterLineFile,scenarioLineFile,s
     setname = "routesquery"
     queryString = "Select * where " + extractString
     n = SelectByQuery(setname,  "Several", queryString,) 
-   	
+    
     // Copy the selected routes in the transit layer to the new directory
     RunMacro("TC40 create Route System subset ex", rs_lyr, setname, null, null, 1, False, null, scenarioRouteFile)
-
+    
      // Make sure route system references scenario line layer
     dbLayers = GetDBLayers(scenarioLineFile)
     ModifyRouteSystem(scenarioRouteFile, {{"Geography", scenarioLineFile, dbLayers[2]}})
