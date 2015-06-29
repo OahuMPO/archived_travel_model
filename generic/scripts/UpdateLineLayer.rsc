@@ -34,7 +34,7 @@ Macro "Update Line Layer" (args)
     taz_lyr=AddLayer(cc,"Oahu TAZs",tazfile,"Oahu TAZs")
     
     //******************************************** Update Area Type ********************************************
-    
+
     // Calculate population and employment density for every TAZ
     debug = false
     
@@ -54,7 +54,6 @@ Macro "Update Line Layer" (args)
     
     // iterate through zones and calculate distance
     for i = 1 to nzones do
-
         // update status bar
         stat = UpdateProgressBar("", RealToInt(i/nzones*100) )
         
@@ -66,10 +65,12 @@ Macro "Update Line Layer" (args)
  
             if nodedata[1][i] != i then do
                 ShowMessage("Error! Node layer out of sequence for TAZs")
+ShowMessage(1)
                 return(0)
             end
             if nodedata[1][j] != j then do
                 ShowMessage("Error! Node layer out of sequence for TAZs")
+ShowMessage(1)
                 return(0)
             end
             

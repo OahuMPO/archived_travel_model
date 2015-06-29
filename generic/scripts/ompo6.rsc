@@ -74,7 +74,7 @@ Macro "OMPO6" (path, Options, jump)
     args = {hwyfile,tazfile,fspdfile,cspdfile,capfile,conicalsfile,trnpkfactfile,trnopfactfile,nzones}
     ret_value = RunMacro("Update Line Layer", args)
     if !ret_value then goto quit
-    
+
     TransitAccess:
     // Create the highway network
     ret_value = RunMacro("Create Highway Network" ,hwyfile, hnetfile, iftoll) 
