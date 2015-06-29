@@ -215,7 +215,8 @@ Macro "Create Highway Network" (hwyfile, hnetfile, iftoll)
    end        
         
         
-    Opts.Global.[Node Options] = {{"[ID:1]", {node_lyr+".[ID:1]", , }}, 
+    // Opts.Global.[Node Options] = {{"[ID:1]", {node_lyr+".[ID:1]", , }}, 
+    Opts.Global.[Node Options] = {{"[ID]", {node_lyr+".[ID]", , }}, 
         {"X", {node_lyr+".X", , }}, {"Y", {node_lyr+".Y", , }}
     }
     Opts.Global.[Length Unit] = "Miles"

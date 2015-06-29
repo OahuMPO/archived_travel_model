@@ -418,7 +418,8 @@ Macro "Walk Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     	{"WALKTIME", {link_lyr+".WALKTIME", link_lyr+".WALKTIME", , , "False"}} 
         }
 
-    Opts.Global.[Node Options] = {{"[ID:1]", {node_lyr+".[ID:1]", , }}, 
+    // Opts.Global.[Node Options] = {{"[ID:1]", {node_lyr+".[ID:1]", , }}, 
+    Opts.Global.[Node Options] = {{"[ID]", {node_lyr+".[ID]", , }}, 
         {"X", {node_lyr+".X", , }}, 
         {"Y", {node_lyr+".Y", , }}, 
         {"Original_Node_ID", {node_lyr+".Original_Node_ID", , }}, 
@@ -601,7 +602,8 @@ Macro "KNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
      	 {"WALKTIME", {link_lyr+".WALKTIME", link_lyr+".WALKTIME", , , "False"}}
         }
 
-    Opts.Global.[Node Options] = {{"[ID:1]", {node_lyr+".[ID:1]", , }}, 
+    // Opts.Global.[Node Options] = {{"[ID:1]", {node_lyr+".[ID:1]", , }}, 
+    Opts.Global.[Node Options] = {{"[ID]", {node_lyr+".[ID]", , }}, 
         {"X", {node_lyr+".X", , }}, 
         {"Y", {node_lyr+".Y", , }}, 
         {"Original_Node_ID", {node_lyr+".Original_Node_ID", , }}, 
@@ -699,7 +701,8 @@ Macro "PNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
      	{"WALKTIME", {link_lyr+".WALKTIME", link_lyr+".WALKTIME", , , "False"}} 
         }
 
-    Opts.Global.[Node Options] = {{"[ID:1]", {node_lyr+".[ID:1]", , }}, 
+    // Opts.Global.[Node Options] = {{"[ID:1]", {node_lyr+".[ID:1]", , }}, 
+    Opts.Global.[Node Options] = {{"[ID]", {node_lyr+".[ID]", , }}, 
         {"X", {node_lyr+".X", , }}, {"Y", {node_lyr+".Y", , }}, 
         {"Original_Node_ID", {node_lyr+".Original_Node_ID", , }}, 
         {"Original", {node_lyr+".Original", , }}, 

@@ -458,8 +458,8 @@ Macro "Copy Layer Settings" (originFile,scenarioFile)
     
     // Add the master Roads layer to the map and make it visible
     link_lyr = AddLayer("OriginMap","Links",originFile,dbLayers[2])    
-    label_exp = GetLabelExpression(link_lyr+"|")
-    opts = GetLabelOptions(link_lyr+"|", arrayOpts)
+    // label_exp = GetLabelExpression(link_lyr+"|")
+    // opts = GetLabelOptions(link_lyr+"|", arrayOpts)
 
     // Create a new map
     dbInfo_dest = GetDBInfo(scenarioFile)
@@ -468,8 +468,8 @@ Macro "Copy Layer Settings" (originFile,scenarioFile)
     
    // Add the scenario Roads layer to the map and make it visible
     link_lyr_dest = AddLayer("DestMap","Links",scenarioFile,dbLayers_dest[2])    
-    SetLabels(link_lyr_dest+"|", label_exp, opts)
-    SetLabelOptions(link_lyr_dest+"|", opts)
+    // SetLabels(link_lyr_dest+"|", label_exp, opts)
+    // SetLabelOptions(link_lyr_dest+"|", opts)
 
     RunMacro("Close All")
     
