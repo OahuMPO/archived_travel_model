@@ -1,6 +1,8 @@
 
 1255
 "ID",I,1,4,0,4,0,,"","",,"Blank",
+"Road Name",C,198,21,0,21,0,,"","New Road Name including centroid designation|",,"Copy",
+"Old Road Name",C,177,21,0,21,0,,"","Name from the Old Model",,"Copy",
 "Multi-Link Station",I,5,4,0,8,0,,"","",,"Copy",
 "Obs-Flow",I,9,4,0,8,0,,"","",,"Copy",
 "CountID",I,13,4,0,8,0,,"","",,"Copy",
@@ -40,8 +42,6 @@
 "BA ATYPE",I,165,4,0,10,0,,"","Area Type the where the link exists-generated",,"Copy",
 "AB LINKTYPE",I,169,4,0,10,0,,"","Code based on area type and facility type|",,"Copy",
 "BA LINKTYPE",I,173,4,0,10,0,,"","Code based on area type and facility type|",,"Copy",
-"Old Road Name",C,177,21,0,21,0,,"","Name from the Old Model",,"Copy",
-"Road Name",C,198,21,0,21,0,,"","New Road Name including centroid designation|",,"Copy",
 "AB_FFTIME",R,219,8,0,10,2,,"","Free Flow time",,"Copy",
 "BA_FFTIME",R,227,8,0,10,2,,"","Free Flow time",,"Copy",
 "AB_CAP_EA3HR",R,235,8,0,10,2,,"","",,"Copy",
