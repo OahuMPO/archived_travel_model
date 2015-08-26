@@ -89,7 +89,7 @@ Macro "Create Network"(path, Options, year)
     //copy other inputs
     RunMacro("Copy Files",otherDirectory,scenarioOtherDirectory)
     
-    // Find the groth factor for the current year
+    // Find the growth factor for the current year
     visitorGFTable = ScenarioDirectory + "\\inputs\\other\\Visitor Growth Factors.bin"
     visitorGF = OpenTable("visitorGF", "FFB", {visitorGFTable})
     SetView("visitorGF")
@@ -152,33 +152,49 @@ Macro "Create Network"(path, Options, year)
     // Set the extraction parameters
     extractLineString = "not (year>"+String(currentYear)+" and [future link]='a') and not (year<="+String(currentYear)+" and [future link]='d')"
     
-    // Run the generic Create Highway Line Layer Macro
-    tempFile = RunMacro("Select from Master Line Layer",masterLine,extractLineString,tempDirectory)
+    CreateProgressBar("Creating Network","False")
     
-    // Run the Change Lanes macro
-    tempFile = RunMacro("Change Lanes",tempFile,year)
+    // Run the generic Create Highway Line Layer Macro
+    UpdateProgressBar("Select from Master Line Layer",0)
+    tempFile = RunMacro("Select from Master Line Layer",masterLine,extractLineString,tempDirectory)
 
+    // Run the Change Lanes macro
+    // tempFile = RunMacro("Change Lanes",tempFile,year)
+    
+    // Kyle: instead of running the change lanes macro,
+    //       run the new management system
+    UpdateProgressBar("Update Project Links",0)
+    tempFile = RunMacro("Update Project Links",tempFile,year,ScenarioDirectory)
+    
     extractPNRString = "("+String(currentYear)+">=[Start Year_PNR Lot] & "+String(currentYear)+"<=[End Year_PNR Lot])"
     //Assign the parking lots based on the start and end year
+    UpdateProgressBar("Assign PNR Lots",0)
     tempFile = RunMacro("Assign PNR Lots",tempFile,currentYear,extractPNRString)
 
     // Export the highway line layer with the fields I want
+    UpdateProgressBar("Export Highway Line Layer",0)
     RunMacro("Export Highway Line Layer",tempFile,scenarioLineFile)
     
     // Kyle: once exported, delete the temp directory
-    DeleteDatabase(tempFile)
-    DeleteDatabase(masterLine)      // this is the copy in the temp folder
-    RemoveDirectory(tempDirectory)
+    // DeleteDatabase(tempFile)
+    // DeleteDatabase(masterLine)      // this is the copy in the temp folder
+    // RemoveDirectory(tempDirectory)
     
     extractRouteString = "[begin year] <= "+String(currentYear)+" and [end year]>= "+String(currentYear)
    
    // Select the transit routes, and copy the transit layer to the scenario directory
     
+    UpdateProgressBar("Export Transit Routes",0)
     RunMacro("Export Transit Routes",masterRoute,originalMasterLine,scenarioLineFile,scenarioNetworkDirectory,extractRouteString)
     
+    UpdateProgressBar("Fill Stop Attributes",0)
+    hwyfile = scenarioLineFile
     RunMacro("Fill Stop Attributes" , hwyfile, scenarioNetworkDirectory+"\\Scenario Route System.rts", scenarioNetworkDirectory+"\\Scenario Route SystemS.bin")
 
+    UpdateProgressBar("Copy Layer Settings",0)
     RunMacro("Copy Layer Settings", originalMasterLine,scenarioLineFile)
+    
+    DestroyProgressBar()
     
     Return(1)
    
@@ -224,13 +240,14 @@ Macro "Select from Master Line Layer" (masterLine,extractString,tempDirectory)
     end
    
     // Extract the projects for this year
+    // Kyle: with new project management system, just export all links
     SetLayer(lineLayer)
-    queryString = "Select * where " + extractString
-    recordsReturned = SelectByQuery("YearSpecific","Several",queryString, )
-   
+    // queryString = "Select * where " + extractString
+    // recordsReturned = SelectByQuery("YearSpecific","Several",queryString, )
     // Export Geography to a temporary file
     tempFile = tempDirectory + "temp.dbd"
-    ExportGeography(lineLayer+"|YearSpecific",tempFile,
+    // ExportGeography(lineLayer+"|YearSpecific",tempFile,
+    ExportGeography(lineLayer+"|",tempFile,
                   { {"Layer Name","Links"}, {"Field Spec",newLinkFields},
                   	{"Node Name","Nodes"}, {"Node Field Spec",newNodeFields} })
           
@@ -695,3 +712,74 @@ Macro "Assign PNR Lots" (tempFile,currentYear,extractPNRString)
     Return( RunMacro("TCB Closing", ret_value, True ) )
    
 EndMacro        
+
+
+
+/*
+Kyle: Major revision to the management of highway projects.  The new
+system uses a csv of project IDs included in the scenario directory.
+Links with the corresponding ID in field "ProjID" have their base
+attributes updated with project attributes.  Finally, links are
+deleted if they have zero lanes in all periods.
+*/
+Macro"Update Project Links" (tempFile,year,ScenarioDirectory)
+    
+    // Get list of project IDs in this scenario
+    projListCSV = ScenarioDirectory + "\\ProjectList.csv"
+    projTbl = OpenTable("projTbl","CSV",{projListCSV})
+    v_projIDs = GetDataVector(projTbl + "|","ProjID",)
+    CloseView(projTbl)
+    
+    // Add the scenario network to the workspace
+    {nlayer,llayer} = GetDBLayers(tempFile)
+    llayer = AddLayerToWorkspace(llayer,tempFile,llayer)
+    
+    // Create a selection set of links that will have their attributes
+    // updated based on project info
+    SetLayer(llayer)
+    for i = 1 to v_projIDs.length do
+        id = v_projIDs[i]
+        
+        qry = "Select * where ProjID = " + String(id)
+        SelectByQuery("projlinks","more",qry)
+    end
+    
+    // These arrays create the field names where project info is stored
+    // In the highway network
+    a_attributes = {"LANE","LIMIT","FNCLASS"}
+    a_dir = {"AB","BA"}
+    a_periods = {"A","M","P"}
+    
+    for a = 1 to a_attributes.length do
+        attr = a_attributes[a]
+        
+        for d = 1 to a_dir.length do
+            dir = a_dir[d]
+            
+            for p = 1 to a_periods.length do
+                per = a_periods[p]
+                
+                // FNCLASS isn't by time period
+                if attr = "FNCLASS" then baseField = dir + " " + attr else 
+                baseField = dir + " " + attr + per
+                projField = "f" + baseField
+                
+                // Collect project info and set it into base year field
+                v_projInfo = GetDataVector(llayer + "|projlinks",projField,)
+                SetDataVector(llayer + "|projlinks", baseField,v_projInfo,)
+                
+                // In addition, build a query to find 0-lane links
+                if attr = "LANE" then do
+                    if delQry = null then delQry = "Select * where nz([" + baseField + "]) = 0"
+                    else delQry = delQry + " and nz([" + baseField + "]) = 0"
+                end
+            end
+        end
+    end
+    
+    // Delete links with 0 lanes throughout the day
+    SelectByQuery("toDelete","Several",delQry)
+    DeleteRecordsInSet("toDelete")
+    
+    return(tempFile)
+EndMacro
