@@ -205,7 +205,8 @@ Macro "OMPO6" (path, Options, jump)
         if !ret_value then goto quit 
         ret_value = RunMacro("Highway Assignment Summary", scenarioDirectory)
         if !ret_value then goto quit
-
+        ret_value = RunMacro("AQ Summary", scenarioDirectory)
+        if !ret_value then goto quit
        // Append:                                                                     // Once the model converges and all the assignments are done                         
        // ret_value = RunMacro("AppendAssign", scenarioDirectory, iteration)          // The AM peak, PM Peak, and Daily flows are appended to the scenario line layer 
        // if !ret_value then goto quit                                                                                      
