@@ -1,14 +1,12 @@
 
-Macro "AQ Summary" (scenarioDirectory) 
+Macro "V6 Summaries" (scenarioDirectory) 
     
     // for testing
     // scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\2012_calibration"
     
     RunMacro("Summarized by FT and AT",scenarioDirectory)
-    
-    // This macro also stratifies by speed bin in order to calculate
-    // emissions estimates
     RunMacro("Emission Estimation",scenarioDirectory)
+    RunMacro("V/C Map",scenarioDirectory)
     
     Return(1)
     
@@ -16,7 +14,7 @@ EndMacro
 
 /*
     This macro provides additional summaries including:
-    VMT/VHT/SpaceMeanSpeed by facility type and area type
+    VMT/VHT/Delay/SpaceMeanSpeed by facility type and area type
     Congested VMT
 */
 
@@ -28,7 +26,7 @@ Macro "Summarized by FT and AT" (scenarioDirectory)
     // inputs
     inputDir = scenarioDirectory + "\\inputs"
     hwyDBD = inputDir + "\\network\\Scenario Line Layer.dbd"
-    vcCutOff = .8   // V/C at .8 is the cut off for a congested link
+    vcCutOff = .9   // V/C of .9 is the cut off for a congested link
     
     // outputs
     outputDir = scenarioDirectory + "\\reports"
@@ -46,7 +44,7 @@ Macro "Summarized by FT and AT" (scenarioDirectory)
     llyr = AddLayerToWorkspace(llyr,hwyDBD,llyr)
     
     file = OpenFile(aqCSV,"w")
-    WriteLine(file,"AreaType,FClass,VMT,Congested VMT,Percent,VHT,Space-Mean Speed")
+    WriteLine(file,"AreaType,FClass,VMT,Congested VMT,Percent,VHT,Space-Mean Speed,Delay")
     
     for a = 1 to a_at.length do
         at = a_at[a]
@@ -59,6 +57,7 @@ Macro "Summarized by FT and AT" (scenarioDirectory)
             cvmt = 0
             vht = 0
             sms = 0
+            delay = 0
                 
             for d = 1 to a_dir.length do
                 dir = a_dir[d]
@@ -81,6 +80,7 @@ Macro "Summarized by FT and AT" (scenarioDirectory)
                         v_vc = GetDataVector(llyr + "|selection",dir + "_VOC_" + tod,)
                         v_spd = GetDataVector(llyr + "|selection",dir + "_SPD_" + tod,)
                         v_vol = GetDataVector(llyr + "|selection",dir + "_FLOW_" + tod,)
+                        v_fftime = GetDataVector(llyr + "|selection",dir + "_FFTIME",)
                         
                         // calculate stats
                         v_vmt = v_length * v_vol
@@ -90,6 +90,8 @@ Macro "Summarized by FT and AT" (scenarioDirectory)
                         v_time = v_length / v_spd
                         v_vht = v_time * v_vol
                         vht = vht + VectorStatistic(v_vht,"Sum",)
+                        v_delay = (v_time - v_fftime/60) * v_vol
+                        delay = delay + VectorStatistic(v_delay,"Sum",)
                     end
                 
                 
@@ -102,7 +104,7 @@ Macro "Summarized by FT and AT" (scenarioDirectory)
             
             // Write out results to the file
             string = String(at) + "," + ftname + "," + String(vmt) + "," + String(cvmt)
-            string = string + "," + String(pct_cvmt) + "," + String(vht) + "," + String(sms)
+            string = string + "," + String(pct_cvmt) + "," + String(vht) + "," + String(sms) + "," + String(delay)
             WriteLine(file, string)
             
         end
@@ -140,7 +142,6 @@ Macro "Emission Estimation" (scenarioDirectory)
     // inputs
     inputDir = scenarioDirectory + "\\inputs"
     hwyDBD = inputDir + "\\network\\Scenario Line Layer.dbd"
-    // vcCutOff = .8   // V/C at .8 is the cut off for a congested link
     curveTbl = inputDir + "\\aq\\CurveLookup.csv"
     mpgTbl = inputDir + "\\aq\\MPGbySpeed.csv"
     mJpg = 121          // megajoules per gallon of gas
@@ -283,5 +284,113 @@ EndMacro
 
 
 
+
+
+Macro "V/C Map" (scenarioDirectory)
+    
+    // inputs
+    inputDir = scenarioDirectory + "\\inputs"
+    hwyDBD = inputDir + "\\network\\Scenario Line Layer.dbd"
+    
+    // outputs
+    outputDir = scenarioDirectory + "\\reports"
+    mapFile = outputDir + "\\AM VoC.map"
+    
+    //Create a new, blank map
+    {nlyr,llyr} = GetDBLayers(hwyDBD)
+    a_info = GetDBInfo(hwyDBD)
+	maptitle = "AM V/C"
+	map = CreateMap(maptitle,{
+		{"Scope",a_info[1]},
+		{"Auto Project","True"}
+		})
+
+	//Add highway layer to the map
+    llyr = AddLayer(map,llyr,hwyDBD,llyr)
+    RunMacro("G30 new layer default settings", llyr)
+    SetLayer(llyr)
+    
+    // Dualized Scaled Symbol Theme (from Caliper Support - not in Help)
+
+	flds = {llyr+".AB_FLOW_AM"}
+
+	opts = null
+	opts.Title = "AM Flow"
+	// opts.[Data Source] = "Screen"
+	opts.[Data Source] = "All"
+	//opts.[Minimum Value] = 0
+	//opts.[Maximum Value] = 100
+	opts.[Minimum Size] = 1
+	opts.[Maximum Size] = 10
+	theme_name = CreateContinuousTheme("Flows", flds, opts)
+
+	//dual_colors = {ColorRGB(32000,32000,65535)}
+    dual_colors = {ColorRGB(65535,65535,65535)} // Set to white to make it disappear in legend
+	//dual_linestyles = {LineStyle({{{1, -1, 0}}})}  //from caliper
+	dual_linestyles = {LineStyle({{{2, -1, 0},{0,0,1},{0,0,-1}}})}
+	//dual_labels = {"AB/BA PM VOL"}
+	dual_linesizes = {0}
+	SetThemeLineStyles(theme_name , dual_linestyles)
+	//SetThemeClassLabels(theme_name , dual_labels)
+	SetThemeLineColors(theme_name , dual_colors)
+	SetThemeLineWidths(theme_name , dual_linesizes)
+
+	ShowTheme(, theme_name)
+	RedrawMap()	
+    
+    //Apply the color ("c") theme based on the AM V/C
+	//	Sets up the name of the layer
+	cTheme = CreateTheme("AM V/C",llyr+".AB_VOC_AM","Manual",3,{
+		{"Values",{
+			{0.0,"True",0.6,"False"},
+			{0.6,"True",0.9,"False"},
+			{0.9,"True",100,"False"}
+			}},
+		{"Other", "False"}
+		})
+
+	line_colors =	{	ColorRGB(10794,52428,17733),
+				ColorRGB(63736,63736,3084),
+				ColorRGB(65535,0,0)
+			}
+	//solidline = LineStyle({{{1, -1, 0}}})
+	dualline = LineStyle({{{2, -1, 0},{0,0,1},{0,0,-1}}})
+			
+    for i = 1 to 3 do
+        class_id = llyr +"|" + cTheme + "|" + String(i)
+        SetLineStyle(class_id, dualline)
+        SetLineColor(class_id, line_colors[i])
+        SetLineWidth(class_id, 2)
+    end
+
+	// Change the labels of the classes (how the divisions appear in the legend)
+	labels = {"0.00 to 0.60", "0.60 to 0.90", ">0.90"}
+	SetThemeClassLabels(cTheme, labels)
+	ShowTheme(,cTheme)
+    
+    // Hide centroid connectors and transit access links
+	SetLayer(llyr)
+	ccquery = "Select * where [AB FACTYPE] = 197 or [AB FACTYPE] = 12 "
+	n1 = SelectByQuery ("CCs", "Several", ccquery,)
+	
+	// Set status to Invisible
+	SetDisplayStatus(llyr+"|CCs", "Invisible")
+    
+	// Configure Legend
+	SetLegendDisplayStatus(llyr+"|", "False")
+	RunMacro("G30 create legend", "Theme")
+	SetLegendSettings (GetMap(), {"Automatic", {0,1,0,0,1,4,0} , {1,1,1} , {"Arial|Bold|16","Arial|9","Arial|Bold|16","Arial|12"} , {"","AM Period"} })
+	str1 = "XXXXXXXX"
+	solid = FillStyle({str1, str1, str1, str1, str1, str1, str1, str1})
+	SetLegendOptions (GetMap(), {{"Background Style", solid}})
+
+	// Refresh Map Window
+	RedrawMap(map)
+
+	// Save map
+	SaveMap(map, mapFile)
+    CloseMap(map)
+    
+EndMacro
 
 
