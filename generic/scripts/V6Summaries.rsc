@@ -7,6 +7,7 @@ Macro "V6 Summaries" (scenarioDirectory)
     RunMacro("Summarized by FT and AT",scenarioDirectory)
     RunMacro("Emission Estimation",scenarioDirectory)
     RunMacro("V/C Map",scenarioDirectory)
+    RunMacro("Trav Time Map",scenarioDirectory)
     
     Return(1)
     
@@ -392,5 +393,91 @@ Macro "V/C Map" (scenarioDirectory)
     CloseMap(map)
     
 EndMacro
+
+
+
+
+
+
+// Creates Isochrone/Travel Time map
+Macro "Trav Time Map" (scenarioDirectory)
+    
+    // inputs
+    inputDir = scenarioDirectory + "\\inputs"
+    hwyDBD = inputDir + "\\network\\Scenario Line Layer.dbd"
+    
+    // outputs
+    outputDir = scenarioDirectory + "\\reports"
+    mapFile = outputDir + "\\AM Travel Time Bands.map"
+    
+    // Create map and get layer names
+    map = RunMacro("G30 new map", hwyDBD, "False")
+    {nLyr,lLyr} = GetDBLayers(hwyDBD)
+    
+    // Create a network
+    Flds = null
+    Flds.[Set Name] = null
+    Flds.[Network File] = GetTempFileName(".net")
+    Flds.Label = null
+    //Length must be included in link options
+    Flds.[Link Options] = {{"Length", {lLyr+".Length", lLyr+".Length",,,"False"}},{"AMTime", {lLyr+".AB_AMTime", lLyr+".BA_AMTime",,,"True"}}}			
+    Flds.[Node Options] = null
+    Flds.Options.[Link Type] = null
+    Flds.Options.[Link ID] = lLyr+".ID"
+    Flds.Options.[Node ID] = nLyr+".ID"
+    Flds.Options.[Turn Penalties] = "No"
+    Flds.Options.[Keep Duplicate Links] = "FALSE"
+    Flds.Options.[Ignore Link Direction] = "FALSE"
+
+    net_h = CreateNetwork(
+        Flds.[Set Name],
+        Flds.[Network File],
+        Flds.Label,
+        Flds.[Link Options],
+        Flds.[Node Options],
+        Flds.Options
+        )
+
+    // Select origin node(s)
+    SetLayer(nLyr)
+    setname = RunMacro("G30 create set", "Origin")
+    n = SelectByQuery(setname,"Several","Select * where ID = 762")
+
+    // Create the isochrone
+    net_arr = GetNetworkInformation(net_h)
+    link_vars = net_arr.[Link Attributes]
+    // select origin node
+    // generate options for network band
+    opts = null
+    opts.[Node Layer] = nLyr
+    opts.existing_network = 1
+    opts.[Band Method] = "Network"
+    opts.[Seed Layer Set] = nLyr+"|" + setname
+    opts.Network = net_h
+    opts.[Cost Min Field] = "AMTime"
+    /* From Jim Lam:
+    The conversion factor estimates time in areas where you are not at a network node
+    This is to make a better looking network band. The factor below:
+    conversion_factor = 60 / unit_size / 30
+    already assumes that you are minimizing time units and that areas outside of the 
+    nodes have an average speed of 30mph (last parameter).  */
+    unit_size = GetUnitSize("Miles", GetMapUnits())
+    conversion_factor = 60 / unit_size / 30
+    opts.[Conversion Factor] = conversion_factor
+    opts.[Band Layer Name] = "Network Bands"
+    opts.[Band File Name] = outputDir + "\\networkbands.dbd"
+    opts.[Band Interval] = 10
+    opts.[Max Cost] = 240
+    opts.[Do Band Theme] = 1
+    opts.[Map Name]  = map
+    Ret = RunMacro("Create Network Bands", opts)
+    
+    RedrawMap(map)
+    SaveMap(map,mapFile)
+    CloseMap(map)
+EndMacro
+
+
+
 
 
