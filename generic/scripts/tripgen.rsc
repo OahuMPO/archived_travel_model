@@ -124,12 +124,15 @@ Macro "Run Program" (scenarioDirectory, executableString, controlString)
         //write the return code check
         failString = "IF NOT ERRORLEVEL = 0 ECHO "+controlString+" > failed.txt"
         WriteLine(ptr,failString) 
-        WriteLine(ptr,"pause")
+        // WriteLine(ptr,"pause")
         CloseFile(ptr)
         
         // Pause for 3 seconds
 				Pause(3000)
-				
+		
+        // Before running the program, clear out any previous error files
+        if GetFileInfo(scenarioDirectory+"\\failed.txt") <> null then DeleteFile(scenarioDirectory+"\\failed.txt")
+		
         status = RunProgram(fileString, {{"Minimize", "True"}})
        
         info = GetFileInfo(scenarioDirectory+"\\failed.txt")
