@@ -57,7 +57,11 @@ Macro "OMPO6" (path, Options, jump)
     
     SetReportFileName(scenarioDirectory+"\\Report.xml")
     SetLogFileName(scenarioDirectory+"\\Log.xml")
-          
+    
+    // Kyle: Create a progress bar to prevent TC from stealing
+    // window focus for every operation
+    CreateProgressBar("Model Running","False")
+    
     if jump = "UpdateLineLayer" then goto UpdateLineLayer
     if jump = "HighwaySkim" then goto HighwaySkim        
     if jump = "TransitSkim" then goto TransitSkim            
@@ -176,6 +180,7 @@ Macro "OMPO6" (path, Options, jump)
         if(iteration = max_iteration) then converged = 1                  // If the model doesnt converge within the maximum number of iterations, the model is considered to be converged
     
         if (converged <> 1 and stop_after_each_itr = 1 and Counter = 1) then do                        // If the user chooses to pause the application at the end of each iteration
+           DestroyProgressBar()
            {iteration, converged, Counter} = RunDbox("Iteration Counter",iteration, max_iteration)     // A seperate dialogebox is shown at the end of each iteration highlighting 
         end                                                                                            // the options available to the user
         
@@ -238,6 +243,7 @@ Macro "OMPO6" (path, Options, jump)
     if stop_after_each_step then goto quit    
        
     quit:
+        DestroyProgressBar()
         Return( RunMacro("TCB Closing", ret_value, True ) )
     
 EndMacro
