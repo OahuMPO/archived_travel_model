@@ -730,56 +730,59 @@ Macro"Update Project Links" (tempFile,year,ScenarioDirectory)
     v_projIDs = GetDataVector(projTbl + "|","ProjID",)
     CloseView(projTbl)
     
-    // Add the scenario network to the workspace
-    {nlayer,llayer} = GetDBLayers(tempFile)
-    llayer = AddLayerToWorkspace(llayer,tempFile,llayer)
-    
-    // Create a selection set of links that will have their attributes
-    // updated based on project info
-    SetLayer(llayer)
-    for i = 1 to v_projIDs.length do
-        id = v_projIDs[i]
+    // Only continue if there were project IDs listed in the csv
+    if v_projIDs.length > 0 then do
         
-        qry = "Select * where ProjID = " + String(id)
-        SelectByQuery("projlinks","more",qry)
-    end
-    
-    // These arrays create the field names where project info is stored
-    // In the highway network
-    a_attributes = {"LANE","LIMIT","FNCLASS"}
-    a_dir = {"AB","BA"}
-    a_periods = {"A","M","P"}
-    
-    for a = 1 to a_attributes.length do
-        attr = a_attributes[a]
+        // Add the scenario network to the workspace
+        {nlayer,llayer} = GetDBLayers(tempFile)
+        llayer = AddLayerToWorkspace(llayer,tempFile,llayer)
         
-        for d = 1 to a_dir.length do
-            dir = a_dir[d]
+        // Create a selection set of links that will have their attributes
+        // updated based on project info
+        SetLayer(llayer)
+        for i = 1 to v_projIDs.length do
+            id = v_projIDs[i]
             
-            for p = 1 to a_periods.length do
-                per = a_periods[p]
+            qry = "Select * where ProjID = " + String(id)
+            SelectByQuery("projlinks","more",qry)
+        end
+        
+        // These arrays create the field names where project info is stored
+        // In the highway network
+        a_attributes = {"LANE","LIMIT","FNCLASS"}
+        a_dir = {"AB","BA"}
+        a_periods = {"A","M","P"}
+        
+        for a = 1 to a_attributes.length do
+            attr = a_attributes[a]
+            
+            for d = 1 to a_dir.length do
+                dir = a_dir[d]
                 
-                // FNCLASS isn't by time period
-                if attr = "FNCLASS" then baseField = dir + " " + attr else 
-                baseField = dir + " " + attr + per
-                projField = "f" + baseField
-                
-                // Collect project info and set it into base year field
-                v_projInfo = GetDataVector(llayer + "|projlinks",projField,)
-                SetDataVector(llayer + "|projlinks", baseField,v_projInfo,)
-                
-                // In addition, build a query to find 0-lane links
-                if attr = "LANE" then do
-                    if delQry = null then delQry = "Select * where nz([" + baseField + "]) = 0"
-                    else delQry = delQry + " and nz([" + baseField + "]) = 0"
+                for p = 1 to a_periods.length do
+                    per = a_periods[p]
+                    
+                    // FNCLASS isn't by time period
+                    if attr = "FNCLASS" then baseField = dir + " " + attr else 
+                    baseField = dir + " " + attr + per
+                    projField = "f" + baseField
+                    
+                    // Collect project info and set it into base year field
+                    v_projInfo = GetDataVector(llayer + "|projlinks",projField,)
+                    SetDataVector(llayer + "|projlinks", baseField,v_projInfo,)
+                    
+                    // In addition, build a query to find 0-lane links
+                    if attr = "LANE" then do
+                        if delQry = null then delQry = "Select * where nz([" + baseField + "]) = 0"
+                        else delQry = delQry + " and nz([" + baseField + "]) = 0"
+                    end
                 end
             end
         end
+        
+        // Delete links with 0 lanes throughout the day
+        SelectByQuery("toDelete","Several",delQry)
+        DeleteRecordsInSet("toDelete")
     end
-    
-    // Delete links with 0 lanes throughout the day
-    SelectByQuery("toDelete","Several",delQry)
-    DeleteRecordsInSet("toDelete")
-    
     return(tempFile)
 EndMacro

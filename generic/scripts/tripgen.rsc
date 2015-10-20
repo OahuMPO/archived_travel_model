@@ -124,7 +124,7 @@ Macro "Run Program" (scenarioDirectory, executableString, controlString)
         //write the return code check
         failString = "IF NOT ERRORLEVEL = 0 ECHO "+controlString+" > failed.txt"
         WriteLine(ptr,failString) 
-        
+        WriteLine(ptr,"pause")
         CloseFile(ptr)
         
         // Pause for 3 seconds

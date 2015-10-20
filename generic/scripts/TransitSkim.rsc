@@ -124,24 +124,24 @@ Macro "Transit Time Update" (scenarioDirectory, hwyfile, iteration)
     AB_FACTYPE = "[AB FACTYPE]"
     SetLayer(link_lyr) //Line Layer
     n1 = SelectByQuery("TranOnly", "Several", "Select * where" +AB_FACTYPE+"=14",)
-    
-    Opts = null
-    Opts.Input.[Dataview Set] = {hwyfile+"|"+link_lyr,link_lyr,"TranOnly"}
-    Opts.Global.Fields = {"AB_EATRNTIME","BA_EATRNTIME",
-    	                    "AB_AMTRNTIME","BA_AMTRNTIME",
-   	                      "AB_MDTRNTIME","BA_MDTRNTIME",
-    	                    "AB_PMTRNTIME","BA_PMTRNTIME",
-    	                    "AB_EVTRNTIME","BA_EVTRNTIME"}
-    Opts.Global.Method = "Formula"
-    Opts.Global.Parameter = {"(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
-    	                       "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
-    	                       "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
-    	                       "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
-    	                       "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60"}
-    	                       
-    ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    if !ret_value then goto quit
-    
+    if n1 > 0  then do
+        Opts = null
+        Opts.Input.[Dataview Set] = {hwyfile+"|"+link_lyr,link_lyr,"TranOnly"}
+        Opts.Global.Fields = {"AB_EATRNTIME","BA_EATRNTIME",
+                                "AB_AMTRNTIME","BA_AMTRNTIME",
+                              "AB_MDTRNTIME","BA_MDTRNTIME",
+                                "AB_PMTRNTIME","BA_PMTRNTIME",
+                                "AB_EVTRNTIME","BA_EVTRNTIME"}
+        Opts.Global.Method = "Formula"
+        Opts.Global.Parameter = {"(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
+                                   "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
+                                   "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
+                                   "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
+                                   "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60"}
+                                   
+        ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
+        if !ret_value then goto quit
+    end
     ret_value = RunMacro("Close All")
     if !ret_value then goto quit
 
