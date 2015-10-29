@@ -499,9 +499,19 @@ Macro "Transit Boardings" (scenarioDirectory)
     {nLyr,lLyr} = GetDBLayers(hwyDBD)    
     {rLyr,sLyr} = AddRouteSystemLayer(map,"Routes",rtsFile,)
     
-    // Get list of all route names and numbers
+    // Get list of all route names, numbers, and modes
     v_rtsID   = GetDataVector(rLyr + "|","Route_ID",)
     v_rtsName = GetDataVector(rLyr + "|","Route_Name",)
+    v_rtsModeN = GetDataVector(rLyr + "|","Mode",)
+    
+    // Convert the mode number to a meaningful name
+    v_rtsMode = if (v_rtsModeN = 4) then "Local Bus"      else ""
+    v_rtsMode = if (v_rtsModeN = 5) then "Express Bus"    else v_rtsMode
+    v_rtsMode = if (v_rtsModeN = 6) then "Limited Bus"    else v_rtsMode
+    v_rtsMode = if (v_rtsModeN = 7) then "Fixed Guideway" else v_rtsMode
+    v_rtsMode = if (v_rtsModeN = 8) then "Ferry"          else v_rtsMode
+    
+    // Create final vector to store boardings
     opts = null
     opts.Constant = 0
     v_rtsOn   = Vector(v_rtsID.length,"Double",opts)
@@ -543,9 +553,9 @@ Macro "Transit Boardings" (scenarioDirectory)
     
     // Write out the results to a CSV
     transitCSV = OpenFile(transitCSV,"w")
-    WriteLine(transitCSV,"Route ID,Route Name,Boardings")
+    WriteLine(transitCSV,"Route ID,Route Name,Mode,Boardings")
     for i = 1 to v_rtsID.length do
-        WriteLine(transitCSV,String(v_rtsID[i]) + "," + v_rtsName[i] + "," + String(v_rtsOn[i]))
+        WriteLine(transitCSV,String(v_rtsID[i]) + "," + v_rtsName[i] + "," + v_rtsMode[i] + "," + String(v_rtsOn[i]))
     end
     
     CloseView(tbl)
