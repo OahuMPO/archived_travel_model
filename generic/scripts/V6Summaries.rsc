@@ -8,6 +8,7 @@ Macro "V6 Summaries" (scenarioDirectory)
     RunMacro("Emission Estimation",scenarioDirectory)
     RunMacro("V/C Map",scenarioDirectory)
     RunMacro("Trav Time Map",scenarioDirectory)
+    RunMacro("Transit Boardings",scenarioDirectory)
     
     Return(1)
     
@@ -476,6 +477,87 @@ Macro "Trav Time Map" (scenarioDirectory)
     SaveMap(map,mapFile)
     CloseMap(map)
 EndMacro
+
+
+
+
+
+Macro "Transit Boardings" (scenarioDirectory)
+    
+    // inputs
+    inputDir = scenarioDirectory + "\\inputs"
+    outputDir = scenarioDirectory + "\\outputs"
+    hwyDBD = inputDir + "\\network\\Scenario Line Layer.dbd"
+    rtsFile = inputDir + "\\network\\Scenario Route System.rts"
+    
+    // outputs
+    reportDir = scenarioDirectory + "\\reports"
+    transitCSV = reportDir + "\\Transit Ridership.csv"
+    
+    // Create map and get layer names.  Add RTS
+    map = RunMacro("G30 new map", hwyDBD, "False")
+    {nLyr,lLyr} = GetDBLayers(hwyDBD)    
+    {rLyr,sLyr} = AddRouteSystemLayer(map,"Routes",rtsFile,)
+    
+    // Get list of all route names and numbers
+    v_rtsID   = GetDataVector(rLyr + "|","Route_ID",)
+    v_rtsName = GetDataVector(rLyr + "|","Route_Name",)
+    opts = null
+    opts.Constant = 0
+    v_rtsOn   = Vector(v_rtsID.length,"Double",opts)
+    
+    // Create arrays to loop over
+    a_access = {"KNR","PNR-FML","PNR-INF","WLK-EXP","WLK-GDWY","WLK-LOC"}
+    a_tod = {"EA","AM","MD","PM","EV"}
+    
+    // Loop over the various transit tables to aggregate boardings
+    // Sample table name of ON/OFF tale collapsed by route
+    // PNR-FML_MD_ONOFF_COLL_JOIN.bin
+    
+    for a = 1 to a_access.length do
+        access = a_access[a]
+        
+        for t = 1 to a_tod.length do
+            tod = a_tod[t]
+            fileName = outputDir + "\\" + access + "_" + tod + "_ONOFF_COLL_JOIN.bin"
+            
+            // Open table and collect the ID and "ON" columns
+            tbl = OpenTable("OnTbl","FFB",{fileName})
+            v_tblID = GetDataVector(tbl + "|","ROUTE",)
+            v_tblOn = GetDataVector(tbl + "|","On",)
+            
+            // Add them to the v_rtsOn vector
+            // GISDK cannot compare vectors of different lengths - must loop
+            for i = 1 to v_rtsID.length do
+                id = v_rtsID[i]
+                
+                pos = ArrayPosition(V2A(v_tblID),{id},)
+                if pos <> 0 then do
+                   test1 = v_rtsOn[i]
+                   test2 = v_tblOn[pos]
+                   v_rtsOn[i] = v_rtsOn[i] + v_tblOn[pos]
+                end
+            end
+        end
+    end
+    
+    // Write out the results to a CSV
+    transitCSV = OpenFile(transitCSV,"w")
+    WriteLine(transitCSV,"Route ID,Route Name,Boardings")
+    for i = 1 to v_rtsID.length do
+        WriteLine(transitCSV,String(v_rtsID[i]) + "," + v_rtsName[i] + "," + String(v_rtsOn[i]))
+    end
+    
+    CloseView(tbl)
+    CloseMap(map)
+    CloseFile(transitCSV)
+EndMacro
+
+
+
+
+
+
 
 
 
