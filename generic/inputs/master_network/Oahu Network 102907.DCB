@@ -1,6 +1,6 @@
 
 1311
-"ID",I,1,4,0,4,0,,"","",,"Blank",
+"newid",I,1,4,0,4,0,,"","",,"Blank",
 "Road Name",C,5,21,0,21,0,,"","New Road Name including centroid designation|",,"Copy",
 "Old Road Name",C,26,21,0,21,0,,"","Name from the Old Model",,"Copy",
 "Multi-Link Station",I,47,4,0,8,0,,"","",,"Copy",
