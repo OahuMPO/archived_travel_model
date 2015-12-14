@@ -125,8 +125,13 @@ Macro "Create Network"(path, Options, year)
     
     //copy DTAfactors files
     RunMacro("Copy Files",DTADirectory +"\\FactorTripTables",scenarioDTAfactorsDirectory)
-
-		//check for directory of DTA output
+    
+    //copy AQ files
+    AQDirectory = DTADirectory + "\\..\\inputs\\aq"
+    scenarioAQDirectory = ScenarioDirectory + "\\inputs\\aq"
+    RunMacro("Copy Files",AQDirectory, scenarioAQDirectory)
+    
+    //check for directory of DTA output
     if GetDirectoryInfo(scenarioDTADirectory + "\\outputs", "Directory")=null then do
         CreateDirectory(scenarioDTADirectory + "\\outputs")
     end
