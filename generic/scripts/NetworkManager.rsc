@@ -725,7 +725,7 @@ Kyle: Major revision to the management of highway projects.  The new
 system uses a csv of project IDs included in the scenario directory.
 Links with the corresponding ID in field "ProjID" have their base
 attributes updated with project attributes.  Finally, links are
-deleted if they have zero lanes in all periods.
+deleted if they have zero lanes in all periods (except transit only).
 */
 Macro"Update Project Links" (tempFile,year,ScenarioDirectory)
     
@@ -786,8 +786,10 @@ Macro"Update Project Links" (tempFile,year,ScenarioDirectory)
         end
         
         // Delete links with 0 lanes throughout the day
-        SelectByQuery("toDelete","Several",delQry)
-        DeleteRecordsInSet("toDelete")
+        // that aren't transit-only links
+        delQry = delQry + " and [AB FACTYPE] <> 14"
+        n = SelectByQuery("toDelete","Several",delQry)
+        if n > 0 then DeleteRecordsInSet("toDelete")
     end
     return(tempFile)
 EndMacro
