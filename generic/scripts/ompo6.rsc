@@ -147,7 +147,14 @@ Macro "OMPO6" (path, Options, jump)
         if stop_after_each_step then goto quit
         
         TourBasedModels:
- 			  // Run tour-based model, visitor model
+        // Check for and delete any previous tbm log files
+        reportDir = scenarioDirectory + "\\reports"
+        a_files = GetDirectoryInfo(reportDir + "\\*.log", "File")
+        for i = 1 to a_files.length do
+            DeleteFile(reportDir + "\\" + a_files[i])
+        end
+        
+        // Run tour-based model, visitor model
         runString = scenarioDirectory+"\\programs\\runompotbm.cmd "+drive+" "+path_forward_slash +" "+r2s(sample_rate[iteration])+" "+i2s(iteration)
         ret_value = RunMacro("TCB Run Command", 1, "Run Tour-Based Model", runString)
         if stop_after_each_step then goto quit
