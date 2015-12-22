@@ -151,7 +151,7 @@ Macro "OMPO6" (path, Options, jump)
         reportDir = scenarioDirectory + "\\reports"
         a_files = GetDirectoryInfo(reportDir + "\\*.log", "File")
         for i = 1 to a_files.length do
-            DeleteFile(reportDir + "\\" + a_files[i])
+            DeleteFile(reportDir + "\\" + a_files[i][1])
         end
         
         // Run tour-based model, visitor model
