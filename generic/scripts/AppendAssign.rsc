@@ -3,9 +3,6 @@
 *  Append highway assignment results to line layer for the 
 *  following scenarios:
 *       EA, AM, MD, PM, EV
-*           
-*
-*
 */
 Macro "AppendAssign" (scenarioDirectory, iteration)
 //    RunMacro("TCB Init")
@@ -21,38 +18,27 @@ Macro "AppendAssign" (scenarioDirectory, iteration)
     node_lyr=AddLayer(cc,"Oahu Nodes",hwyfile,"Oahu Nodes")
     link_lyr=AddLayer(cc,"Oahu Links",hwyfile,"Oahu Links")
     
-    //first append AM2 Hour
-    tmp = GetFields(link_lyr, "All")
-    fld_names = tmp[1]
-    
- 
-		periods = {"EA", "AM", "MD", "PM", "EV" }
+    periods = {"EA", "AM", "MD", "PM", "EV" }
     	
   	for period = 1 to periods.length do
 	  
-	    //search through the fields in the line layer, add the AM2 fields if they don't already exist
-    	found=0
-    	for i = 1 to fld_names.length do
-        if(fld_names[i]="AB_FLOW_AM") then found=1
-	    end
-   	
-		
+		// Kyle: modifying this part to also add/update a time field
     	//add the fields
-    	if !found then do 
         NewFlds = {
             {"AB_FLOW_"+periods[period], "real"},
             {"BA_FLOW_"+periods[period], "real"},
             {"TOT_FLOW_"+periods[period], "real"},
             {"AB_SPD_"+periods[period], "real"},
             {"BA_SPD_"+periods[period], "real"},
+            {"AB_TIME_"+periods[period], "real"},
+            {"BA_TIME_"+periods[period], "real"},
             {"AB_VOC_"+periods[period], "real"},
             {"BA_VOC_"+periods[period], "real"}}
         // add the new fields to the link layer
         ret_value = RunMacro("TCB Add View Fields", {link_lyr, NewFlds})
         if !ret_value then goto quit
-    	end
  
- 			flowTable = scenarioDirectory+"\\outputs\\"+periods[period]+"Flow"+iteration+".bin"
+        flowTable = scenarioDirectory+"\\outputs\\"+periods[period]+"Flow"+iteration+".bin"
     
     	//fill fields with AM2 Assignment Results
      	Opts.Input.[Dataview Set] = {{hwyfile+"|"+link_lyr, flowTable, {"ID"}, {"ID1"}}, "joinedvw"+periods[period]}	
@@ -61,22 +47,17 @@ Macro "AppendAssign" (scenarioDirectory, iteration)
     	                    "TOT_FLOW_"+periods[period],
     	                    "AB_SPD_"+periods[period],
     	                    "BA_SPD_"+periods[period],
+    	                    "AB_TIME_"+periods[period],
+    	                    "BA_TIME_"+periods[period],
     	                    "AB_VOC_"+periods[period],
     	                    "BA_VOC_"+periods[period]} // the fields to fill        
     	Opts.Global.Method = "Formula"                                         // the fill method          
-    	Opts.Global.Parameter = {"AB_Flow","BA_Flow","TOT_Flow","AB_Speed","BA_Speed","AB_VOC", "BA_VOC"}                               
+    	Opts.Global.Parameter = {"AB_Flow","BA_Flow","TOT_Flow","AB_Speed","BA_Speed","AB_Time", "BA_Time", "AB_VOC", "BA_VOC"}                               
     	ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
     	if !ret_value then goto quit
 	end
-    
-    //search through the fields in the line layer, add the Total Daily fields if they don't already exist
-    found=0
-    for i = 1 to fld_names.length do
-        if(fld_names[i]="AB_FLOW_DAILY") then found=1
-    end
 
     //add the fields
-    if !found then do 
         NewFlds = {
             {"AB_FLOW_DAILY", "real"},
             {"BA_FLOW_DAILY", "real"},
@@ -84,7 +65,6 @@ Macro "AppendAssign" (scenarioDirectory, iteration)
         // add the new fields to the link layer
         ret_value = RunMacro("TCB Add View Fields", {link_lyr, NewFlds})
         if !ret_value then goto quit
-    end
    
 //fill fields with total Assignment Results
  Opts.Input.[Dataview Set] = {hwyfile+"|"+link_lyr, link_lyr}	

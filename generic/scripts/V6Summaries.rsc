@@ -2,7 +2,7 @@
 Macro "V6 Summaries" (scenarioDirectory) 
     
     // for testing
-    // scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\LRTP2040"
+    // scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\LRTP2040EC"
     
     RunMacro("Summarize by FT and AT",scenarioDirectory)
     RunMacro("Emission Estimation",scenarioDirectory)
@@ -329,8 +329,8 @@ Macro "V/C Map" (scenarioDirectory)
 
 	//dual_colors = {ColorRGB(32000,32000,65535)}
     dual_colors = {ColorRGB(65535,65535,65535)} // Set to white to make it disappear in legend
-	//dual_linestyles = {LineStyle({{{1, -1, 0}}})}  //from caliper
-	dual_linestyles = {LineStyle({{{2, -1, 0},{0,0,1},{0,0,-1}}})}
+	dual_linestyles = {LineStyle({{{1, -1, 0}}})}                       // without black outlines
+	// dual_linestyles = {LineStyle({{{2, -1, 0},{0,0,1},{0,0,-1}}})}   // with black outlines
 	//dual_labels = {"AB/BA PM VOL"}
 	dual_linesizes = {0}
 	SetThemeLineStyles(theme_name , dual_linestyles)
@@ -425,10 +425,10 @@ Macro "Trav Time Map" (scenarioDirectory)
     // Create a network
     Flds = null
     Flds.[Set Name] = null
-    Flds.[Network File] = GetTempFileName(".net")
+    Flds.[Network File] = outputDir + "\\travbands.net"
     Flds.Label = null
     //Length must be included in link options
-    Flds.[Link Options] = {{"Length", {lLyr+".Length", lLyr+".Length",,,"False"}},{"AMTime", {lLyr+".AB_AMTime", lLyr+".BA_AMTime",,,"True"}}}			
+    Flds.[Link Options] = {{"Length", {lLyr+".Length", lLyr+".Length",,,"False"}},{"AMTime", {lLyr+".AB_TIME_AM", lLyr+".BA_TIME_AM",,,"True"}}}			
     Flds.[Node Options] = null
     Flds.Options.[Link Type] = null
     Flds.Options.[Link ID] = lLyr+".ID"
@@ -474,11 +474,34 @@ Macro "Trav Time Map" (scenarioDirectory)
     opts.[Conversion Factor] = conversion_factor
     opts.[Band Layer Name] = "Network Bands"
     opts.[Band File Name] = outputDir + "\\networkbands.dbd"
-    opts.[Band Interval] = 10
+    opts.[Band Interval] = 5
     opts.[Max Cost] = 240
     opts.[Do Band Theme] = 1
     opts.[Map Name]  = map
     Ret = RunMacro("Create Network Bands", opts)
+    
+    // Change Theme Name
+    SetLayer("Network Bands")
+    opts = null
+    opts.Title = "Travel Time (mins)"
+    SetThemeOptions("AMTime ()", opts)
+    
+    // Hide centroid connectors and transit access links
+	SetLayer(lLyr)
+	ccquery = "Select * where [AB FACTYPE] = 197 or [AB FACTYPE] = 12 "
+	n1 = SelectByQuery ("CCs", "Several", ccquery,)
+	
+	// Set status to Invisible
+	SetDisplayStatus(lLyr+"|CCs", "Invisible")
+    
+    // Configure Legend
+	SetLegendDisplayStatus(lLyr+"|", "False")
+	SetLegendDisplayStatus("Network Bands|", "False")
+	RunMacro("G30 create legend", "Theme")
+	SetLegendSettings (GetMap(), {"Automatic", {0,1,0,0,1,4,0} , {1,1,1} , {"Arial|Bold|16","Arial|9","Arial|Bold|16","Arial|12"} , {"","AM Travel Time from the Airport"} })
+	str1 = "XXXXXXXX"
+	solid = FillStyle({str1, str1, str1, str1, str1, str1, str1, str1})
+	SetLegendOptions (GetMap(), {{"Background Style", solid}})
     
     RedrawMap(map)
     SaveMap(map,mapFile)
