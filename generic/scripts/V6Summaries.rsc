@@ -2,9 +2,9 @@
 Macro "V6 Summaries" (scenarioDirectory) 
     
     // for testing
-    // scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\2012_calibration"
+    // scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\LRTP2040"
     
-    RunMacro("Summarized by FT and AT",scenarioDirectory)
+    RunMacro("Summarize by FT and AT",scenarioDirectory)
     RunMacro("Emission Estimation",scenarioDirectory)
     RunMacro("V/C Map",scenarioDirectory)
     RunMacro("Trav Time Map",scenarioDirectory)
@@ -20,7 +20,7 @@ EndMacro
     Congested VMT
 */
 
-Macro "Summarized by FT and AT" (scenarioDirectory) 
+Macro "Summarize by FT and AT" (scenarioDirectory) 
     
     CreateProgressBar("",False)
     UpdateProgressBar("Summarizing by FT and AT",0)
@@ -310,6 +310,7 @@ Macro "V/C Map" (scenarioDirectory)
 	//Add highway layer to the map
     llyr = AddLayer(map,llyr,hwyDBD,llyr)
     RunMacro("G30 new layer default settings", llyr)
+    SetArrowheads(llyr + "|", "None")
     SetLayer(llyr)
     
     // Dualized Scaled Symbol Theme (from Caliper Support - not in Help)
@@ -342,23 +343,26 @@ Macro "V/C Map" (scenarioDirectory)
     
     //Apply the color ("c") theme based on the AM V/C
 	//	Sets up the name of the layer
-	cTheme = CreateTheme("AM V/C",llyr+".AB_VOC_AM","Manual",3,{
+    numClasses = 4
+	cTheme = CreateTheme("AM V/C",llyr+".AB_VOC_AM","Manual",numClasses,{
 		{"Values",{
 			{0.0,"True",0.6,"False"},
-			{0.6,"True",0.9,"False"},
+			{0.6,"True",0.75,"False"},
+			{0.75,"True",0.9,"False"},
 			{0.9,"True",100,"False"}
 			}},
 		{"Other", "False"}
 		})
 
-	line_colors =	{	ColorRGB(10794,52428,17733),
-				ColorRGB(63736,63736,3084),
-				ColorRGB(65535,0,0)
+	line_colors =	{	ColorRGB(10794, 52428, 17733),
+				ColorRGB(63736, 63736, 3084),
+				ColorRGB(65535, 32896, 0),
+				ColorRGB(65535, 0, 0)
 			}
 	//solidline = LineStyle({{{1, -1, 0}}})
 	dualline = LineStyle({{{2, -1, 0},{0,0,1},{0,0,-1}}})
 			
-    for i = 1 to 3 do
+    for i = 1 to numClasses do
         class_id = llyr +"|" + cTheme + "|" + String(i)
         SetLineStyle(class_id, dualline)
         SetLineColor(class_id, line_colors[i])
@@ -366,7 +370,10 @@ Macro "V/C Map" (scenarioDirectory)
     end
 
 	// Change the labels of the classes (how the divisions appear in the legend)
-	labels = {"0.00 to 0.60", "0.60 to 0.90", ">0.90"}
+	labels = {"Congestion Free (VC < .6)",
+              "Moderate Traffic (VC .60 to .75)",
+              "Heavy Traffic (VC .75 to .90)",
+              "Stop and Go (VC > .90)"}
 	SetThemeClassLabels(cTheme, labels)
 	ShowTheme(,cTheme)
     
