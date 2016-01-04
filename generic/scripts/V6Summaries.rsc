@@ -2,7 +2,7 @@
 Macro "V6 Summaries" (scenarioDirectory) 
     
     // for testing
-    // scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\LRTP2040EC"
+    // scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\LRTP2040"
     
     RunMacro("Summarize by FT and AT",scenarioDirectory)
     RunMacro("Emission Estimation",scenarioDirectory)
@@ -449,7 +449,7 @@ Macro "Trav Time Map" (scenarioDirectory)
     // Select origin node(s)
     SetLayer(nLyr)
     setname = RunMacro("G30 create set", "Origin")
-    n = SelectByQuery(setname,"Several","Select * where ID = 762")
+    n = SelectByQuery(setname,"Several","Select * where ID = 265")
 
     // Create the isochrone
     net_arr = GetNetworkInformation(net_h)
@@ -475,7 +475,7 @@ Macro "Trav Time Map" (scenarioDirectory)
     opts.[Band Layer Name] = "Network Bands"
     opts.[Band File Name] = outputDir + "\\networkbands.dbd"
     opts.[Band Interval] = 5
-    opts.[Max Cost] = 240
+    opts.[Max Cost] = 45
     opts.[Do Band Theme] = 1
     opts.[Map Name]  = map
     Ret = RunMacro("Create Network Bands", opts)
