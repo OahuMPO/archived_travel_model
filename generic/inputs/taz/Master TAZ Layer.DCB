@@ -1,8 +1,8 @@
 
 131
 "newid",I,1,4,0,4,0,,"","",,"Blank",
-"TAZ",S,5,2,0,4,0,,"","",,"Blank",
-"TAZ762",S,7,2,0,4,0,,"","",,"Blank",
+"TAZ",S,5,2,0,4,0,,"","This is the field used by the model, even though|it is equivalent to the ID field.",,"Blank",
+"TAZ762",S,7,2,0,4,0,,"","Not sure this is used for anything, but should leave in the table|so that the table structure stays constant for java models.",,"Blank",
 "AREA_SQFT",R,9,8,0,19,5,,"","",,"Blank",
 "Section",C,17,15,0,15,0,,"","",,"Blank",
 "TD",S,32,2,0,4,0,,"","",,"Blank",
