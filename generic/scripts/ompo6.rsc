@@ -1,5 +1,7 @@
 
 Macro "OMPO6" (path, Options, jump)
+    shared scenarioDirectory
+    
     RunMacro("TCB Init")	
     scenarioDirectory = path[2]
 
@@ -147,6 +149,7 @@ Macro "OMPO6" (path, Options, jump)
         if stop_after_each_step then goto quit
         
         TourBasedModels:
+        
         // Check for and delete any previous tbm log files
         reportDir = scenarioDirectory + "\\reports"
         a_files = GetDirectoryInfo(reportDir + "\\*.log", "File")
@@ -188,8 +191,8 @@ Macro "OMPO6" (path, Options, jump)
     
         if (converged <> 1 and stop_after_each_itr = 1 and Counter = 1) then do                        // If the user chooses to pause the application at the end of each iteration
            DestroyProgressBar()
-           {iteration, converged, Counter} = RunDbox("Iteration Counter",iteration, max_iteration)     // A seperate dialogebox is shown at the end of each iteration highlighting 
-        end                                                                                            // the options available to the user
+           {iteration, converged, Counter} = RunDbox("Iteration Counter",iteration, converged, Counter)     // A separate dialogue box is shown at the end of each iteration highlighting 
+        end                                                                                                 // the options available to the user
         
         
         if (stop_after_each_step = 1 and  converged = 0)then do           // This conversion (=2) of the "Converged" value ensures that
@@ -270,10 +273,8 @@ Dbox "Iteration Counter" (iteration, converged, Counter)
     Radio Button 2, 8.5 Prompt: "Run untill convergence & summarize results" do Counter = 0 enditem
      
     button "OK" 7, 11, 10, 1.5 do
-		iteration = IntToString(iteration)
-		ShowMessage("This is "+iteration+" Iteration")
-		iteration = StringToInt(iteration)
-		ret = {iteration, max_iteration}
+		ShowMessage("This is " + String(iteration) + " Iteration")
+		ret = {iteration, converged, Counter}
 		Return(ret) 
 	enditem
         

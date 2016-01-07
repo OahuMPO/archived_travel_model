@@ -5,7 +5,8 @@
 *
 *****************************************************************************/
 Macro "Update Line Layer" (args)
-
+    shared scenarioDirectory
+    
     hwyfile=args[1]
     tazfile=args[2]
     fspdfile=args[3]
@@ -32,6 +33,14 @@ Macro "Update Line Layer" (args)
     node_lyr=AddLayer(cc,"Oahu Nodes",hwyfile,"Oahu Nodes")
     link_lyr=AddLayer(cc,"Oahu Links",hwyfile,"Oahu Links")
     taz_lyr=AddLayer(cc,"Oahu TAZs",tazfile,"Oahu TAZs")
+    
+    // Kyle: Add the density fields
+    NewFlds = {
+    	   {"POP_DEN", "integer"},
+           {"EMP_DEN", "integer"},
+           {"ATYPE", "integer"}
+           }     
+    ret_value = RunMacro("TCB Add View Fields", {taz_lyr, NewFlds})
     
     //******************************************** Update Area Type ********************************************
 
@@ -65,12 +74,12 @@ Macro "Update Line Layer" (args)
  
             if nodedata[1][i] != i then do
                 ShowMessage("Error! Node layer out of sequence for TAZs")
-ShowMessage(1)
+                ShowMessage(1)
                 return(0)
             end
             if nodedata[1][j] != j then do
                 ShowMessage("Error! Node layer out of sequence for TAZs")
-ShowMessage(1)
+                ShowMessage(1)
                 return(0)
             end
             
