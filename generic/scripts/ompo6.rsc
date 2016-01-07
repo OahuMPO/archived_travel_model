@@ -149,12 +149,22 @@ Macro "OMPO6" (path, Options, jump)
         if stop_after_each_step then goto quit
         
         TourBasedModels:
-        
         // Check for and delete any previous tbm log files
         reportDir = scenarioDirectory + "\\reports"
         a_files = GetDirectoryInfo(reportDir + "\\*.log", "File")
         for i = 1 to a_files.length do
             DeleteFile(reportDir + "\\" + a_files[i][1])
+        end
+        
+        // Also, check for and delete the previous java output files.
+        // This will make sure that the GISDK model crashes if the java
+        // model fails in any iteration.
+        outputDir = scenarioDirectory + "\\outputs"
+        a_files = GetDirectoryInfo(outputDir + "\\resident*.mtx", "File")
+        a_files = a_files + GetDirectoryInfo(outputDir + "\\visitor*.mtx", "File")
+        a_files = a_files + {"tours.csv", "trips.csv", "visitorTours.csv", "visitorTrips.csv"}
+        for i = 1 to a_files.length do
+            DeleteFile(outputDir + "\\" + a_files[i][1])
         end
         
         // Run tour-based model, visitor model
