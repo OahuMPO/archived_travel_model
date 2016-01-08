@@ -46,6 +46,7 @@ Macro "OMPO6" (path, Options, jump)
     max_iteration = StringToInt(Options[9])     // Converges by 3rd iteration; user can define max. 
     cordonPricing = Options[10]                 // Cordon pricing:  Reset the non-toll skims to 0 if toll skimmed
     sample_rate = { 0.20, 0.60, 1.0, 1.0, 1.0, 1.0 }
+    // sample_rate = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 }  // for testing
    
    	path_parts = SplitPath(scenarioDirectory)
     path_no_drive = path_parts[2]+path_parts[3]
@@ -164,7 +165,7 @@ Macro "OMPO6" (path, Options, jump)
         a_files = a_files + GetDirectoryInfo(outputDir + "\\visitor*.mtx", "File")
         a_files = a_files + {"tours.csv", "trips.csv", "visitorTours.csv", "visitorTrips.csv"}
         for i = 1 to a_files.length do
-            DeleteFile(outputDir + "\\" + a_files[i][1])
+            if GetFileInfo() <> null then DeleteFile(outputDir + "\\" + a_files[i][1])
         end
         
         // Run tour-based model, visitor model
