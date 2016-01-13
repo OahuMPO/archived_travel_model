@@ -2,7 +2,7 @@
 Macro "V6 Summaries" (scenarioDirectory) 
     
     // for testing
-    // scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\LRTP2040"
+    // scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\LRTP2012_previous"
     
     RunMacro("Summarize by FT and AT",scenarioDirectory)
     RunMacro("Emission Estimation",scenarioDirectory)
@@ -416,7 +416,7 @@ Macro "Trav Time Map" (scenarioDirectory)
     
     // outputs
     outputDir = scenarioDirectory + "\\reports"
-    mapFile = outputDir + "\\AM Travel Time Bands.map"
+    mapFile = outputDir + "\\PM Travel Time Bands.map"
     
     // Create map and get layer names
     map = RunMacro("G30 new map", hwyDBD, "False")
@@ -428,7 +428,7 @@ Macro "Trav Time Map" (scenarioDirectory)
     Flds.[Network File] = outputDir + "\\travbands.net"
     Flds.Label = null
     //Length must be included in link options
-    Flds.[Link Options] = {{"Length", {lLyr+".Length", lLyr+".Length",,,"False"}},{"AMTime", {lLyr+".AB_TIME_AM", lLyr+".BA_TIME_AM",,,"True"}}}			
+    Flds.[Link Options] = {{"Length", {lLyr+".Length", lLyr+".Length",,,"False"}},{"PMTime", {lLyr+".AB_TIME_PM", lLyr+".BA_TIME_PM",,,"True"}}}			
     Flds.[Node Options] = null
     Flds.Options.[Link Type] = null
     Flds.Options.[Link ID] = lLyr+".ID"
@@ -462,7 +462,7 @@ Macro "Trav Time Map" (scenarioDirectory)
     opts.[Band Method] = "Network"
     opts.[Seed Layer Set] = nLyr+"|" + setname
     opts.Network = net_h
-    opts.[Cost Min Field] = "AMTime"
+    opts.[Cost Min Field] = "PMTime"
     /* From Jim Lam:
     The conversion factor estimates time in areas where you are not at a network node
     This is to make a better looking network band. The factor below:
@@ -484,7 +484,7 @@ Macro "Trav Time Map" (scenarioDirectory)
     SetLayer("Network Bands")
     opts = null
     opts.Title = "Travel Time (mins)"
-    SetThemeOptions("AMTime ()", opts)
+    SetThemeOptions("PMTime ()", opts)
     
     // Hide centroid connectors and transit access links
 	SetLayer(lLyr)
@@ -498,7 +498,7 @@ Macro "Trav Time Map" (scenarioDirectory)
 	SetLegendDisplayStatus(lLyr+"|", "False")
 	SetLegendDisplayStatus("Network Bands|", "False")
 	RunMacro("G30 create legend", "Theme")
-	SetLegendSettings (GetMap(), {"Automatic", {0,1,0,0,1,4,0} , {1,1,1} , {"Arial|Bold|16","Arial|9","Arial|Bold|16","Arial|12"} , {"","AM Travel Time from the Airport"} })
+	SetLegendSettings (GetMap(), {"Automatic", {0,1,0,0,1,4,0} , {1,1,1} , {"Arial|Bold|16","Arial|9","Arial|Bold|16","Arial|12"} , {"","PM Travel Time from Downtown"} })
 	str1 = "XXXXXXXX"
 	solid = FillStyle({str1, str1, str1, str1, str1, str1, str1, str1})
 	SetLegendOptions (GetMap(), {{"Background Style", solid}})
