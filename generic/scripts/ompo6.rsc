@@ -163,9 +163,9 @@ Macro "OMPO6" (path, Options, jump)
         outputDir = scenarioDirectory + "\\outputs"
         a_files = GetDirectoryInfo(outputDir + "\\resident*.mtx", "File")
         a_files = a_files + GetDirectoryInfo(outputDir + "\\visitor*.mtx", "File")
-        a_files = a_files + {"tours.csv", "trips.csv", "visitorTours.csv", "visitorTrips.csv"}
+        a_files = a_files + {{"tours.csv"}, {"trips.csv"}, {"visitorTours.csv"}, {"visitorTrips.csv"}}
         for i = 1 to a_files.length do
-            if GetFileInfo() <> null then DeleteFile(outputDir + "\\" + a_files[i][1])
+            if GetFileInfo(outputDir + "\\" + a_files[i][1]) <> null then DeleteFile(outputDir + "\\" + a_files[i][1])
         end
         
         // Run tour-based model, visitor model
