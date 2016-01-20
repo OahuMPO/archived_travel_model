@@ -2,12 +2,13 @@
 Macro "V6 Summaries" (scenarioDirectory) 
     
     // for testing
-    // scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\LRTP2012_previous"
+    // scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\LRTP2012"
     
     RunMacro("Summarize by FT and AT",scenarioDirectory)
     RunMacro("Emission Estimation",scenarioDirectory)
     RunMacro("V/C Map",scenarioDirectory)
     RunMacro("Trav Time Map",scenarioDirectory)
+    // RunMacro("Trav Time Map - Zonal",scenarioDirectory)
     RunMacro("Transit Boardings",scenarioDirectory)
     
     Return(1)
@@ -407,7 +408,11 @@ EndMacro
 
 
 
-// Creates Isochrone/Travel Time map
+/*
+Creates Isochrone/Travel Time map
+The travel time is for an SOV vehicle, meaning
+that it cannot use HOV, zipper, etc.
+*/
 Macro "Trav Time Map" (scenarioDirectory)
     
     // inputs
@@ -422,9 +427,16 @@ Macro "Trav Time Map" (scenarioDirectory)
     map = RunMacro("G30 new map", hwyDBD, "False")
     {nLyr,lLyr} = GetDBLayers(hwyDBD)
     
+    // Create a link set of links that SOV can travel in the PM
+    SetLayer(lLyr)
+    setname = "sov pm links"
+    qry =       "Select * where nz([AB LIMITP]) not between 2 and 3 and nz([BA LIMITP]) not between 2 and 3"
+    qry = qry + " and (nz([AB LANEP]) + nz([BA LANEP])) > 0 and [Road Name] <> 'Walk Access'"
+    SelectByQuery(setname, "Several", qry)
+    
     // Create a network
     Flds = null
-    Flds.[Set Name] = null
+    Flds.[Set Name] = setname
     Flds.[Network File] = outputDir + "\\travbands.net"
     Flds.Label = null
     //Length must be included in link options
@@ -474,8 +486,8 @@ Macro "Trav Time Map" (scenarioDirectory)
     opts.[Conversion Factor] = conversion_factor
     opts.[Band Layer Name] = "Network Bands"
     opts.[Band File Name] = outputDir + "\\networkbands.dbd"
-    opts.[Band Interval] = 5
-    opts.[Max Cost] = 45
+    opts.[Band Interval] = 10
+    opts.[Max Cost] = 120
     opts.[Do Band Theme] = 1
     opts.[Map Name]  = map
     Ret = RunMacro("Create Network Bands", opts)
@@ -509,7 +521,52 @@ Macro "Trav Time Map" (scenarioDirectory)
 EndMacro
 
 
+Macro "Trav Time Map" (scenarioDirectory)
+    
+    // inputs
+    inputDir = scenarioDirectory + "\\inputs"
+    hwyDBD = inputDir + "\\network\\Scenario Line Layer.dbd"
+    
+    // outputs
+    outputDir = scenarioDirectory + "\\reports"
+    mapFile = outputDir + "\\AM Zonal Travel Time to Downtown.map"
+    
+    // Create map and get layer names
+    map = RunMacro("G30 new map", hwyDBD, "False")
+    {nLyr,lLyr} = GetDBLayers(hwyDBD)
+    
+    // Create a link set of links that SOV can travel in the AM
+    SetLayer(lLyr)
+    setname = "sov am links"
+    qry =       "Select * where nz([AB LIMITA]) not between 2 and 3 and nz([BA LIMITA]) not between 2 and 3"
+    qry = qry + " and (nz([AB LANEA]) + nz([BA LANEA])) > 0 and [Road Name] <> 'Walk Access'"
+    SelectByQuery(setname, "Several", qry)
+    
+    // Create a network
+    Flds = null
+    Flds.[Set Name] = setname
+    Flds.[Network File] = outputDir + "\\zonaltravtime.net"
+    Flds.Label = null
+    //Length must be included in link options
+    Flds.[Link Options] = {{"Length", {lLyr+".Length", lLyr+".Length",,,"False"}},{"PMTime", {lLyr+".AB_TIME_PM", lLyr+".BA_TIME_PM",,,"True"}}}			
+    Flds.[Node Options] = null
+    Flds.Options.[Link Type] = null
+    Flds.Options.[Link ID] = lLyr+".ID"
+    Flds.Options.[Node ID] = nLyr+".ID"
+    Flds.Options.[Turn Penalties] = "No"
+    Flds.Options.[Keep Duplicate Links] = "FALSE"
+    Flds.Options.[Ignore Link Direction] = "FALSE"
 
+    net_h = CreateNetwork(
+        Flds.[Set Name],
+        Flds.[Network File],
+        Flds.Label,
+        Flds.[Link Options],
+        Flds.[Node Options],
+        Flds.Options
+        )
+    
+EndMacro
 
 
 Macro "Transit Boardings" (scenarioDirectory)
