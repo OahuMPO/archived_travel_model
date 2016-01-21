@@ -8,7 +8,7 @@ Macro "V6 Summaries" (scenarioDirectory)
     RunMacro("Emission Estimation",scenarioDirectory)
     RunMacro("V/C Map",scenarioDirectory)
     RunMacro("Trav Time Map",scenarioDirectory)
-    // RunMacro("Trav Time Map - Zonal",scenarioDirectory)
+    RunMacro("Trav Time Map - Zonal",scenarioDirectory)
     RunMacro("Transit Boardings",scenarioDirectory)
     
     Return(1)
@@ -520,16 +520,26 @@ Macro "Trav Time Map" (scenarioDirectory)
     CloseMap(map)
 EndMacro
 
-
-Macro "Trav Time Map" (scenarioDirectory)
+/*
+The purpose of this map is to create the zone-based
+travel times used directly by the ORTP.  Any difference
+maps will still need to be created manually by comparing
+two scenarios.
+*/
+Macro "Trav Time Map - Zonal" (scenarioDirectory)
+    
+    RunMacro("TCB Init")
     
     // inputs
     inputDir = scenarioDirectory + "\\inputs"
     hwyDBD = inputDir + "\\network\\Scenario Line Layer.dbd"
+    tazDBD = inputDir + "\\taz\\Scenario TAZ Layer.dbd"
+    destTAZ = 265
     
     // outputs
     outputDir = scenarioDirectory + "\\reports"
-    mapFile = outputDir + "\\AM Zonal Travel Time to Downtown.map"
+    mapFile = outputDir + "\\AM SOV Zonal Travel Time to Downtown.map"
+    skimMtx = outputDir + "\\AM SOV Zonal Travel Time to Downtown.mtx"
     
     // Create map and get layer names
     map = RunMacro("G30 new map", hwyDBD, "False")
@@ -542,13 +552,20 @@ Macro "Trav Time Map" (scenarioDirectory)
     qry = qry + " and (nz([AB LANEA]) + nz([BA LANEA])) > 0 and [Road Name] <> 'Walk Access'"
     SelectByQuery(setname, "Several", qry)
     
+    // Create a node set of centroids
+    SetLayer(nLyr)
+    centroidSet = "centroids"
+    qry = "Select * where [Zone Centroid] = 'Yes'"
+    SelectByQuery(centroidSet, "Several", qry)
+    
     // Create a network
+    SetLayer(lLyr)
     Flds = null
     Flds.[Set Name] = setname
     Flds.[Network File] = outputDir + "\\zonaltravtime.net"
     Flds.Label = null
     //Length must be included in link options
-    Flds.[Link Options] = {{"Length", {lLyr+".Length", lLyr+".Length",,,"False"}},{"PMTime", {lLyr+".AB_TIME_PM", lLyr+".BA_TIME_PM",,,"True"}}}			
+    Flds.[Link Options] = {{"Length", {lLyr+".Length", lLyr+".Length",,,"False"}},{"AMTime", {lLyr+".AB_TIME_AM", lLyr+".BA_TIME_AM",,,"True"}}}			
     Flds.[Node Options] = null
     Flds.Options.[Link Type] = null
     Flds.Options.[Link ID] = lLyr+".ID"
@@ -566,6 +583,77 @@ Macro "Trav Time Map" (scenarioDirectory)
         Flds.Options
         )
     
+    // Change network settings (add centroids)
+    opts = null
+    opts.[Use Centroids] = "True"
+    opts.[Centroid Set] = centroidSet
+    ChangeNetworkSettings(net_h, opts)
+    
+    // Skim the highway network
+    Opts = null
+    Opts.Input.Network = Flds.[Network File]
+    Opts.Input.[Origin Set] = {hwyDBD + "|" + nLyr, nLyr, "centroids", "Select * where [Zone Centroid] = 'Y'"}
+    Opts.Input.[Destination Set] = {hwyDBD + "|" + nLyr, nLyr, "centroids"}
+    Opts.Input.[Via Set] = {hwyDBD + "|" + nLyr, nLyr}
+    Opts.Field.Minimize = "AMTime"
+    Opts.Field.Nodes = nLyr + ".ID"
+    Opts.Flag = {}
+    Opts.Output.[Output Matrix].Label = "AM SOV Zonal Trav Time"
+    Opts.Output.[Output Matrix].[File Name] = skimMtx
+    ret_value = RunMacro("TCB Run Procedure", "TCSPMAT", Opts, &Ret)
+    
+    // Open matrix and collect the travel time column
+    // of the destination zone.
+    skimMtx = OpenMatrix(skimMtx, )
+    {ri, ci} = GetMatrixIndex(skimMtx)
+    skimMC  = CreateMatrixCurrency(skimMtx, "AM SOV Zonal Trav Time - AMTime", ri, ci, )
+    opts = null
+    opts.Column = destTAZ
+    v_time = GetMatrixVector(skimMC, opts)
+    
+    CloseMap(map)
+    
+    // Create the final TAZ map
+    map = RunMacro("G30 new map", tazDBD, "False")
+    {tLyr} = GetDBLayers(tazDBD)
+    
+    // Add a field for the trav time to dest taz
+    NewFlds = {
+           {"TimeToDestTAZ", "real"}
+           }     
+    ret_value = RunMacro("TCB Add View Fields", {tLyr, NewFlds})
+    
+    // Fill the travel time with the matrix vector
+    opts = null
+    opts.[Sort Order] = {{"ID", "Ascending"}}
+    SetDataVector(tLyr + "|", "TimeToDestTAZ", v_time, opts)
+    
+    // Create a theme for the travel time
+    numClasses = 8
+    opts = null
+    opts.[Pretty Values] = "True"
+    opts.Title = "AM SOV Time to Downtown"
+    opts.Other = "False"
+    cTheme = CreateTheme("TravTime",tLyr+".TimeToDestTAZ","Optimal",numClasses, opts)
+    
+    // Set theme fill color and style
+    opts = null
+    // opts.method = "RGB"
+    a_color = GeneratePalette(ColorRGB(65535, 61937, 47545), ColorRGB(0, 25000, 0), numClasses - 2, opts)
+    SetThemeFillColors(cTheme, a_color)
+    str1 = "XXXXXXXX"
+	solid = FillStyle({str1, str1, str1, str1, str1, str1, str1, str1})
+    for i = 1 to numClasses do
+        a_fillstyles = a_fillstyles + {solid}
+    end
+    SetThemeFillStyles(cTheme, a_fillstyles)
+    ShowTheme(, cTheme)
+    
+    // Modify the border color
+    darkGray = ColorRGB(7196, 7196, 7196)
+    SetLineColor(tLyr + "|", darkGray)
+    
+    RedrawMap(map)
 EndMacro
 
 
