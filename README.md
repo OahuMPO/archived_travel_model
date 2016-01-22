@@ -60,9 +60,13 @@ C:\Program Files\GetGnuWin32\bin
 
 The model requires a file to point to the location of these three folders.  This is done
 by changing the following file (in the model directory):
-generic\programs\CTRampEnv.bat
+generic\programs\CTRampEnv.bat.example
 
-Make sure the following three lines point to the correct location of each software.
+First, make a copy of the file in the same location, and change the name of the copy to:
+CTRampEnv.bat
+
+Next, make sure the following three lines point to the correct location of each software
+on your local machine.  As an example:
 
 set JAVA_64_PATH=C:\Progra~1\Java\jdk1.8.0_31
 set TRANSCAD_PATH=C:\Progra~1\TransCAD_6.0_bld_9030

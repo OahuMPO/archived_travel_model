@@ -1,3 +1,4 @@
-# Ignore local changes to the CTRampEnv batch file
-# This needs to be customized for each machine
+# Ignore local changes to the CTRampEnv batch file,
+# which needs to be customized on each machine.
+# (See README)
 CTRampEnv.bat
