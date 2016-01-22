@@ -22,3 +22,48 @@ This folder should contain each scenario created by the user.  The contents of t
 the repository from getting too large.  An example base-year scenario would be stored in the following directory:
 
 scenarios\2012_base\
+
+## Setting up Third-Part Software
+
+This model requires a few other programs to be installed on the machine.
+
+### TransCAD V6 Build 9030
+Purchase/Download from Caliper.
+
+Installation Directory:
+C:\Program Files\TransCAD_6.0_bld_9030
+
+For example, the bmp folder would be located here:
+C:\Program Files\TransCAD_6.0_bld_9030\bmp
+
+### Java Development Kit (JDK)
+Download from:
+http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+
+Installation Directory:
+C:\Program Files\Java
+
+For example, if the user downloaded JDK 8u31, the bin folder would be located here:
+C:\Program Files\Java\jdk1.8.0_31\bin
+
+### GnuWin32
+Download from:
+http://gnuwin32.sourceforge.net/
+
+Install to:
+C:\Program Files\GetGnuWin32
+
+For example, the bin folder would be located here:
+C:\Program Files\GetGnuWin32\bin
+
+### Pointing the model to the third-party software
+
+The model requires a file to point to the location of these three folders.  This is done
+by changing the following file (in the model directory):
+generic\programs\CTRampEnv.bat
+
+Make sure the following three lines point to the correct location of each software.
+
+set JAVA_64_PATH=C:\Progra~1\Java\jdk1.8.0_31
+set TRANSCAD_PATH=C:\Progra~1\TransCAD_6.0_bld_9030
+set GNUWIN32_PATH=c:\progra~1\GetGnuWin32\bin
