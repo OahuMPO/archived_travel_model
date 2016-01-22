@@ -9,4 +9,5 @@ rem must be version 6 build 9030
 set TRANSCAD_PATH=C:\Progra~1\TransCAD_6.0_bld_9030
 
 rem set location of GNU tools
-set GNUWIN32_PATH=c:\progra~1\GetGnuWin32\bin
+rem tee.exe must be present in the bin folder
+set GNUWIN32_PATH=C:\projects\Honolulu\Version6\OMPORepo\generic\programs\GetGnuWin32\bin

@@ -47,14 +47,8 @@ For example, if the user downloaded JDK 8u31, the bin folder would be located he
 C:\Program Files\Java\jdk1.8.0_31\bin
 
 ### GnuWin32
-Download from:
-http://gnuwin32.sourceforge.net/
-
-Install to:
-C:\Program Files\GetGnuWin32
-
-For example, the bin folder would be located here:
-C:\Program Files\GetGnuWin32\bin
+In order to simplify model setup, this software is distributed along with the model files.
+It is located in the generic\programs folder.
 
 ### Pointing the model to the third-party software
 
@@ -70,4 +64,4 @@ on your local machine.  As an example:
 
 set JAVA_64_PATH=C:\Progra~1\Java\jdk1.8.0_31
 set TRANSCAD_PATH=C:\Progra~1\TransCAD_6.0_bld_9030
-set GNUWIN32_PATH=c:\progra~1\GetGnuWin32\bin
+set GNUWIN32_PATH=C:\projects\Honolulu\Version6\OMPORepo\generic\programs\GetGnuWin32\bin
