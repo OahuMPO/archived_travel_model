@@ -182,8 +182,8 @@ dbox "Oahu Model"
 	enditem
             
     button  3, 45.5 icon: "bmp\\planmatrix.bmp"
-	button "EJ Summaries" 18, 45.5, 26, 1.5 do
-	    jump = "EJSummaries"
+	button "Summaries" 18, 45.5, 26, 1.5 do
+	    jump = "Summaries"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 	

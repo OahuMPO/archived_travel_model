@@ -4,11 +4,20 @@ Macro "V6 Summaries" (scenarioDirectory)
     // for testing
     // scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\LRTP2040"
     
-    RunMacro("Summarize by FT and AT",scenarioDirectory)
-    RunMacro("Emission Estimation",scenarioDirectory)
-    RunMacro("V/C Map",scenarioDirectory)
-    RunMacro("Trav Time Map",scenarioDirectory)
-    RunMacro("Trav Time Map - Zonal",scenarioDirectory)
+	// Close any maps that might be open from the rest of the model run
+	maps = GetMaps()
+	if maps <> null then do
+		maps = maps[1]
+		for i = 1 to maps.length do
+			CloseMap(map[i])
+		end
+	end
+	
+    // RunMacro("Summarize by FT and AT",scenarioDirectory)
+    // RunMacro("Emission Estimation",scenarioDirectory)
+    // RunMacro("V/C Map",scenarioDirectory)
+    // RunMacro("Trav Time Map",scenarioDirectory)
+    // RunMacro("Trav Time Map - Zonal",scenarioDirectory)
     RunMacro("Transit Boardings",scenarioDirectory)
     
     Return(1)

@@ -73,7 +73,7 @@ Macro "OMPO6" (path, Options, jump)
     if jump = "TimeOfDay" then goto TimeOfDay        
     if jump = "HighwayAssign" then goto HighwayAssign 
     if jump = "TransitAssign" then goto TransitAssign
-    if jump = "EJSummaries" then goto EJSummaries
+    if jump = "Summaries" then goto Summaries
     if jump = "DTArun" then goto DTArun
                 
     UpdateLineLayer:
@@ -245,16 +245,14 @@ Macro "OMPO6" (path, Options, jump)
     if !ret_value then goto quit
     ret_value = RunMacro("Skim Summary", scenarioDirectory)
     if !ret_value then goto quit
-
-    if !ret_value then goto quit
     if stop_after_each_step then goto quit    
    
+    Summaries:
    // New V6 summaries
    // Creates summaries of transit and highway
-    if !ret_value then goto quit
     ret_value = RunMacro("V6 Summaries", scenarioDirectory)
+    if !ret_value then goto quit
       
-    EJSummaries:
    // ret_value = RunMacro("Calculate Environmental Justice", scenarioDirectory, nzones)
     
     //don't run dta as part of the regular model
