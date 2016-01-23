@@ -2,7 +2,7 @@
 Macro "V6 Summaries" (scenarioDirectory) 
     
     // for testing
-    // scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\LRTP2012"
+    // scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\LRTP2040"
     
     RunMacro("Summarize by FT and AT",scenarioDirectory)
     RunMacro("Emission Estimation",scenarioDirectory)
@@ -654,6 +654,8 @@ Macro "Trav Time Map - Zonal" (scenarioDirectory)
     SetLineColor(tLyr + "|", darkGray)
     
     RedrawMap(map)
+	SaveMap(map,mapFile)
+    CloseMap(map)
 EndMacro
 
 
