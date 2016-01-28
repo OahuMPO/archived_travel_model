@@ -77,7 +77,7 @@ Macro "Transit Access Links" (scenarioDirectory, hwyfile, rtsfile, nzones,fixgdw
     // a_maxRailLinks  = {2,2,8}
     // a_maxLength     = {2,8,}
     a_type          = {"Walk"}
-    a_maxLinks      = {5}
+    a_maxLinks      = {10}
     a_maxRailLinks  = {2}
     a_maxLength     = {2}
     
