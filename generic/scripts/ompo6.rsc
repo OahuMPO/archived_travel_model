@@ -1,5 +1,7 @@
 
 Macro "OMPO6" (path, Options, jump)
+    shared scenarioDirectory
+    
     RunMacro("TCB Init")	
     scenarioDirectory = path[2]
 
@@ -44,6 +46,7 @@ Macro "OMPO6" (path, Options, jump)
     max_iteration = StringToInt(Options[9])     // Converges by 3rd iteration; user can define max. 
     cordonPricing = Options[10]                 // Cordon pricing:  Reset the non-toll skims to 0 if toll skimmed
     sample_rate = { 0.20, 0.60, 1.0, 1.0, 1.0, 1.0 }
+    // sample_rate = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 }  // for testing
    
    	path_parts = SplitPath(scenarioDirectory)
     path_no_drive = path_parts[2]+path_parts[3]
@@ -57,7 +60,11 @@ Macro "OMPO6" (path, Options, jump)
     
     SetReportFileName(scenarioDirectory+"\\Report.xml")
     SetLogFileName(scenarioDirectory+"\\Log.xml")
-          
+    
+    // Kyle: Create a progress bar to prevent TC from stealing
+    // window focus for every operation
+    CreateProgressBar("Model Running","False")
+    
     if jump = "UpdateLineLayer" then goto UpdateLineLayer
     if jump = "HighwaySkim" then goto HighwaySkim        
     if jump = "TransitSkim" then goto TransitSkim            
@@ -66,7 +73,7 @@ Macro "OMPO6" (path, Options, jump)
     if jump = "TimeOfDay" then goto TimeOfDay        
     if jump = "HighwayAssign" then goto HighwayAssign 
     if jump = "TransitAssign" then goto TransitAssign
-    if jump = "EJSummaries" then goto EJSummaries
+    if jump = "Summaries" then goto Summaries
     if jump = "DTArun" then goto DTArun
                 
     UpdateLineLayer:
@@ -74,7 +81,7 @@ Macro "OMPO6" (path, Options, jump)
     args = {hwyfile,tazfile,fspdfile,cspdfile,capfile,conicalsfile,trnpkfactfile,trnopfactfile,nzones}
     ret_value = RunMacro("Update Line Layer", args)
     if !ret_value then goto quit
-    
+
     TransitAccess:
     // Create the highway network
     ret_value = RunMacro("Create Highway Network" ,hwyfile, hnetfile, iftoll) 
@@ -143,7 +150,25 @@ Macro "OMPO6" (path, Options, jump)
         if stop_after_each_step then goto quit
         
         TourBasedModels:
- 			  // Run tour-based model, visitor model
+        // Check for and delete any previous tbm log files
+        reportDir = scenarioDirectory + "\\reports"
+        a_files = GetDirectoryInfo(reportDir + "\\*.log", "File")
+        for i = 1 to a_files.length do
+            DeleteFile(reportDir + "\\" + a_files[i][1])
+        end
+        
+        // Also, check for and delete the previous java output files.
+        // This will make sure that the GISDK model crashes if the java
+        // model fails in any iteration.
+        outputDir = scenarioDirectory + "\\outputs"
+        a_files = GetDirectoryInfo(outputDir + "\\resident*.mtx", "File")
+        a_files = a_files + GetDirectoryInfo(outputDir + "\\visitor*.mtx", "File")
+        a_files = a_files + {{"tours.csv"}, {"trips.csv"}, {"visitorTours.csv"}, {"visitorTrips.csv"}}
+        for i = 1 to a_files.length do
+            if GetFileInfo(outputDir + "\\" + a_files[i][1]) <> null then DeleteFile(outputDir + "\\" + a_files[i][1])
+        end
+        
+        // Run tour-based model, visitor model
         runString = scenarioDirectory+"\\programs\\runompotbm.cmd "+drive+" "+path_forward_slash +" "+r2s(sample_rate[iteration])+" "+i2s(iteration)
         ret_value = RunMacro("TCB Run Command", 1, "Run Tour-Based Model", runString)
         if stop_after_each_step then goto quit
@@ -176,8 +201,9 @@ Macro "OMPO6" (path, Options, jump)
         if(iteration = max_iteration) then converged = 1                  // If the model doesnt converge within the maximum number of iterations, the model is considered to be converged
     
         if (converged <> 1 and stop_after_each_itr = 1 and Counter = 1) then do                        // If the user chooses to pause the application at the end of each iteration
-           {iteration, converged, Counter} = RunDbox("Iteration Counter",iteration, max_iteration)     // A seperate dialogebox is shown at the end of each iteration highlighting 
-        end                                                                                            // the options available to the user
+           DestroyProgressBar()
+           {iteration, converged, Counter} = RunDbox("Iteration Counter",iteration, converged, Counter)     // A separate dialogue box is shown at the end of each iteration highlighting 
+        end                                                                                                 // the options available to the user
         
         
         if (stop_after_each_step = 1 and  converged = 0)then do           // This conversion (=2) of the "Converged" value ensures that
@@ -205,7 +231,6 @@ Macro "OMPO6" (path, Options, jump)
         if !ret_value then goto quit 
         ret_value = RunMacro("Highway Assignment Summary", scenarioDirectory)
         if !ret_value then goto quit
-
        // Append:                                                                     // Once the model converges and all the assignments are done                         
        // ret_value = RunMacro("AppendAssign", scenarioDirectory, iteration)          // The AM peak, PM Peak, and Daily flows are appended to the scenario line layer 
        // if !ret_value then goto quit                                                                                      
@@ -220,12 +245,14 @@ Macro "OMPO6" (path, Options, jump)
     if !ret_value then goto quit
     ret_value = RunMacro("Skim Summary", scenarioDirectory)
     if !ret_value then goto quit
-
-    if !ret_value then goto quit
     if stop_after_each_step then goto quit    
    
+    Summaries:
+   // New V6 summaries
+   // Creates summaries of transit and highway
+    ret_value = RunMacro("V6 Summaries", scenarioDirectory)
+    if !ret_value then goto quit
       
-    EJSummaries:
    // ret_value = RunMacro("Calculate Environmental Justice", scenarioDirectory, nzones)
     
     //don't run dta as part of the regular model
@@ -237,6 +264,7 @@ Macro "OMPO6" (path, Options, jump)
     if stop_after_each_step then goto quit    
        
     quit:
+        DestroyProgressBar()
         Return( RunMacro("TCB Closing", ret_value, True ) )
     
 EndMacro
@@ -254,10 +282,8 @@ Dbox "Iteration Counter" (iteration, converged, Counter)
     Radio Button 2, 8.5 Prompt: "Run untill convergence & summarize results" do Counter = 0 enditem
      
     button "OK" 7, 11, 10, 1.5 do
-		iteration = IntToString(iteration)
-		ShowMessage("This is "+iteration+" Iteration")
-		iteration = StringToInt(iteration)
-		ret = {iteration, max_iteration}
+		ShowMessage("This is " + String(iteration) + " Iteration")
+		ret = {iteration, converged, Counter}
 		Return(ret) 
 	enditem
         

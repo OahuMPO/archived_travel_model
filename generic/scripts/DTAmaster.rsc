@@ -394,7 +394,8 @@ Macro "Set 4Hr AM Peak Network"(scenarioDirectory, period, highway_net, DTA_DBD)
      				  {"*_AM15Min_SCAP", {link_lyr+"."+ab_scapacity, link_lyr+"."+ba_scapacity, , , "False"}}
      				  }
 
-        Opts.Global.[Node Options] = {{"[ID:1]", {node_lyr+".[ID:1]", , }}, 
+        // Opts.Global.[Node Options] = {{"[ID:1]", {node_lyr+".[ID:1]", , }}, 
+        Opts.Global.[Node Options] = {{"[ID]", {node_lyr+".[ID]", , }}, 
             {"X", {node_lyr+".X", , }}, {"Y", {node_lyr+".Y", , }}, 
             {"Original_Node_ID", {node_lyr+".Original_Node_ID", , }}, 
             {"Original", {node_lyr+".Original", , }}, 

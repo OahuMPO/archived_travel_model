@@ -233,7 +233,8 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
      				  {"*_COST_S3TL", {link_lyr+".COST_S3TL", link_lyr+".COST_S3TL", , , "False"}}
      				  }
 
-        Opts.Global.[Node Options] = {{"[ID:1]", {node_lyr+".[ID:1]", , }}, 
+        // Opts.Global.[Node Options] = {{"[ID:1]", {node_lyr+".[ID:1]", , }}, 
+        Opts.Global.[Node Options] = {{"[ID]", {node_lyr+".[ID]", , }}, 
             {"X", {node_lyr+".X", , }}, {"Y", {node_lyr+".Y", , }}, 
             {"Original_Node_ID", {node_lyr+".Original_Node_ID", , }}, 
             {"Original", {node_lyr+".Original", , }}, 

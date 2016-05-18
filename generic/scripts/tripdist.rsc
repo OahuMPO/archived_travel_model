@@ -73,8 +73,12 @@ Macro "Run Distrib" (scenarioDirectory, executableString, controls, iftoll)
         
         //write the return code check
         WriteLine(ptr,"IF NOT ERRORLEVEL = 0 ECHO "+controlString+" > failed.txt") 
-        
+        // WriteLine(ptr,"pause")
         CloseFile(ptr)
+        
+        // Before running the program, clear out any previous error files
+        if GetFileInfo(scenarioDirectory+"\\failed.txt") <> null then DeleteFile(scenarioDirectory+"\\failed.txt")
+        
         status = RunProgram(fileString, {{"Minimize", "True"}})
        
         info = GetFileInfo(scenarioDirectory+"\\failed.txt")

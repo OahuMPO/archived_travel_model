@@ -124,24 +124,24 @@ Macro "Transit Time Update" (scenarioDirectory, hwyfile, iteration)
     AB_FACTYPE = "[AB FACTYPE]"
     SetLayer(link_lyr) //Line Layer
     n1 = SelectByQuery("TranOnly", "Several", "Select * where" +AB_FACTYPE+"=14",)
-    
-    Opts = null
-    Opts.Input.[Dataview Set] = {hwyfile+"|"+link_lyr,link_lyr,"TranOnly"}
-    Opts.Global.Fields = {"AB_EATRNTIME","BA_EATRNTIME",
-    	                    "AB_AMTRNTIME","BA_AMTRNTIME",
-   	                      "AB_MDTRNTIME","BA_MDTRNTIME",
-    	                    "AB_PMTRNTIME","BA_PMTRNTIME",
-    	                    "AB_EVTRNTIME","BA_EVTRNTIME"}
-    Opts.Global.Method = "Formula"
-    Opts.Global.Parameter = {"(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
-    	                       "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
-    	                       "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
-    	                       "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
-    	                       "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60"}
-    	                       
-    ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    if !ret_value then goto quit
-    
+    if n1 > 0  then do
+        Opts = null
+        Opts.Input.[Dataview Set] = {hwyfile+"|"+link_lyr,link_lyr,"TranOnly"}
+        Opts.Global.Fields = {"AB_EATRNTIME","BA_EATRNTIME",
+                                "AB_AMTRNTIME","BA_AMTRNTIME",
+                              "AB_MDTRNTIME","BA_MDTRNTIME",
+                                "AB_PMTRNTIME","BA_PMTRNTIME",
+                                "AB_EVTRNTIME","BA_EVTRNTIME"}
+        Opts.Global.Method = "Formula"
+        Opts.Global.Parameter = {"(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
+                                   "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
+                                   "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
+                                   "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
+                                   "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60"}
+                                   
+        ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
+        if !ret_value then goto quit
+    end
     ret_value = RunMacro("Close All")
     if !ret_value then goto quit
 
@@ -287,6 +287,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Global.[Network Options].[Route Attributes].Route_ID = {rte_lyr+".Route_ID"}
     Opts.Global.[Network Options].[Route Attributes].Mode = {rte_lyr+".Mode"}
     Opts.Global.[Network Options].[Route Attributes].Headway = {rte_lyr+"."+periods[i]+"_Headway"}
+    Opts.Global.[Network Options].[Route Attributes].Fare = {rte_lyr + ".Fare"}
      Opts.Global.[Network Options].[Stop Attributes].ID = {stp_lyr+".ID"}
     Opts.Global.[Network Options].[Stop Attributes].Longitude = {stp_lyr+".Longitude"}
     Opts.Global.[Network Options].[Stop Attributes].Latitude = {stp_lyr+".Latitude"}
@@ -317,20 +318,21 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Input.[Centroid Set] = {hwyfile+"|"+node_lyr, node_lyr, "centroid"}
     Opts.Field.[Link Impedance] = abba_trntime
     Opts.Field.[Route Headway] = "Headway"
-    Opts.Field.[Mode Impedance] = modes_vw+".Mode_"+periods[i]+"Time"
-    Opts.Field.[Mode Used] = modes_vw+".Walk_Local"
-    Opts.Field.[Mode Access] = modes_vw+".Access"
-    Opts.Field.[Mode Egress] = modes_vw+".Egress"
-    Opts.Field.[Mode Imp Weight]   = modes_vw + ".Local_Weight" 
-    Opts.Field.[Mode IWait Weight] = modes_vw + ".IWait_Weight" 
-    Opts.Field.[Mode XWait Weight] = modes_vw + ".XWait_Weight" 
+    Opts.Field.[Route Fare] = "Fare"
+    Opts.Field.[Mode Impedance] = "Mode_"+periods[i]+"Time"
+    Opts.Field.[Mode Used] = "Walk_Local"
+    Opts.Field.[Mode Access] = "Access"
+    Opts.Field.[Mode Egress] = "Egress"
+    Opts.Field.[Mode Imp Weight]   = "Local_Weight" 
+    Opts.Field.[Mode IWait Weight] = "IWait_Weight" 
+    Opts.Field.[Mode XWait Weight] = "XWait_Weight" 
     Opts.Field.[Inter-Mode Xfer From] = xfer_vw+".FROM"
     Opts.Field.[Inter-Mode Xfer To] = xfer_vw+".TO"
     Opts.Field.[Inter-Mode Xfer Stop] = xfer_vw+".STOP"
     Opts.Field.[Inter-Mode Xfer Fare] = xfer_vw+".FARE"
-    Opts.Global.[Global Fare Value] = 68
+    Opts.Global.[Global Fare Value] = .68
     Opts.Global.[Global Xfer Fare] = 0
-    Opts.Global.[Global Fare Weight] = 0.01
+    Opts.Global.[Global Fare Weight] = 1    // Fare will be entered in dollars on the RTS
     Opts.Global.[Global Imp Weight] = 1
     Opts.Global.[Global Xfer Weight] = 1
     Opts.Global.[Global IWait Weight] = 2
@@ -478,7 +480,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     pnr_pnrAccNode = scenarioDirectory+"\\outputs\\pnr_"+periods[i]+"_pnrAccNode.mtx"
     knr_knrAccNode = scenarioDirectory+"\\outputs\\knr_"+periods[i]+"_knrAccNode.mtx"
    // pnr_pnrEgrNode = scenarioDirectory+"\\outputs\\pnr_"+periods[i]+"_pnrEgrNode.mtx"  --Doesn't work
- 
+
     // an array of networks
     trnnet_scen={trn_wloc   ,    trn_wexp,    trn_wfxg,        trn_ptw,       trn_ktw,  trn_wtp,     trn_wtk}
        

@@ -182,8 +182,8 @@ dbox "Oahu Model"
 	enditem
             
     button  3, 45.5 icon: "bmp\\planmatrix.bmp"
-	button "EJ Summaries" 18, 45.5, 26, 1.5 do
-	    jump = "EJSummaries"
+	button "Summaries" 18, 45.5, 26, 1.5 do
+	    jump = "Summaries"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 	
@@ -219,12 +219,16 @@ Dbox "Scenario Manager"
     Frame 1, .5, 65, 4.25 Prompt: "INPUTS"	
     
     Edit Int "rdwy year item" 15, 1.75, 10, 1
-        prompt: "Roadway Year"
+        prompt: "Transit Year"
     variable: year
     Edit Int "rdwy year item" same, after, 10, 1
         prompt: "SE Year"
     variable: seYear
-	button "Inputs" 30, 2, 33, 1.5 do
+    button "?" 26, 1.75, 3 do
+        ShowMessage("The transit routes and PNR lots\nhave a start and stop year.")
+        ShowMessage("The highway projects are controlled\nwith the ProjectList.csv")
+    enditem
+	button "Inputs" 34, 2, 29, 1.5 do
 	    RunDbox("Inputs")
 	enditem
     
@@ -529,7 +533,14 @@ Macro "SetDirectoryDefaults"
     
     uiDir = GetInterface()
     a_temp = SplitPath(uiDir)
-    genericDir = a_temp[1] + a_temp[2] + "..\\"
+    // Don't use the ".." parent directory notation because it causes problems when
+    // comparing path strings later in the model.
+    // genericDir = a_temp[1] + a_temp[2] + "..\\"
+    a_split = ParseString(a_temp[2],"\\")
+    for i = 1 to a_split.length - 1 do
+        string = string + "\\" + a_split[i]
+    end
+    genericDir = a_temp[1] + string + "\\"
     
     path[3] = genericDir
     path[4] = genericDir + "inputs\\master_network\\"
