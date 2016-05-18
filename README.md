@@ -62,6 +62,6 @@ CTRampEnv.bat
 Next, make sure the following three lines point to the correct location of each software
 on your local machine.  As an example:
 
-set JAVA_64_PATH=C:\Progra~1\Java\jdk1.8.0_31
-set TRANSCAD_PATH=C:\Progra~1\TransCAD_6.0_bld_9030
+set JAVA_64_PATH=C:\Progra~1\Java\jdk1.8.0_31  
+set TRANSCAD_PATH=C:\Progra~1\TransCAD_6.0_bld_9030  
 set GNUWIN32_PATH=C:\projects\Honolulu\Version6\OMPORepo\generic\programs\GetGnuWin32\bin
