@@ -1,6 +1,6 @@
 
-dbox "Oahu Model" 
-      
+dbox "Oahu Model"
+
 //***************************This part of the code is for initial set up*************************************************************************
     right, center toolbox NoKeyboard
     title: "OAHU Model"
@@ -16,16 +16,23 @@ dbox "Oahu Model"
 		RunMacro("TCB Init")
 		path[1] = "C:\\Projects\\Ompo\\Conversion\\Application\\"
 //        LoadResourceFile(,"C:\\Projects\\Ompo\\Conversion\\Application\\scripts\\tazmanager.rsc",)
-		enditem
+
+    // Use the ui location to find the bmp directory
+    uiDBD = GetInterface()
+    a_path = SplitPath(uiDBD)
+    uiDir = a_path[1] + a_path[2]
+    bmpDir = uiDir + "../bmp"
+
+	enditem
 	close do
 		return()
 		enditem
-                        
-    button  0, 0 icon: "bmp\\Oahu.bmp"
-                        
+
+    button  0, 0 icon: bmpDir + "/Oahu.bmp"
+
 //***************************This part of the code sets up the Scenario directory *************************************************************************
-                        
-    Frame 1, 8.5, 45, 6.2 Prompt: "Scenario Directory"	
+
+    Frame 1, 8.5, 45, 6.2 Prompt: "Scenario Directory"
 
 //    Edit Int "num iter item" 25, 14, 10
 //        prompt: "Enter the Scenario Year"
@@ -54,9 +61,9 @@ dbox "Oahu Model"
 
 //***************************This part of the code sets up the Options in the model*************************************************************************
 
-//    Frame 1, 16.5, 45, 7 Prompt: "OPTIONS"	
+//    Frame 1, 16.5, 45, 7 Prompt: "OPTIONS"
 
-    Frame 1, 14.7, 45, 9 Prompt: "OPTIONS"	
+    Frame 1, 14.7, 45, 9 Prompt: "OPTIONS"
 
     Checkbox 3, 16.0 prompt: "Stop after each stage" variable: Options[1]
 
@@ -67,44 +74,44 @@ dbox "Oahu Model"
     Checkbox 3, 19.6 prompt: "Write User Benefits" variable: Options[4]
 
     Checkbox 3, 20.8 prompt: "Stop after each iteration" variable: Options[5]
-        
+
     Checkbox 3, 22.0 prompt: "Cordon Pricing" variable: Options[10]
-    
+
 
     Popdown Menu "num iter item" 40, 17.5, 4.5
         Editable
         prompt: "Start At Iter"
         list: {1,2,3,4,5,6,7,8}
-    variable: Options[6]              
-    
+    variable: Options[6]
+
     Popdown Menu "num iter item" 40, 19.5, 4.5
         Editable
         prompt: "Max Iterations"
         list: {1,2,3,4,5,6,7,8}
-    variable: Options[9]              
-        
-  	
-  	
+    variable: Options[9]
+
+
+
 //***************************This part of the code sets up the Stages of the model*************************************************************************
-	
-    Frame 1, 24, 45, 32 Prompt: "STAGES"	
-	
+
+    Frame 1, 24, 45, 32 Prompt: "STAGES"
+
 	button  3, 25.5 icon: "bmp\\plannetwork.bmp"
 	button "Prepare Network" 18, 25.5, 26, 1.5 do
 	    jump = "UpdateLineLayer"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
-    
+
     button  3, 28 icon: "bmp\\planskim.bmp"
 	button "Create Highway Skims" 18, 28, 26, 1.5 do
 	    jump = "HighwaySkim"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
-    
-    button  3, 30.5 icon: "bmp\\TS.bmp" do
+
+    button  3, 30.5 icon: bmpDir + "/TS.bmp" do
 	 	     maps = GetMapNames()
 	 	     views = GetViewNames()
-	 	     if((maps <> null) or (views <> null)) then do 
+	 	     if((maps <> null) or (views <> null)) then do
 	 	         ret_value = RunMacro("Close All")
 				 end
 				 else do
@@ -112,26 +119,26 @@ dbox "Oahu Model"
             		hwyfile=path[2]+ "\\inputs\\network\\Scenario Line Layer.dbd"
             		rtsfile=path[2]+ "\\inputs\\network\\Scenario Route System.rts"
 	 	 	 	      	baselyrs = GetDBLayers(hwyfile)
-	 	 	 	      	ModifyRouteSystem(rtsfile, {{"Geography", hwyfile, baselyrs[2]}, {"Link ID", "ID"}})    
+	 	 	 	      	ModifyRouteSystem(rtsfile, {{"Geography", hwyfile, baselyrs[2]}, {"Link ID", "ID"}})
 	 	 	 	      	// create a map and add the route system layer to it, change some display settings
 	 	 	 	      	aa = GetDBInfo(hwyfile)
 	 	 	 	      	cc = CreateMap("bb",{{"Scope",aa[1]}})
 	 	 	 	      	lyrs=AddRouteSystemLayer(cc, "Route System", rtsfile,{})
 	 	 	 	      	RunMacro("Set Default RS Style", lyrs, "True", "True")
 	 	 	 	      	if getlayervisibility(lyrs[5])= "Off" then SetLayerVisibility(lyrs[5], "True")
-	 	 	 	      	SetLayerVisibility(lyrs[4], "True")   
+	 	 	 	      	SetLayerVisibility(lyrs[4], "True")
 	 	 	 	 end
-     enditem    
+     enditem
 
 	button "Create Transit Skims" 18, 30.5, 26, 1.5 do
 	    jump = "TransitSkim"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
-    
+
     button  3, 33 icon: "bmp\\plantripgen.bmp" do
 	 	     maps = GetMapNames()
 	 	     views = GetViewNames()
-	 	     if((maps <> null) or (views <> null)) then do 
+	 	     if((maps <> null) or (views <> null)) then do
    	 	         ret_value = RunMacro("Close All")
 				 end
 				 else do
@@ -141,53 +148,53 @@ dbox "Oahu Model"
                 newmap = CreateMap("TempMap",{{"Scope",dbInfo[1]}})
                 tazLayer=AddLayer("TempMap","Oahu_TAZs",scenarioTAZFile,dbLayers[1])
                 SetLayerVisibility(tazLayer,"True")
-                
+
                 //path[2] + "\\inputs\\taz\\hdistrib.ASC"
                 fptr = OpenFile(path[2] + "\\inputs\\taz\\hdistrib.ASC", "r")
 
 
                 //path[2] + "\inputs\taz\Scenario TAZ Layer.ASC"
-                //HDistrib  = OpenTable("FutureYearData", "FFB", {HDistrib,null}, {{"Shared", "True"}})   
+                //HDistrib  = OpenTable("FutureYearData", "FFB", {HDistrib,null}, {{"Shared", "True"}})
     						//baseYearDistrib = OpenTable("BaseYearDistrib", "FFB", {baseYearHHFile,null}, {{"Shared", "True"}})
 
 				end
-	 enditem	
+	 enditem
 	button "Special Market Models" 18, 33, 26, 1.5 do
 	    jump = "SpecialMarket"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
-    
+
     button  3, 35.5 icon: "bmp\\plantripdist.bmp"
 	button "Tour-Based Models" 18, 35.5, 26, 1.5 do
 	    jump = "TourBasedModels"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
-    
-    button  3, 38 icon: "bmp\\TOD.bmp"
+
+    button  3, 38 icon: bmpDir + "/TOD.bmp"
 	button "Time of Day" 18, 38, 26, 1.5 do
 	    jump = "TimeOfDay"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
-    
+
     button  3, 40.5 icon: "bmp\\planassign.bmp"
 	button "Highway Assignment" 18, 40.5, 26, 1.5 do
 	    jump = "HighwayAssign"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
-    
-    button  3, 43 icon: "bmp\\TA.bmp"
+
+    button  3, 43 icon: bmpDir + "/TA.bmp"
 	button "Transit Assignment" 18, 43, 26, 1.5 do
 	    jump = "TransitAssign"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
-            
+
     button  3, 45.5 icon: "bmp\\planmatrix.bmp"
 	button "Summaries" 18, 45.5, 26, 1.5 do
 	    jump = "Summaries"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
-	
-	button  3, 48 icon: "bmp\\DTA.bmp"
+
+	button  3, 48 icon: bmpDir + "/DTA.bmp"
 	button "Run DTA" 18, 48, 26, 1.5 do
 	    jump = "DTArun"
 	    RunMacro("OMPO6", path, Options, jump)
@@ -197,12 +204,12 @@ dbox "Oahu Model"
 
 	button "Quit" 10, 53, 24, 1.5 cancel do
 		//ShowMessage(" Exit")
-		Return() 
+		Return()
 	enditem
 
     text "                " 1, 54.1
-    
-    
+
+
 EndDbox
 
 
@@ -215,9 +222,9 @@ Dbox "Scenario Manager"
 	close do
 		return()
 		enditem
-    
-    Frame 1, .5, 65, 4.25 Prompt: "INPUTS"	
-    
+
+    Frame 1, .5, 65, 4.25 Prompt: "INPUTS"
+
     Edit Int "rdwy year item" 15, 1.75, 10, 1
         prompt: "Transit Year"
     variable: year
@@ -231,17 +238,17 @@ Dbox "Scenario Manager"
 	button "Inputs" 34, 2, 29, 1.5 do
 	    RunDbox("Inputs")
 	enditem
-    
+
     Frame 1, 5.5, 65, 3.5 Prompt: "Scenario Directory"
 	text 16, 7.2, 43 variable: path[2] prompt: " " framed
     button "Copy" 3, 7, 10, 1.5 do
-        RunDbox("Copy_Scenario")     
+        RunDbox("Copy_Scenario")
 	enditem
-	
+
 	button ".." 61, 7.2 icons: "bmp\\buttons|114.bmp" do
 	    on error, notfound, escape do
             goto nodir
-        end    
+        end
 		path[2] = ChooseDirectory("Choose a Scenario Directory",{{"Initial Directory", "C:\\Projects\\Ompo\\Conversion\\Application\\generic\\"}} )
 		path[2] = path[2]
         nodir:
@@ -259,7 +266,7 @@ Radio Button 2, 12 Prompt: "Use Data From Urbansim"
 		end
 		if selection = 1 then do
         		RunMacro("Create TAZ File")
-		end     
+		end
 	enditem
 
 	button "Create Network" 3, 14, 61, 2 do
@@ -272,16 +279,16 @@ Radio Button 2, 12 Prompt: "Use Data From Urbansim"
 
 	button "OK" 7, 17.5, 20, 2 do
 		//ShowMessage(" Exit")
-		Return() 
+		Return()
 	enditem
 
 	button "Cancel" 38, 17.5, 20, 2 cancel do
 		//ShowMessage(" Exit")
-		Return() 
+		Return()
 	enditem
- 
+
     text "                " 1, 18.5
-    
+
 
 EndDbox
 
@@ -294,7 +301,7 @@ Dbox "Inputs"
 //***************************This part of the code is for initial set up*************************
     Left, center toolbox NoKeyboard
     title: "OAHU Model"
-        
+
 	init do
         Shared path, Options, year, seYear
 		enditem
@@ -321,7 +328,7 @@ Dbox "Inputs"
 	        path[12] =path[3] + "DTA\\"
 	    end
 	enditem
-    
+
     button "Re-Set All the Directories" 40, 0.8, 21, 1.2 do
     //	    ShowMessage("This will clear all the directory paths")
         path[3] = ""
@@ -335,8 +342,8 @@ Dbox "Inputs"
 	    path[11] = ""
 	    path[12]= ""
 	enditem
-	
-	Frame 1, 2.3, 65, 2.9 Prompt: "Generic Directory"	
+
+	Frame 1, 2.3, 65, 2.9 Prompt: "Generic Directory"
 	text 3, 3.5, 55 variable: path[3] prompt: " " framed
 	button ".." 61, 3.5 icons: "bmp\\buttons|114.bmp" do
 	    on error, notfound, escape do
@@ -349,8 +356,8 @@ Dbox "Inputs"
         nodir:
             on error, notfound, escape default
 		enditem
-    
-	Frame 1, 7.6, 65, 2.9 Prompt: "Master Line Layer Directory"	
+
+	Frame 1, 7.6, 65, 2.9 Prompt: "Master Line Layer Directory"
 	text 3, 8.8, 55 variable: path[4] prompt: " " framed
 	button ".." 61, 8.8 icons: "bmp\\buttons|114.bmp" do
 	    on error, notfound, escape do
@@ -361,8 +368,8 @@ Dbox "Inputs"
         nodir:
             on error, notfound, escape default
 		enditem
-    
-    Frame 1, 11.1, 65, 2.9 Prompt: "Turns Directory"	
+
+    Frame 1, 11.1, 65, 2.9 Prompt: "Turns Directory"
 	text 3, 12.3, 55 variable: path[5] prompt: " " framed
 	button ".." 61, 12.3 icons: "bmp\\buttons|114.bmp" do
 	    on error, notfound, escape do
@@ -374,7 +381,7 @@ Dbox "Inputs"
             on error, notfound, escape default
 		enditem
 
-   Frame 1, 14.6, 65, 2.9 Prompt: "Other Inputs Directory"	
+   Frame 1, 14.6, 65, 2.9 Prompt: "Other Inputs Directory"
 	text 3, 15.8, 55 variable: path[6] prompt: " " framed
 	button ".." 61, 15.8 icons: "bmp\\buttons|114.bmp" do
 	    on error, notfound, escape do
@@ -386,7 +393,7 @@ Dbox "Inputs"
             on error, notfound, escape default
 		enditem
 
-   Frame 1, 18.1, 65, 2.9 Prompt: "TAZ Data Directory"	
+   Frame 1, 18.1, 65, 2.9 Prompt: "TAZ Data Directory"
 	text 3, 19.3, 55 variable: path[7] prompt: " " framed
 	button ".." 61, 19.3 icons: "bmp\\buttons|114.bmp" do
 	    on error, notfound, escape do
@@ -398,7 +405,7 @@ Dbox "Inputs"
             on error, notfound, escape default
 		enditem
 
-   Frame 1, 21.6, 65, 2.9 Prompt: "Controls Directory"	
+   Frame 1, 21.6, 65, 2.9 Prompt: "Controls Directory"
 	text 3, 22.8, 55 variable: path[8] prompt: " " framed
 	button ".." 61, 22.8 icons: "bmp\\buttons|114.bmp" do
 	    on error, notfound, escape do
@@ -410,7 +417,7 @@ Dbox "Inputs"
             on error, notfound, escape default
 		enditem
 
-   Frame 1, 25.1, 65, 2.9 Prompt: "Programs Directory"	
+   Frame 1, 25.1, 65, 2.9 Prompt: "Programs Directory"
 	text 3, 26.3, 55 variable: path[9] prompt: " " framed
 	button ".." 61, 26.3 icons: "bmp\\buttons|114.bmp" do
 	    on error, notfound, escape do
@@ -422,7 +429,7 @@ Dbox "Inputs"
             on error, notfound, escape default
 		enditem
 
-   Frame 1, 28.6, 65, 2.9 Prompt: "Temp Directory"	
+   Frame 1, 28.6, 65, 2.9 Prompt: "Temp Directory"
 	text 3, 29.8, 55 variable: path[10] prompt: " " framed
 	button ".." 61, 29.8 icons: "bmp\\buttons|114.bmp" do
 	    on error, notfound, escape do
@@ -434,7 +441,7 @@ Dbox "Inputs"
             on error, notfound, escape default
 		enditem
 
-   Frame 1, 32.1, 65, 2.9 Prompt: "Scripts Directory"	
+   Frame 1, 32.1, 65, 2.9 Prompt: "Scripts Directory"
 	text 3, 33.3, 55 variable: path[11] prompt: " " framed
 	button ".." 61, 33.3 icons: "bmp\\buttons|114.bmp" do
 	    on error, notfound, escape do
@@ -445,8 +452,8 @@ Dbox "Inputs"
         nodir:
             on error, notfound, escape default
 		enditem
-		
-	Frame 1, 35.6, 65, 2.9 Prompt: "DTA Directory"	
+
+	Frame 1, 35.6, 65, 2.9 Prompt: "DTA Directory"
 	text 3, 36.8, 55 variable: path[12] prompt: " " framed
 	button ".." 61, 36.8 icons: "bmp\\buttons|114.bmp" do
 	    on error, notfound, escape do
@@ -460,12 +467,12 @@ Dbox "Inputs"
 
 	button "OK" 7, 39, 20, 2 do
 		//ShowMessage(" Exit")
-		Return() 
+		Return()
 	enditem
 
 	button "Cancel" 38, 39, 20, 2 cancel do
 		//ShowMessage(" Exit")
-		Return() 
+		Return()
 	enditem
 
    text "                " 1, 38
@@ -480,8 +487,8 @@ DBox "Copy_Scenario"
 	close do
 		return()
 		enditem
-		
-	Frame 1, 1, 48, 5 Prompt: "Copy Scenario Directory"	
+
+	Frame 1, 1, 48, 5 Prompt: "Copy Scenario Directory"
     text "Copy File" 3, 2.5
 	text 15, 2.5, 25 variable: path[12] prompt: " " framed
 	button ".." 42, 2.5 icons: "bmp\\buttons|114.bmp" do
@@ -514,23 +521,23 @@ DBox "Copy_Scenario"
 	button "OK" 7, 8, 14, 1.5 do
 		//ShowMessage(" Exit")
   		RunProgram("cmd.exe /c xcopy "+path[12]+" "+path[13]+"/s/e/i",)
-		Return() 
+		Return()
 	enditem
 
 	button "Cancel" 28, 8, 14, 1.5 cancel do
 		//ShowMessage(" Exit")
-		Return() 
+		Return()
 	enditem
 
     text "                " 1, 9.5
-    
+
 EndDbox
-    
+
 
 // Kyle: added this
 Macro "SetDirectoryDefaults"
     shared path
-    
+
     uiDir = GetInterface()
     a_temp = SplitPath(uiDir)
     // Don't use the ".." parent directory notation because it causes problems when
@@ -541,7 +548,7 @@ Macro "SetDirectoryDefaults"
         string = string + "\\" + a_split[i]
     end
     genericDir = a_temp[1] + string + "\\"
-    
+
     path[3] = genericDir
     path[4] = genericDir + "inputs\\master_network\\"
     path[5] = genericDir + "inputs\\turn penalties\\"
