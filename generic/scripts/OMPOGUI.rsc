@@ -32,16 +32,16 @@ dbox "Oahu Model"
 
 //***************************This part of the code sets up the Scenario directory *************************************************************************
 
-    Frame 1, 8.5, 45, 6.2 Prompt: "Scenario Directory"
+    Frame 1, 10.5, 45, 6.2 Prompt: "Scenario Directory"
 
 //    Edit Int "num iter item" 25, 14, 10
 //        prompt: "Enter the Scenario Year"
 //    variable: parameter[3]
 
-	text 3, 10, 35 variable: path[2] prompt: " " framed
+	text 3, 12, 35 variable: path[2] prompt: " " framed
 //	text "                " 59, 15
 
-	button ".." 41, 10 icons: "bmp\\buttons|114.bmp" do
+	button ".." 41, 12 icons: "bmp\\buttons|114.bmp" do
 	    on error, notfound, escape do
             goto nodir
         end
@@ -52,7 +52,7 @@ dbox "Oahu Model"
             on error, notfound, escape default
 		enditem
 
-	button "Scenario Manager" 3, 12, 41, 1.5 do
+	button "Scenario Manager" 3, 14, 41, 1.5 do
 //        LoadResourceFile(, "tazmanager.rsc", )
 	    RunMacro("SetDirectoryDefaults")
         RunDbox("Scenario Manager")
@@ -63,28 +63,28 @@ dbox "Oahu Model"
 
 //    Frame 1, 16.5, 45, 7 Prompt: "OPTIONS"
 
-    Frame 1, 14.7, 45, 9 Prompt: "OPTIONS"
+    Frame 1, 16.7, 45, 9 Prompt: "OPTIONS"
 
-    Checkbox 3, 16.0 prompt: "Stop after each stage" variable: Options[1]
+    Checkbox 3, 18.0 prompt: "Stop after each stage" variable: Options[1]
 
-    Checkbox 3, 17.2 prompt: "Toll present" variable: Options[2]
+    Checkbox 3, 19.2 prompt: "Toll present" variable: Options[2]
 
-    Checkbox 3, 18.4 prompt: "Fixed-Guideway present" variable: Options[3]
+    Checkbox 3, 20.4 prompt: "Fixed-Guideway present" variable: Options[3]
 
-    Checkbox 3, 19.6 prompt: "Write User Benefits" variable: Options[4]
+    Checkbox 3, 21.6 prompt: "Write User Benefits" variable: Options[4]
 
-    Checkbox 3, 20.8 prompt: "Stop after each iteration" variable: Options[5]
+    Checkbox 3, 22.8 prompt: "Stop after each iteration" variable: Options[5]
 
-    Checkbox 3, 22.0 prompt: "Cordon Pricing" variable: Options[10]
+    Checkbox 3, 24.0 prompt: "Cordon Pricing" variable: Options[10]
 
 
-    Popdown Menu "num iter item" 40, 17.5, 4.5
+    Popdown Menu "num iter item" 40, 19.5, 4.5
         Editable
         prompt: "Start At Iter"
         list: {1,2,3,4,5,6,7,8}
     variable: Options[6]
 
-    Popdown Menu "num iter item" 40, 19.5, 4.5
+    Popdown Menu "num iter item" 40, 21.5, 4.5
         Editable
         prompt: "Max Iterations"
         list: {1,2,3,4,5,6,7,8}
@@ -94,21 +94,21 @@ dbox "Oahu Model"
 
 //***************************This part of the code sets up the Stages of the model*************************************************************************
 
-    Frame 1, 24, 45, 32 Prompt: "STAGES"
+    Frame 1, 26, 45, 27 Prompt: "STAGES"
 
-	button  3, 25.5 icon: "bmp\\plannetwork.bmp"
-	button "Prepare Network" 18, 25.5, 26, 1.5 do
+	button  3, 27.5 icon: "bmp\\plannetwork.bmp"
+	button "Prepare Network" 18, 27.5, 26, 1.5 do
 	    jump = "UpdateLineLayer"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
-    button  3, 28 icon: "bmp\\planskim.bmp"
-	button "Create Highway Skims" 18, 28, 26, 1.5 do
+    button  3, 30 icon: "bmp\\planskim.bmp"
+	button "Create Highway Skims" 18, 30, 26, 1.5 do
 	    jump = "HighwaySkim"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
-    button  3, 30.5 icon: bmpDir + "/TS.bmp" do
+    button  3, 32.5 icon: bmpDir + "/TS.bmp" do
 	 	     maps = GetMapNames()
 	 	     views = GetViewNames()
 	 	     if((maps <> null) or (views <> null)) then do
@@ -130,12 +130,12 @@ dbox "Oahu Model"
 	 	 	 	 end
      enditem
 
-	button "Create Transit Skims" 18, 30.5, 26, 1.5 do
+	button "Create Transit Skims" 18, 32.5, 26, 1.5 do
 	    jump = "TransitSkim"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
-    button  3, 33 icon: "bmp\\plantripgen.bmp" do
+    button  3, 35 icon: "bmp\\plantripgen.bmp" do
 	 	     maps = GetMapNames()
 	 	     views = GetViewNames()
 	 	     if((maps <> null) or (views <> null)) then do
@@ -159,50 +159,50 @@ dbox "Oahu Model"
 
 				end
 	 enditem
-	button "Special Market Models" 18, 33, 26, 1.5 do
+	button "Special Market Models" 18, 35, 26, 1.5 do
 	    jump = "SpecialMarket"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
-    button  3, 35.5 icon: "bmp\\plantripdist.bmp"
-	button "Tour-Based Models" 18, 35.5, 26, 1.5 do
+    button  3, 37.5 icon: "bmp\\plantripdist.bmp"
+	button "Tour-Based Models" 18, 37.5, 26, 1.5 do
 	    jump = "TourBasedModels"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
-    button  3, 38 icon: bmpDir + "/TOD.bmp"
-	button "Time of Day" 18, 38, 26, 1.5 do
+    button  3, 40 icon: bmpDir + "/TOD.bmp"
+	button "Time of Day" 18, 40, 26, 1.5 do
 	    jump = "TimeOfDay"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
-    button  3, 40.5 icon: "bmp\\planassign.bmp"
-	button "Highway Assignment" 18, 40.5, 26, 1.5 do
+    button  3, 42.5 icon: "bmp\\planassign.bmp"
+	button "Highway Assignment" 18, 42.5, 26, 1.5 do
 	    jump = "HighwayAssign"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
-    button  3, 43 icon: bmpDir + "/TA.bmp"
-	button "Transit Assignment" 18, 43, 26, 1.5 do
+    button  3, 45 icon: bmpDir + "/TA.bmp"
+	button "Transit Assignment" 18, 45, 26, 1.5 do
 	    jump = "TransitAssign"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
-    button  3, 45.5 icon: "bmp\\planmatrix.bmp"
-	button "Summaries" 18, 45.5, 26, 1.5 do
+    button  3, 47.5 icon: "bmp\\planmatrix.bmp"
+	button "Summaries" 18, 47.5, 26, 1.5 do
 	    jump = "Summaries"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
-	button  3, 48 icon: bmpDir + "/DTA.bmp"
-	button "Run DTA" 18, 48, 26, 1.5 do
+	button  3, 50 icon: bmpDir + "/DTA.bmp"
+	button "Run DTA" 18, 50, 26, 1.5 do
 	    jump = "DTArun"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
 //**********************************************************************************************************************************************************************
 
-	button "Quit" 10, 53, 24, 1.5 cancel do
+	button "Quit" 12, 55, 24, 1.5 cancel do
 		//ShowMessage(" Exit")
 		Return()
 	enditem
