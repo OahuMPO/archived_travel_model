@@ -23,6 +23,13 @@ dbox "Oahu Model"
     uiDir = a_path[1] + a_path[2]
     bmpDir = uiDir + "../bmp"
 
+    // Check to see if any script files (rsc or lst) have a later date than the
+    // compiled UI.  If so, show a warning.
+    scriptDir = uiDir
+    {recompile, problemFile} = RunMacro("Compile UI Check", uiDBD, scriptDir)
+    if recompile then ShowMessage("The compiled UI is older than " +
+      problemFile + "\n(and possibly other .rsc files)\nRe-compile the UI " +
+      "before using the model.")
 	enditem
 	close do
 		return()
@@ -559,4 +566,49 @@ Macro "SetDirectoryDefaults"
     path[10] =genericDir + "..\\temp\\"
     path[11] =genericDir + "scripts\\"
     path[12] =genericDir + "DTA\\"
+EndMacro
+
+/*
+Checks the UI against the RSC files used to create it.  If any of the RSC
+files are newer than the UI, returns "True" and the name of the RSC file.
+*/
+Macro "Compile UI Check" (uiDBD, scriptDir)
+
+  a_files = GetDirectoryInfo(scriptDir + "/*.rsc", "File")
+  a_files = a_files + GetDirectoryInfo(scriptDir + "/*.lst", "File")
+  // Check the ompo6.1 file instead of ompo.dbd.  The dbd file doesn't get
+  // updated on recompile.
+  a_uiInfo = GetFileInfo(Substitute(uiDBD, ".dbd", ".1", ))
+  uiTime = a_uiInfo[9]
+  a_units = {"year", "month", "day", "hour", "minute", "second", "millisecond"}
+  recompile = "False"
+  for i = 1 to a_files.length do
+    fileTime = a_files[i][9]
+
+    for j = 1 to a_units.length do
+      unit = a_units[j]
+      uT = uiTime.(unit)
+      fT = fileTime.(unit)
+
+      // If the year is greater in the UI than rsc, no problem.
+      // Don't check any more date units on the current file.
+      if uiTime.(unit) > fileTime.(unit) then do
+        j = a_units.length + 1
+      end
+
+      // If the year is less in UI than rsc, then there is a problem.
+      // Don't check any more times OR files.
+      if uiTime.(unit) < fileTime.(unit) then do
+        recompile = "True"
+        problemFile = a_files[i][1]
+        j = a_units.length + 1
+        i = a_files.length + 1
+      end
+
+      // Otherwise, the years are the same, and the j loop must continue to
+      // compare the months (then days, hours, etc.)
+    end
+  end
+
+  return({recompile, problemFile})
 EndMacro
