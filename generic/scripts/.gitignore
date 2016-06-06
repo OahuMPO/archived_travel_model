@@ -1,0 +1,10 @@
+# Ignore the compiled UI file in favor of tracking the
+# zipped version, which can be shared between machines.
+# (See Wiki Installation page)
+ompo6.1
+ompo6.2
+ompo6.3
+ompo6.4
+ompo6.5
+ompo6.6
+ompo6.dbd
