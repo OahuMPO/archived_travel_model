@@ -1,6 +1,4 @@
-# Ignore the compiled UI file in favor of tracking the
-# zipped version, which can be shared between machines.
-# (See Wiki Installation page)
+# Ignore the compiled UI file. It must be compiled locally.
 ompo6.1
 ompo6.2
 ompo6.3
