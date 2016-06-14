@@ -110,7 +110,7 @@ Macro "Transit Access Links" (scenarioDirectory, hwyfile, rtsfile, nzones,fixgdw
             goto quit
         end
     end
-ShowMessage(1)
+
     //{maximum number of links, maximum number of KNR to rail links, maximum distance}
     ret_value = RunMacro("KNR Access Link Generation", {8,2,8}, scenarioDirectory, hwyfile, rtsfile, nzones)
     if !ret_value then goto quit
