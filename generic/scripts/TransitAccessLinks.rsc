@@ -7,7 +7,7 @@ for straight line. It was set to use straight line.  Given that,
 there are much faster ways of doing it. The KNR macro also takes
 way too long, but does something different.
 
-I have rewritten the Walk and KNR portions to be substantially faster.
+I have rewritten the Walk portion to be substantially faster.
 */
 
 
@@ -95,7 +95,7 @@ Macro "Transit Access Links" (scenarioDirectory, hwyfile, rtsfile, nzones,fixgdw
     a_type          = {"Walk"}
     a_maxLinks      = {10}
     a_maxRailLinks  = {2}
-    a_maxLength     = {.5}
+    a_maxLength     = {1}
 
     for t = 1 to a_type.length do
         type = a_type[t]
