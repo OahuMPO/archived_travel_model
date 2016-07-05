@@ -1,39 +1,69 @@
+/*
+Kyle:
+Began a partial re-write of this code to speed things up.
+The comments below are misleading.  The PNR and KNR do use actual
+network skim distances, but the walk link macro has a yes/no toggle
+for straight line. It was set to use straight line.  Given that,
+there are much faster ways of doing it. The KNR macro also takes
+way too long, but does something different.
+
+I have rewritten the Walk portion to be substantially faster.
+*/
+
+
+
 /*******************************************************************************
-* Set Up for Access Link Generations:						
-* 1. Walk access links: 							
-*    Maximum walk distance 2 miles; 
-*    Maximum # of walk access links for each centroid is 10.	
-*    Distances of walk access links are calculated from the shortest walk 	
+* Set Up for Access Link Generations:
+* 1. Walk access links:
+*    Maximum walk distance 2 miles;
+*    Maximum # of walk access links for each centroid is 10.
+*    Distances of walk access links are calculated from the shortest walk
 *       path, not the direct distance between coords of centroids and stops.
-*    Walk network is defined either					
-* 	(1) by facility type: either AB or BA direction are 2-8 and 12; or	
-* 	(2) by '*_limita' field: either AB or BA direction are 0,5,6 and 7.	
-* 	Currently using definition (1).			
-*    The output walk access links are physically added to the highway network.	
-* 				
-* 2. Drive access links: 
+*    Walk network is defined either
+* 	(1) by facility type: either AB or BA direction are 2-8 and 12; or
+* 	(2) by '*_limita' field: either AB or BA direction are 0,5,6 and 7.
+* 	Currently using definition (1).
+*    The output walk access links are physically added to the highway network.
+*
+* 2. Drive access links:
 *    KNR access: same setup as walk access links;
 * 		 the output KNR access links are represented in matrix format.
-*    PNR access: maximum driving distance 5 miles; 	
+*    PNR access: maximum driving distance 5 miles;
 *    	  	 maximum # of PNR lots each centroid can access is 3;
 *    	  	 the drive network is using AM SOV highway network;
 * 		 the output PNR access links are represented in matrix format.
-* 	
+*
 * 3. Estimated Transit travel time/speed: now same as highway travel time/speed.
-*    The conversion function between highway and transit times/speeds will be 
+*    The conversion function between highway and transit times/speeds will be
 *    implemented when available.
-* 				
-* 4. Before running the script, PNR nodes need to be defined in the field "PNR"	
-*    in the Node Layer.	
-* 	
-* 5. "Mode_ID": in highway link layer:	
+*
+* 4. Before running the script, PNR nodes need to be defined in the field "PNR"
+*    in the Node Layer.
+*
+* 5. "Mode_ID": in highway link layer:
 *    Mode_ID=11: Transfer walk links, defined either
 * 	(1) by facility type: either AB or BA direction are 2-8; or
 * 	(2) by '*_limita' field: either AB or BA direction are 0,5,6 and 7.
-* 	Currently using definition (1).	
-*    Mode_ID=12: Walk access links	
-* 		
+* 	Currently using definition (1).
+*    Mode_ID=12: Walk access links
+*
 ********************************************************************************/
+
+/*
+Manual testing macro for transit access links
+*/
+Macro "test tal"
+  scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\test_ta_links"
+  hwyfile = scenarioDirectory + "\\inputs\\network\\Scenario Line Layer.dbd"
+  rtsfile = scenarioDirectory + "\\inputs\\network\\Scenario Route System.rts"
+  nzones = 764
+  fixgdwy = 0
+
+  RunMacro("TCB Init")
+  RunMacro("Transit Access Links", scenarioDirectory, hwyfile, rtsfile, nzones, fixgdwy)
+  ShowMessage("Done")
+endMacro
+
 //**********************************************************************************************
 //
 // This macro creates transit access links
@@ -43,26 +73,52 @@ Macro "Transit Access Links" (scenarioDirectory, hwyfile, rtsfile, nzones,fixgdw
 
     ret_value = RunMacro("Initial Setup",scenarioDirectory, hwyfile, rtsfile,fixgdwy)
     if !ret_value then goto quit
-    
+
+    // Kyle - the following three skims from the original script will be used
     ret_value = RunMacro("Walk Time Matrix", scenarioDirectory, hwyfile, rtsfile, nzones)
     if !ret_value then goto quit
-    
+
     ret_value = RunMacro("PNR Time Matrix", scenarioDirectory, hwyfile, rtsfile, nzones)
     if !ret_value then goto quit
-    
+
     ret_value = RunMacro("KNR Time Matrix", scenarioDirectory, hwyfile, rtsfile, nzones)
     if !ret_value then goto quit
-    
-    //{maximum number of links, maximum number of walk to rail links, maximum distance}
-    ret_value = RunMacro("Walk Access Link Generation", {10,2,2}, scenarioDirectory, hwyfile, rtsfile, nzones)
-    if !ret_value then goto quit
+
+
+    // Realized that the KNR and PNR processes are different.  Leaving them alone.
+    // If it is OK to handle them in the same manner, then uncomment the first
+    // set of 4 code lines.
+    // a_type          = {"Walk","KNR","PNR"}
+    // a_maxLinks      = {10,8,4}
+    // a_maxRailLinks  = {2,2,8}
+    // a_maxLength     = {2,8,}
+    a_type          = {"Walk"}
+    a_maxLinks      = {10}
+    a_maxRailLinks  = {2}
+    a_maxLength     = {1}
+
+    for t = 1 to a_type.length do
+        type = a_type[t]
+        maxLinks = a_maxLinks[t]
+        maxRailLinks = a_maxRailLinks[t]        // not used currently
+        maxLength = a_maxLength[t]
+
+        // This macro will create walk links based on straight-line distances.
+        ret_value = RunMacro("Walk Links",scenarioDirectory, hwyfile, rtsfile,fixgdwy,type,maxLinks,maxLength)
+        if !ret_value then do
+            ShowMessage("Error connecting " + type + " links.")
+            goto quit
+        end
+    end
+
     //{maximum number of links, maximum number of KNR to rail links, maximum distance}
     ret_value = RunMacro("KNR Access Link Generation", {8,2,8}, scenarioDirectory, hwyfile, rtsfile, nzones)
     if !ret_value then goto quit
+
     //{maximum number of links, maximum distance}
     ret_value = RunMacro("PNR Access Link Generation", {4,8}, scenarioDirectory, hwyfile, rtsfile, nzones)
     if !ret_value then goto quit
-    
+
     station:
     ret_value = RunMacro("Write Station File",  scenarioDirectory, hwyfile, rtsfile)
     if !ret_value then goto quit
@@ -79,26 +135,26 @@ endMacro
 /***********************************************************************************************************************************
     Initial Setup
     Initial setup for transit access link generation.  This macro:
-    
+
     1.  Creates  SP_DIST link field and sets equal to link distance
     2.  Creates WALKTIME link field and sets equal to walking time at 3 MPH
     3.  Creates MODE_ID link field and sets equal to 11 for links that are valid for transfer walk to/from transit (not freeways or ramps)
     4.  Creates AT_TRN node field and sets equal to 1 for nodes that are valid transit stops
     5.  Creates RAIL_STP node field and sets equal to 1 for nodes that are rail stops
-    
+
 ***********************************************************************************************************************************/
 Macro "Initial Setup" (scenarioDirectory, hwyfile, rtsfile,fixgdwy)
 
-    // RunMacro("TCB Init")    
-    
+    // RunMacro("TCB Init")
+
     validlinks="ID>0"
     validtransit="Mode<>null"
 
- 
+
     // add the hwyfile, and make the route system refer to it
     baselyrs = GetDBLayers(hwyfile)
     ModifyRouteSystem(rtsfile, {{"Geography", hwyfile, baselyrs[2]}, {"Link ID", "ID"}})
-    
+
     // create a map and add the route system layer to it, change some display settings
     aa = GetDBInfo(hwyfile)
     cc = CreateMap("bb",{{"Scope",aa[1]}})
@@ -110,31 +166,33 @@ Macro "Initial Setup" (scenarioDirectory, hwyfile, rtsfile,fixgdwy)
     stp_lyr = lyrs[2]
     node_lyr = lyrs[4]
     link_lyr = lyrs[5]
-	
+
 	  //*********************************Tag Route Stops to Line Layer Nodes*************************************************
 	  Opts = null
-  
+
    	Opts.Input.[Dataview Set] = {rtsfile+"|Route Stops", "Route Stops"}  																															//Fill Layer is the Route Stops
    	Opts.Input.[Tag View Set] = {hwyfile+"|Oahu Nodes", "Oahu Nodes"}       																													//Tag from file is the Node Layer
    	Opts.Global.Fields = {"[Route Stops].NODENUMBER"}																																									//Put in the field NODENUMBER
    	Opts.Global.Method = "Tag"
    	Opts.Global.Parameter = {"Value", "Oahu Nodes", "[Oahu Nodes].ID"}																																//Tag with the nearest Nodes ID
- 
+
    ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
- 
+
    if !ret_value then goto quit
     //********************* Set up a Node field that corresponds to transit stops and a link field for shortest path *********************
 
     // new link fields for transit in-vehicle times
-        
+
         NewFlds = {
                {"SP_DIST",	"real"},	// shortest distance between the two endpoints, mainly for walk and drive access links
-               {"MODE_ID",	"integer"}}     
+               {"MODE_ID",	"integer"}}
     // add the new fields to the link layer
     ret_value = RunMacro("TCB Add View Fields", {link_lyr, NewFlds})
 
     // set the link distance to the link length; not sure why this is done?
-    SetDataVector(link_lyr + "|", "SP_DIST", GetDataVector(link_lyr + "|", "LENGTH",),)
+    //SetDataVector(link_lyr + "|", "SP_DIST", GetDataVector(link_lyr + "|", "LENGTH",),)
+    test = GetDataVector(link_lyr + "|", "LENGTH",)
+    SetDataVector(link_lyr + "|", "SP_DIST", test,)
 
     // create a new field called WALKTIME based on walk speed of 3 MPH
     Opts = null
@@ -144,7 +202,7 @@ Macro "Initial Setup" (scenarioDirectory, hwyfile, rtsfile,fixgdwy)
     Opts.Global.Parameter = {"Length*60/3"}
     ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
     if !ret_value then goto quit
-    
+
     // code WALKTIME to 30 seconds for rail access links only if FG in scenario
      if fixgdwy<>0 then do
       	Opts = null
@@ -153,26 +211,26 @@ Macro "Initial Setup" (scenarioDirectory, hwyfile, rtsfile,fixgdwy)
    	 		Opts.Global.Method = "Value"
    	 		Opts.Global.Parameter = {0.50}
     		ret_value = RunMacro("TCB Run Operation", 2, "Fill Dataview", Opts)
-   	 	if !ret_value then goto quit 
-   	 end   
-    
+   	 	if !ret_value then goto quit
+   	 end
+
 
     // create a new field called MODE_ID equal to 11 based on facility type,
     // to prohibit walking on freeways, ramps, centroid connectors, HOV lanes, and transit-only links.
-    // 
+    //
     // Facility Type:
-    //      1 – Freeways; 
-    //      2 – Expressways; 
-    //      3 – Class I arterials; 
-    //      4 – Class II arterials; 
-    //      5 – Class III arterials; 
-    //      6 – Class I collectors; 
-    //      7 – Class II collectors; 
-    //      8 – local streets;
-    //      9 – High speed Ramps; 
-    //      10 – Low Speed Ramps; 
-    //      12 – centroid connectors; 
-    //      13 – HOV lanes.
+    //      1 ï¿½ Freeways;
+    //      2 ï¿½ Expressways;
+    //      3 ï¿½ Class I arterials;
+    //      4 ï¿½ Class II arterials;
+    //      5 ï¿½ Class III arterials;
+    //      6 ï¿½ Class I collectors;
+    //      7 ï¿½ Class II collectors;
+    //      8 ï¿½ local streets;
+    //      9 ï¿½ High speed Ramps;
+    //      10 ï¿½ Low Speed Ramps;
+    //      12 ï¿½ centroid connectors;
+    //      13 ï¿½ HOV lanes.
     //      14 - Transit-only links
 
     Opts = null
@@ -184,84 +242,156 @@ Macro "Initial Setup" (scenarioDirectory, hwyfile, rtsfile,fixgdwy)
     if !ret_value then goto quit
 
     // Add a new field AT_TRN to the node layer to indicate if it is a valid transit stop
-    NewFlds = {{"AT_TRN","integer"}}     
+    NewFlds = {{"AT_TRN","integer"}}
     ret_value = RunMacro("TCB Add View Fields", {node_lyr, NewFlds})
 
 
     //************************Determine the nodes that correspond to transit stops************************
 
     Setlayer(rte_lyr)
-    
+
     // Select routes that are valid (all routes with a mode field)
-    n = Selectbyquery("BaseTransit", "Several", "Select * where "+validtransit,)     
-    
-    //In the following section all highway nodes that have bus stops associated with them have AT_TRN equal to 1
-    //The AT_TRN field is filled one-by-one only because the limitation of the length of query in TransCAD
-    if n<>0 then do
-    	rec = GetFirstRecord(rte_lyr+"|BaseTransit",{{"Route_ID", "Ascending"}})
-    	i =1
-        // Iterate through the routes
-    	while rec <> null do
-    	    // get the route ID, store it in the transit_id array
-            rec_vals = GetRecordValues(rte_lyr, rec, {"Route_ID"})
-	        if i >1 then do
-    		    if ArrayPosition(transit_id,{rec_vals[1][2]},) = 0 then transit_id = transit_id+{rec_vals[1][2]}
-    	        end
-            else transit_id={rec_vals[1][2]}
-    	    i = i+1
-    	    rec= GetNextRecord(rte_lyr+"|BaseTransit",rec ,{{"Route_ID", "Ascending"}})
-    	end
-    
-        // set the layer to stops
-    	SetLayer(stp_lyr)
-    	rec = GetFirstRecord(stp_lyr+"|", {{"NODENUMBER", "Ascending"}}) 
-    	i=1
-    	
-    	//Iterate through transit stops
-    	while rec <> null do
-            rec_vals = GetRecordValues(stp_lyr, rec, {"Route_ID","NODENUMBER"})
-            if ArrayPosition(transit_id,{rec_vals[1][2]},) <> 0 then do
-	    	
-	    	// get the stop id, add it to the stop_id array
-	    	if i >1 then do
-            	    if arrayposition(stop_id,{rec_vals[2][2]},) = 0 then do
-            	    	stop_id =stop_id+{rec_vals[2][2]}
-		    	        
-		    	        //set the AT_TRN field to 1 if it has an associated transit stop
-    		    	    Opts = null
-     		    	    Opts.Input.[Dataview Set] = {hwyfile+"|"+node_lyr, node_lyr, "Selection", "Select * where ID="+string(rec_vals[2][2])}
-     		    	    Opts.Global.Fields = {"AT_TRN"}
-     		    	    Opts.Global.Method = "Value"
-     		   	        Opts.Global.Parameter = {1}
-		    	        ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-     		    	    if !ret_value then goto quit
-     	    	    end
-    	        end
-    	    else do
-    	    	stop_id ={rec_vals[2][2]}
-		    	//fill the AT_TRN field of the node layer with the stop ID field
-    		    Opts = null
-     		    Opts.Input.[Dataview Set] = {hwyfile+"|"+node_lyr, node_lyr, "Selection", "Select * where ID="+string(rec_vals[2][2])}
-     		    Opts.Global.Fields = {"AT_TRN"}
-     		    Opts.Global.Method = "Value"
-     		    Opts.Global.Parameter = {1}
-		        ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-     		    if !ret_value then goto quit
-    	        end
-    	    end
-    	    i = i+1
-    	    rec= GetNextrecord(stp_lyr+"|",rec ,{{"NODENUMBER", "Ascending"}})
-    	end    
+    n = Selectbyquery("BaseTransit", "Several", "Select * where "+validtransit,)
+
+    /**********************************************
+    Kyle: rewriting this to fix errors and simplify
+    **********************************************/
+
+    // Tag each stop with the node ID it is located on
+    TagRouteStopsWithNode(rte_lyr,"BaseTransit","NODENUMBER",.05)
+
+    // Get a unique list of node IDs that are route stops
+    SetLayer(stp_lyr)
+    qry = "Select * where NODENUMBER <> null"
+    SelectByQuery("Selection","Several",qry)
+    v_nodeIDs = GetDataVector(stp_lyr + "|Selection","NODENUMBER",)
+    opts = null
+    opts.Unique = "True"
+    v_uniqNodeIDs = SortVector(v_nodeIDs,opts)
+
+    // Fill AT_TRN in the node layer with 1 if it is a transit stop
+    SetLayer(node_lyr)
+    for i = 1 to v_uniqNodeIDs.length do
+        id = v_uniqNodeIDs[i]
+        qry = "Select * where ID = " + String(id)
+        n = SelectByQuery("tstops","More",qry)
     end
-    
+    opts = null
+    opts.Constant = 1
+    v_atTrn = Vector(v_uniqNodeIDs.length,"Long",opts)
+    SetDataVector(node_lyr + "|tstops","AT_TRN",v_atTrn,)
+
     ret_value = RunMacro("Close All")
     if !ret_value then goto quit
 
     Return( 1 )
-    
+
     quit:
          Return( RunMacro("TCB Closing", ret_value, True ) )
 endMacro
+
+
+
+
+/*
+Kyle: Rewriting to make this portion of the model faster
+*/
+Macro "Walk Links" (scenarioDirectory, hwyfile, rtsfile,fixgdwy,type,maxLinks,maxLength)
+
+    // Create map of route system
+    a_info = GetDBInfo(hwyfile)
+    scope = a_info[1]
+    opts = null
+    opts.Scope = scope
+    map = CreateMap("map",opts)
+    layers = AddRouteSystemLayer(,"Route System",rtsfile,)
+    RunMacro("Set Default RS Style", layers, "True", "True")
+    {rLyr,sLyr,pLyr,nLyr,lLyr} = layers
+
+
+    // Create a selection set of target nodes depending on connection type
+    SetLayer(nLyr)
+    targetNodeSet = "Target Nodes"
+    RunMacro("G30 create set",targetNodeSet)  // sets default display settings
+    if type = "Walk" then qry = "Select * where AT_TRN = 1"
+    if type = "KNR" then qry = "Select * where AT_TRN = 1"
+    if type = "PNR" then qry = "Select * where PNR <> null"
+    n = SelectByQuery(targetNodeSet,"Several",qry)
+
+    // Create selection set of centroid nodes
+    SetLayer(nLyr)
+    centroidSet = "Centroids"
+    RunMacro("G30 create set",centroidSet)
+    centQry = "Select * where [Zone Centroid] = 'Y'"
+    n = SelectByQuery(centroidSet,"Several",centQry)
+
+    // Add some fields used for tagging during the connection step
+    NewFlds = {{"ConnectionLink",	"character"}}
+    ret_value = RunMacro("TCB Add View Fields", {lLyr, NewFlds})
+
+    // Connect centroids to stop nodes
+    // This setup sometimes causes a fatal error and TC closes
+    // Unsure why
+    SetLayer(lLyr)
+    opts = null
+    opts.[Snap Distance] = maxLength                   // max distance (mi)
+    opts.Slices = maxLinks                             // max connections
+    opts.Link = lLyr + ".ConnectionLink"
+    opts.[Tag value] = type
+    opts.[Split Links] = "False"
+    opts.[Target Nodes] = nLyr + "|" + targetNodeSet
+    ConnectCentroid(lLyr,nLyr + "|" + centroidSet,opts)
+
+    // Set the field values of the recently-added links
+    linkSet = "Walk Links"
+    RunMacro("G30 create set",linkSet)
+    qry = "Select * where ConnectionLink = 'Walk'"
+    SelectByQuery(linkSet,"Several",qry)
+
+    // Kyle: I'm not sure why the original script sets them up as 1-way, but I
+    // have done the same for now.
+    if type = "Walk" then do
+        a_fieldVals = {{"Dir",1},
+                      {"[Road Name]", "Walk Access"},
+                      {"[AB LaneA]",1},
+                      // {"[BA LaneA]",1},
+                      {"[AB LaneM]",1},
+                      // {"[BA LaneM]",1},
+                      {"[AB LaneP]",1},
+                      // {"[BA LaneP]",1},
+                      {"[AB Capacity]",9999},
+                      // {"[BA Capacity]",9999},
+                      {"[AB FACTYPE]", 197},
+                      {"[BA FACTYPE]", 197},
+                      {"MODE_ID", 12}}
+        v_id = GetDataVector(lLyr + "|" + linkSet,"ID",)
+        v_length = GetDataVector(lLyr + "|" + linkSet,"Length",)
+        for fv = 1 to a_fieldVals.length do
+            {field,value} = a_fieldVals[fv]
+
+            type = TypeOf(value)
+            if type <> "string" then type = "long"
+            opts = null
+            opts.Constant = value
+            v_value = Vector(v_id.length,type,opts)
+            SetDataVector(lLyr + "|" + linkSet,field,v_value,)
+        end
+        SetDataVector(lLyr + "|" + linkSet,"SP_DIST",v_length,)
+        v_walktime = v_length / 3 * 60
+        SetDataVector(lLyr + "|" + linkSet,"WALKTIME",v_walktime,)
+
+        // I don't think these are needed, but if errors show up,
+        // write some looping code to fill them in.
+        // {"[From ID]", wlkacclink[2]},
+        // {"[To ID]", wlkacclink[3]},
+
+    end
+    CloseMap(map)
+    Return(1)
+EndMacro
+
+
+
 
 /************************************************************************************************************************************************
     Walk Time Matrix
@@ -280,10 +410,10 @@ Macro "Walk Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
 
 
     validlinks="ID>0"
-    
+
     // Add highway and transit layers
-    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)  
-    rte_lyr = RunMacro("TCB Add RS Layers", rtsfile, , )           
+    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)
+    rte_lyr = RunMacro("TCB Add RS Layers", rtsfile, , )
     stp_lyr = GetStopsLayerFromRS(rte_lyr)
 
     // Build a highway network
@@ -296,23 +426,24 @@ Macro "Walk Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     Opts.Global.[Network Options].[Keep Duplicate Links] = "FALSE"
     Opts.Global.[Network Options].[Ignore Link Direction] = "TRUE"
     Opts.Global.[Network Options].[Time Unit] = "Minutes"
-    Opts.Global.[Link Options] = {{"Length", {link_lyr+".Length", link_lyr+".Length", , , "False"}}, 
-     	{"*_FACTYPE", {link_lyr+".[AB FACTYPE]", link_lyr+".[BA FACTYPE]", , , "False"}}, 
-     	{"*_EATIME", {link_lyr+".AB_EATIME", link_lyr+".BA_EATIME", , , "False"}}, 
-     	{"*_AMTIME", {link_lyr+".AB_AMTIME", link_lyr+".BA_AMTIME", , , "False"}}, 
-    	{"*_MDTIME", {link_lyr+".AB_MDTIME", link_lyr+".BA_MDTIME", , , "False"}}, 
-     	{"*_PMTIME", {link_lyr+".AB_PMTIME", link_lyr+".BA_PMTIME", , , "False"}}, 
-     	{"*_EVTIME", {link_lyr+".AB_EVTIME", link_lyr+".BA_EVTIME", , , "False"}}, 
-    	{"WALKTIME", {link_lyr+".WALKTIME", link_lyr+".WALKTIME", , , "False"}} 
+    Opts.Global.[Link Options] = {{"Length", {link_lyr+".Length", link_lyr+".Length", , , "False"}},
+     	{"*_FACTYPE", {link_lyr+".[AB FACTYPE]", link_lyr+".[BA FACTYPE]", , , "False"}},
+     	{"*_EATIME", {link_lyr+".AB_EATIME", link_lyr+".BA_EATIME", , , "False"}},
+     	{"*_AMTIME", {link_lyr+".AB_AMTIME", link_lyr+".BA_AMTIME", , , "False"}},
+    	{"*_MDTIME", {link_lyr+".AB_MDTIME", link_lyr+".BA_MDTIME", , , "False"}},
+     	{"*_PMTIME", {link_lyr+".AB_PMTIME", link_lyr+".BA_PMTIME", , , "False"}},
+     	{"*_EVTIME", {link_lyr+".AB_EVTIME", link_lyr+".BA_EVTIME", , , "False"}},
+    	{"WALKTIME", {link_lyr+".WALKTIME", link_lyr+".WALKTIME", , , "False"}}
         }
 
-    Opts.Global.[Node Options] = {{"[ID]", {node_lyr+".[ID]", , }}, 
-        {"X", {node_lyr+".X", , }}, 
-        {"Y", {node_lyr+".Y", , }}, 
-        {"Original_Node_ID", {node_lyr+".Original_Node_ID", , }}, 
-        {"Original", {node_lyr+".Original", , }}, 
-        {"CCSTYLE", {node_lyr+".CCSTYLE", , }}, 
-     	{"ON", {node_lyr+".ON", , }}, 
+    // Opts.Global.[Node Options] = {{"[ID:1]", {node_lyr+".[ID:1]", , }},
+    Opts.Global.[Node Options] = {{"[ID]", {node_lyr+".[ID]", , }},
+        {"X", {node_lyr+".X", , }},
+        {"Y", {node_lyr+".Y", , }},
+        {"Original_Node_ID", {node_lyr+".Original_Node_ID", , }},
+        {"Original", {node_lyr+".Original", , }},
+        {"CCSTYLE", {node_lyr+".CCSTYLE", , }},
+     	{"ON", {node_lyr+".ON", , }},
      	{"OFF", {node_lyr+".OFF", , }}}
     Opts.Global.[Length Unit] = "Miles"
     Opts.Global.[Time Unit] = "Minutes"
@@ -323,20 +454,20 @@ Macro "Walk Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
 
     //************Create shortest path for walking distance between centroid and transit stops************
     StraightLine = 1
-    
+
     if(StraightLine=0) then do
         //  Highway Network Setting (exclude freeways, ramps, HOV lanes, and transit-only links)
         Opts = null
         Opts.Input.Database = hwyfile
         Opts.Input.Network = hwynet_wlk
-        Opts.Input.[Update Link Set] = {hwyfile+"|"+link_lyr, link_lyr, "Selection", "Select * where (([AB FACTYPE]=1 | [AB FACTYPE]=9 | [AB FACTYPE]=10 | [AB FACTYPE]=13| [AB FACTYPE]=14) & ([BA FACTYPE]=1 | [BA FACTYPE]=9 | [BA FACTYPE]=10 | [BA FACTYPE]=13| [AB FACTYPE]=14)) | !("+ validlinks +")"}	
+        Opts.Input.[Update Link Set] = {hwyfile+"|"+link_lyr, link_lyr, "Selection", "Select * where (([AB FACTYPE]=1 | [AB FACTYPE]=9 | [AB FACTYPE]=10 | [AB FACTYPE]=13| [AB FACTYPE]=14) & ([BA FACTYPE]=1 | [BA FACTYPE]=9 | [BA FACTYPE]=10 | [BA FACTYPE]=13| [AB FACTYPE]=14)) | !("+ validlinks +")"}
         Opts.Global.[Update Link Options].[Link ID] = link_lyr+".ID"
         Opts.Global.[Update Link Options].Type = "Disable"
         Opts.Global.[Update Network Fields].[Link Type] = {"*_FACTYPE", link_lyr+".[AB FACTYPE]", link_lyr+".[BA FACTYPE]"}	// need to confirm which variable to use, factype or linktype in the highway file
         Opts.Global.[Update Network Fields].Formulas = {}
         ret_value = RunMacro("TCB Run Operation", "Highway Network Setting", Opts, &Ret)
         if !ret_value then goto quit
-        
+
         // Create a skim of shortest path walk length from origin nodes to valid transit stop nodes; also skim the times on the link
         Opts = null
         Opts.Input.Network = hwynet_wlk
@@ -348,10 +479,10 @@ Macro "Walk Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
         Opts.Output.[Output Matrix].Label = "SP Walk Path"
         Opts.Output.[Output Matrix].Compression = 1
         Opts.Output.[Output Matrix].[File Name] = hskim_wlkdist
-        
+
         ret_value = RunMacro("TCB Run Procedure", "TCSPMAT", Opts, &Ret)
         if !ret_value then goto quit
-        
+
         // Save the skim as a table
         m = OpenMatrix(hskim_wlkdist, "True")
         CreateTableFromMatrix(m,hbin_wlkdist,"FFB",{{"Complete","Yes"}})
@@ -366,7 +497,7 @@ Macro "Walk Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
         ModifyTable(view_name, vw_flds)
         CloseView(view_name)
     end
-    
+
     //option 2 - code distance straight-line distance matrix
     if(StraightLine=1) then do
         SetLayer(node_lyr)
@@ -375,7 +506,7 @@ Macro "Walk Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
         fields = {  {"Orig","Integer",12,0,},
                     {"Dest","Integer",12,0,},
                     {"Length","Float",12,2,}   }
-              
+
         distanceTable = CreateTable("Walk Distance", hbin_wlkdist, "FFB", fields)
 
         // read the latitudes and longitudes into an array
@@ -383,60 +514,60 @@ Macro "Walk Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
         latlong = GetRecordsValues(node_lyr+"|", rh,{"ID","Longitude","Latitude","AT_TRN"},{{"ID","Ascending"}} , nnodes, "Column", )
 
         CreateProgressBar("Calculating walk distance matrix...", "True")
-   
+
         //storing results in an array
         dim values[nstops,3]
-        
+
         // iterate through zone-stop and calculate distance
         for i = 1 to nzones do
-        
+
             // update status bar
             stat = UpdateProgressBar("", RealToInt(i/nzones*100) )
             stop=0
             for j = 1 to nnodes do
-        
+
                 if latlong[1][i] != i then do
                     ShowMessage("Error! Node layer out of sequence for TAZs")
                     return(0)
                 end
-                 
+
                  if(latlong[4][j] = 1) then do
-                 
+
                     stop=stop+1
                     // store latitude, longitude
-                    ilat=  latlong[2][i]  
+                    ilat=  latlong[2][i]
                     ilong= latlong[3][i]
                     jlat=  latlong[2][j]
                     jlong= latlong[3][j]
-            
+
                     x = Abs(ilat - jlat)
 	    		    y = Abs(ilong - jlong)
-                
+
                     // great circle distance is probably more accurate
                     loc1 = Coord(ilat, ilong)
                     loc2 = Coord(jlat, jlong)
                     distance = GetDistance(loc1, loc2)
-/*      
+/*
                     // calculate right-angle distance
                     distance = 0.0
                     if x > 0.0 and y > 0.0 then do
                         distance = ( x + y ) * 0.000068
                     end
-*/                
+*/
                     values[stop][1]=i              //taz
                     values[stop][2]=latlong[1][j]  //stop id
                     values[stop][3]=distance       //distance
                 end
-            end            
+            end
             // set records for this izone
-            record_handle = AddRecords(distanceTable, 
+            record_handle = AddRecords(distanceTable,
                     {"Orig","Dest","Length"},
                     values, )
-        
-        end 
-             
+
+        end
+
         DestroyProgressBar()
-        
+
     end
 
 
@@ -455,18 +586,18 @@ endMacro
     3.  Converts the skim to a binary table.
 
 ************************************************************************************************************************************************/
-Macro "KNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones) 
+Macro "KNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
 
     // outputs
     hwynet_knr=scenarioDirectory+"\\outputs\\highway_knr.net"
     hskim_knrdist=scenarioDirectory+"\\outputs\\SP_knrdist.mtx"
     hbin_knrdist=scenarioDirectory+"\\outputs\\SP_knrdist.bin"
-    
+
     validlinks="ID>0"
-    
+
     // Add highway and transit layers
-    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)  
-    rte_lyr = RunMacro("TCB Add RS Layers", rtsfile, , )           
+    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)
+    rte_lyr = RunMacro("TCB Add RS Layers", rtsfile, , )
     stp_lyr = GetStopsLayerFromRS(rte_lyr)
 
     // Build a highway network
@@ -479,23 +610,24 @@ Macro "KNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     Opts.Global.[Network Options].[Keep Duplicate Links] = "FALSE"
     Opts.Global.[Network Options].[Ignore Link Direction] = "FALSE"
     Opts.Global.[Network Options].[Time Unit] = "Minutes"
-    Opts.Global.[Link Options] = {{"Length", {link_lyr+".Length", link_lyr+".Length", , , "False"}}, 
-      	{"*_FACTYPE", {link_lyr+".[AB FACTYPE]", link_lyr+".[BA FACTYPE]", , , "False"}}, 
-      	{"*_EATIME", {link_lyr+".AB_EATIME", link_lyr+".BA_EATIME", , , "False"}}, 
-      	{"*_AMTIME", {link_lyr+".AB_AMTIME", link_lyr+".BA_AMTIME", , , "False"}}, 
-      	{"*_MDTIME", {link_lyr+".AB_MDTIME", link_lyr+".BA_MDTIME", , , "False"}}, 
-      	{"*_PMTIME", {link_lyr+".AB_PMTIME", link_lyr+".BA_PMTIME", , , "False"}}, 
-      	{"*_EVTIME", {link_lyr+".AB_EVTIME", link_lyr+".BA_EVTIME", , , "False"}}, 
+    Opts.Global.[Link Options] = {{"Length", {link_lyr+".Length", link_lyr+".Length", , , "False"}},
+      	{"*_FACTYPE", {link_lyr+".[AB FACTYPE]", link_lyr+".[BA FACTYPE]", , , "False"}},
+      	{"*_EATIME", {link_lyr+".AB_EATIME", link_lyr+".BA_EATIME", , , "False"}},
+      	{"*_AMTIME", {link_lyr+".AB_AMTIME", link_lyr+".BA_AMTIME", , , "False"}},
+      	{"*_MDTIME", {link_lyr+".AB_MDTIME", link_lyr+".BA_MDTIME", , , "False"}},
+      	{"*_PMTIME", {link_lyr+".AB_PMTIME", link_lyr+".BA_PMTIME", , , "False"}},
+      	{"*_EVTIME", {link_lyr+".AB_EVTIME", link_lyr+".BA_EVTIME", , , "False"}},
      	 {"WALKTIME", {link_lyr+".WALKTIME", link_lyr+".WALKTIME", , , "False"}}
         }
 
-    Opts.Global.[Node Options] = {{"[ID]", {node_lyr+".[ID]", , }}, 
-        {"X", {node_lyr+".X", , }}, 
-        {"Y", {node_lyr+".Y", , }}, 
-        {"Original_Node_ID", {node_lyr+".Original_Node_ID", , }}, 
-        {"Original", {node_lyr+".Original", , }}, 
-        {"CCSTYLE", {node_lyr+".CCSTYLE", , }}, 
-     	{"ON", {node_lyr+".ON", , }}, 
+    // Opts.Global.[Node Options] = {{"[ID:1]", {node_lyr+".[ID:1]", , }},
+    Opts.Global.[Node Options] = {{"[ID]", {node_lyr+".[ID]", , }},
+        {"X", {node_lyr+".X", , }},
+        {"Y", {node_lyr+".Y", , }},
+        {"Original_Node_ID", {node_lyr+".Original_Node_ID", , }},
+        {"Original", {node_lyr+".Original", , }},
+        {"CCSTYLE", {node_lyr+".CCSTYLE", , }},
+     	{"ON", {node_lyr+".ON", , }},
      	{"OFF", {node_lyr+".OFF", , }}}
     Opts.Global.[Length Unit] = "Miles"
     Opts.Global.[Time Unit] = "Minutes"
@@ -505,7 +637,7 @@ Macro "KNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     if !ret_value then goto quit
 
     //************Create shortest path for driving distance between centroid and transit stops************
-    
+
     // Create a skim of shortest path drive length from origin nodes to valid transit stop nodes; also skim the auto times by TOD on the link
     Opts = null
     Opts.Input.Network = hwynet_knr
@@ -517,7 +649,7 @@ Macro "KNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     Opts.Output.[Output Matrix].Label = "SP KNR Path"
     Opts.Output.[Output Matrix].Compression = 1
     Opts.Output.[Output Matrix].[File Name] = hskim_knrdist
-    
+
     ret_value = RunMacro("TCB Run Procedure", "TCSPMAT", Opts, &Ret)
     if !ret_value then goto quit
 
@@ -551,20 +683,20 @@ endMacro
     3.  Converts the skim to a binary table.
 
 ************************************************************************************************************************************************/
-Macro "PNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones) 
+Macro "PNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
 
     // outputs
     hwynet_pnr=scenarioDirectory+"\\outputs\\highway_pnr.net"
     hskim_pnrdist=scenarioDirectory+"\\outputs\\SP_pnrdist.mtx"
     hbin_pnrdist=scenarioDirectory+"\\outputs\\SP_pnrdist.bin"
-    
+
     validlinks="ID>0"
     ab_limita="[AB LIMITA]"
     ba_limita="[BA LIMITA]"
 
     // Add the highway and route layers
-    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)  
-    rte_lyr = RunMacro("TCB Add RS Layers", rtsfile, , )           
+    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)
+    rte_lyr = RunMacro("TCB Add RS Layers", rtsfile, , )
     stp_lyr = GetStopsLayerFromRS(rte_lyr)
 
     // Create a highway network
@@ -577,22 +709,23 @@ Macro "PNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     Opts.Global.[Network Options].[Keep Duplicate Links] = "FALSE"
     Opts.Global.[Network Options].[Ignore Link Direction] = "FALSE"
     Opts.Global.[Network Options].[Time Unit] = "Minutes"
-    Opts.Global.[Link Options] = {{"Length", {link_lyr+".Length", link_lyr+".Length", , , "False"}}, 
-     	{"*_FACTYPE", {link_lyr+".[AB FACTYPE]", link_lyr+".[BA FACTYPE]", , , "False"}}, 
-     	{"*_EATIME", {link_lyr+".AB_EATIME", link_lyr+".BA_EATIME", , , "False"}}, 
-     	{"*_AMTIME", {link_lyr+".AB_AMTIME", link_lyr+".BA_AMTIME", , , "False"}}, 
-     	{"*_MDTIME", {link_lyr+".AB_MDTIME", link_lyr+".BA_MDTIME", , , "False"}}, 
-     	{"*_PMTIME", {link_lyr+".AB_PMTIME", link_lyr+".BA_PMTIME", , , "False"}}, 
-     	{"*_EVTIME", {link_lyr+".AB_EVTIME", link_lyr+".BA_EVTIME", , , "False"}}, 
-     	{"WALKTIME", {link_lyr+".WALKTIME", link_lyr+".WALKTIME", , , "False"}} 
+    Opts.Global.[Link Options] = {{"Length", {link_lyr+".Length", link_lyr+".Length", , , "False"}},
+     	{"*_FACTYPE", {link_lyr+".[AB FACTYPE]", link_lyr+".[BA FACTYPE]", , , "False"}},
+     	{"*_EATIME", {link_lyr+".AB_EATIME", link_lyr+".BA_EATIME", , , "False"}},
+     	{"*_AMTIME", {link_lyr+".AB_AMTIME", link_lyr+".BA_AMTIME", , , "False"}},
+     	{"*_MDTIME", {link_lyr+".AB_MDTIME", link_lyr+".BA_MDTIME", , , "False"}},
+     	{"*_PMTIME", {link_lyr+".AB_PMTIME", link_lyr+".BA_PMTIME", , , "False"}},
+     	{"*_EVTIME", {link_lyr+".AB_EVTIME", link_lyr+".BA_EVTIME", , , "False"}},
+     	{"WALKTIME", {link_lyr+".WALKTIME", link_lyr+".WALKTIME", , , "False"}}
         }
 
-    Opts.Global.[Node Options] = {{"[ID]", {node_lyr+".[ID]", , }}, 
-        {"X", {node_lyr+".X", , }}, {"Y", {node_lyr+".Y", , }}, 
-        {"Original_Node_ID", {node_lyr+".Original_Node_ID", , }}, 
-        {"Original", {node_lyr+".Original", , }}, 
-     	{"CCSTYLE", {node_lyr+".CCSTYLE", , }}, 
-     	{"ON", {node_lyr+".ON", , }}, 
+    // Opts.Global.[Node Options] = {{"[ID:1]", {node_lyr+".[ID:1]", , }},
+    Opts.Global.[Node Options] = {{"[ID]", {node_lyr+".[ID]", , }},
+        {"X", {node_lyr+".X", , }}, {"Y", {node_lyr+".Y", , }},
+        {"Original_Node_ID", {node_lyr+".Original_Node_ID", , }},
+        {"Original", {node_lyr+".Original", , }},
+     	{"CCSTYLE", {node_lyr+".CCSTYLE", , }},
+     	{"ON", {node_lyr+".ON", , }},
      	{"OFF", {node_lyr+".OFF", , }}}
     Opts.Global.[Length Unit] = "Miles"
     Opts.Global.[Time Unit] = "Minutes"
@@ -623,7 +756,7 @@ Macro "PNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     Opts.Output.[Output Matrix].Label = "SP AM SOV Drive Path"
     Opts.Output.[Output Matrix].Compression = 1
     Opts.Output.[Output Matrix].[File Name] = hskim_pnrdist
-    
+
     ret_value = RunMacro("TCB Run Procedure", "TCSPMAT", Opts, &Ret)
     if !ret_value then goto quit
 
@@ -640,188 +773,6 @@ Macro "PNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     end
     ModifyTable(view_name, vw_flds)
     CloseView(view_name)
-    
-    ret_value = RunMacro("Close All")
-    if !ret_value then goto quit
-
-    return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
-endMacro    
-
-/************************************************************************************************************************************************
-    Walk Access Link Generation
-        Args:
-            1.  Maximum number of links
-            2.  Maximum distance
-    This macro:
-    1.  Selects records from the walk-transit table (one record per origin-stop pair) that are less than the maximum distance
-    2.  Joins those records to the transit stop table, sorts the table in ascending length from origin to stops
-    2.  Iterates through the joined table, adds walk links to the line layer for each stop up to maximum number of links, from shortest to longest
-    4.  Writes out unconnected TAZs to unconn_taz.log
-
-************************************************************************************************************************************************/
-Macro "Walk Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, nzones)
-
-    //inputs
-    hbin_wlkdist=scenarioDirectory+"\\outputs\\SP_wlkdist.bin"
-
-    // outputs
-    tempfile1 = scenarioDirectory+"\\outputs\\temp_valid1.bin"
-    tempfile2 = scenarioDirectory+"\\outputs\\temp_valid2.bin"
-    
-    maxLinks=cond[1]
-    maxRailLinks=cond[2]
-    maxLength=cond[3]
-
-    ab_lanea="[AB LaneA]"
-    ab_lanem="[AB LaneM]"
-    ab_lanep="[AB LaneP]"
-
-    //Add the highway, route layers
-    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)  
-    rte_lyr = RunMacro("TCB Add RS Layers", rtsfile, , )           
-    stp_lyr = GetStopsLayerFromRS(rte_lyr)
-
-    // Open the walk to transit stop table in binary format (one record per origin to stop node pair).  Fields include length, time by TOD
-    vw_name = OpenTable("walk length", "FFB", {hbin_wlkdist,})
-
-    // Select rows from the table where walk distance is less than the maximum walk length, and export to a temp file (temp_valid1.bin)
-    SetView(vw_name)
-    n= SelectByQuery("ValidWKLength", "Several", "Select * where Length <=" + string(maxLength),)
-    ExportView(vw_name+"|ValidWKLength", "FFB", tempfile1,,)
-    CloseView(vw_name) 
-    
-    // Open the file of records with centroid and stop node, and join it to the stop layer using the destination (stop node) field, export to a temp file (temp_valid2.bin)
-    vw_name = OpenTable("valid walk length", "FFB", {tempfile1,})
-    view_name = JoinViews("joined view", vw_name+".Dest", stp_lyr+".NODENUMBER",{{"O",}})
-    ExportView(view_name+"|", "FFB", tempfile2, {"Orig","Dest","Length","Route_ID","MODE"},)
-
-    // Iterate through the zone -> stop list
-//    EnableProgressBar("Generating walk links...", 1)     // Allow only a single progress bar
-    CreateProgressBar("Generating walk links...", "True")
-
-    connectedtaz=null
-    counter=0
-    record = GetFirstRecord(view_name+ "|", {{"Orig", "Ascending"},{"Length", "Ascending"},{"Dest", "Ascending"},{"MODE", "Ascending"}})
-    records = GetRecords(view_name+ "|", {{"Orig", "Ascending"},{"Length", "Ascending"},{"Dest", "Ascending"},{"MODE", "Ascending"}}) // can't use GetRecordCount on joined view
-    nrec = records.length
-    numberConnected=0
-    railConnected=0
-    while record<>null do
-    
-        counter = counter + 1
-        
-        // update status bar
-        stat = UpdateProgressBar("", RealToInt(counter/nrec*100) )
-
-    	rec_vals = GetRecordValues(view_name, record, {"Orig", "Dest", "Length", "Route_ID","MODE"})
-        
-        // reset the numberConnected if new origin
-        if numberConnected<>0 then do
-    	    if (rec_vals[1][2]<>org) then do
-    	        numberConnected=0
-    	        railConnected=0
-    	    end
-    	end
-        
-        // if not first stop for origin, and numberConnected less than maxLinks, and route not in rout array, add destination to rout array
-        if numberConnected<>0 then do
-            if ((numberConnected<maxLinks) or (railConnected<maxRailLinks)) then do
-                if ((ArrayPosition(rout,{rec_vals[4][2]},) = 0) or rec_vals[5][2]=7) then do                  
-    	       	    rout=rout+{rec_vals[4][2]}
-  
-    	       	    // if a new destination, get the coordinates of the origin and the stop node and add a new walk-access link to the line layer
-    	       	    if (rec_vals[2][2]<>dst) then do
-    	      	          dst=rec_vals[2][2]
-               	        SetLayer(node_lyr)
-               	        cencoord = GetPoint(rec_vals[1][2])
-	       	              stopcoord = GetPoint(rec_vals[2][2])
-               	        SetLayer(link_lyr)
-               	        
-               	        //add walk access link to highway network
-               	        wlkacclink = AddLink({cencoord,stopcoord}, , {{"Snap Node", "True"}, {"Snap Link", "False"}})
-              	        Setlayer(link_lyr)
-               	        wlkaccrec = ID2RH(wlkacclink[1])    //converts an ID to a record handle
-	      	              SetRecordValues(link_lyr, wlkaccrec, {{"SP_DIST",rec_vals[3][2]},
-	      	                {"Dir",1},
-	      	                {"[Road Name]", "Walk Access"},
-	      	                {ab_lanea,1},
-	      	                {ab_lanem,1},
-	      	                {ab_lanep,1},
-	      	                {"[AB Capacity]",9999},
-	      	        	    {"[AB FACTYPE]", 197},
-	      	        	    {"[BA FACTYPE]", 197},
-	      	        	    {"[From ID]", wlkacclink[2]},
-	      	        	    {"[To ID]", wlkacclink[3]},
-	      	        	    {"WALKTIME", rec_vals[3][2]/3*60},
-	      	        	    {"MODE_ID", 12}})
-	        	            numberConnected=numberConnected+1
-				                if(rec_vals[5][2]=7) then do
-				                   railConnected = railConnected + 1
-				                end
-       	    	    end
-               	end
-       	    end
-			end
-    	else do                         // first stop for origin, add destination to rout array
-    	    org=rec_vals[1][2]          // get the coordinates of the origin and the stop node and add a new walk-access link to the line layer
-    	    dst=rec_vals[2][2]
-    	    rout={rec_vals[4][2]}
-       	    SetLayer(node_lyr)
-       	    cencoord = GetPoint(rec_vals[1][2])
-  	        stopcoord = GetPoint(rec_vals[2][2])
-       	    SetLayer(link_lyr)
-       	    //add walk access link to highway network
-       	    wlkacclink = addlink({cencoord,stopcoord}, , {{"Snap Node", "True"}, {"Snap Link", "False"}})
-       	    Setlayer(link_lyr)
-      	    wlkaccrec = ID2RH(wlkacclink[1])
-	        SetRecordValues(link_lyr, wlkaccrec, {{"SP_DIST",rec_vals[3][2]},
-	            {"Dir",1},
-	            {"[Road Name]", "Walk Access"},
-	            {ab_lanea,1},
-	            {ab_lanem,1},
-	            {ab_lanep,1},
-	            {"[AB Capacity]",9999},
-	      	    {"[AB FACTYPE]", 197},
-	      	    {"[BA FACTYPE]", 197},
-	      	    {"[From ID]", wlkacclink[2]},
-	      	    {"[To ID]", wlkacclink[3]},
-	      	    {"WALKTIME", rec_vals[3][2]/3*60},
-	      	    {"MODE_ID", 12}})
-	        numberConnected=numberConnected+1
-	        connectedtaz=connectedtaz+{org}
-          if(rec_vals[5][2]=7) then do          
-             railConnected = railConnected + 1  
-          end                                   
-        end
-        record = GetNextRecord(view_name+ "|", record, {{"Orig", "Ascending"},{"Length", "Ascending"},{"Dest", "Ascending"}})
-    end	
-    DestroyProgressBar()
-   
-    //************ For reporting purpose only: non-connected centroids by walk access links ************
-    nonconn_cen=null
-    SetView(node_lyr)
-    
-    // get a selection set of all zones
-    n= SelectByQuery("centroid", "Several", "Select * where ID <="+string(nzones),)
-    
-    // Iterate through the set, and if it isn't in the connectedtaz array, add it to the nonconn_cenn array
-    orec = GetFirstRecord(node_lyr+"|centroid", {{"ID", "Ascending"}}) 
-    while orec <> null do
-       	orec_vals = GetRecordValues(node_lyr, orec, {"ID"})
-       	if arrayposition(connectedtaz,{orec_vals[1][2]},) = 0 then do
-       	    nonconn_cen =nonconn_cen+{orec_vals[1][2]}
-       	end
-      	orec= GetNextrecord(node_lyr+"|centroid",orec ,{{"ID", "Ascending"}})
-    end
-
-    // print the nonconn_cenn array to a log file
-    if nonconn_cen<>null then do
-    	ptr = OpenFile(scenarioDirectory+"\\reports\\unconn_taz.log", "w")
-    	WriteArraySeparated(ptr,nonconn_cen, ",", "\"")
-    	closefile(ptr)
-    end
 
     ret_value = RunMacro("Close All")
     if !ret_value then goto quit
@@ -829,7 +780,9 @@ Macro "Walk Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, 
     return(1)
     quit:
         Return( RunMacro("TCB Closing", ret_value, True ) )
-endMacro    
+endMacro
+
+
 
 /************************************************************************************************************************************************
     KNR Access Link Generation
@@ -837,7 +790,7 @@ endMacro
             1.  Maximum number of links
             2.  Maximum distance
     This macro:
-        1.  Opens the centroid-stop table created in the KNR Link Generation macro 
+        1.  Opens the centroid-stop table created in the KNR Link Generation macro
         2.  Sorts the table in ascending order by origin and length
         3.  Iterates through records in the table, adding them as records in a view, up to maximum number of links per origin
         4.  Skims the table to create a skim from centroid to KNR node of length, Time by TOD
@@ -861,8 +814,8 @@ Macro "KNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
     maxLength=cond[3]
 
     //Add the highway, route layers
-    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)  
-    rte_lyr = RunMacro("TCB Add RS Layers", rtsfile, , )           
+    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)
+    rte_lyr = RunMacro("TCB Add RS Layers", rtsfile, , )
     stp_lyr = GetStopsLayerFromRS(rte_lyr)
 
    // Open the knr to transit stop table in binary format (one record per origin to stop node pair).  Fields include length, time by TOD
@@ -877,13 +830,13 @@ Macro "KNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
     SetView(vw_name)
     n= SelectByQuery("ValidKRLength", "Several", "Select * where Length <=" + string(maxLength),)
     ExportView(vw_name+"|ValidKRLength", "FFB", tempfile3,,)
-    CloseView(vw_name) 
-    
+    CloseView(vw_name)
+
     // Open the file of records with centroid and stop node, and join it to the stop layer using the destination (stop node) field, export to a temp file (temp_valid4.bin)
     vw_name = OpenTable("valid knr length", "FFB", {tempfile3,})
     view_name = JoinViews("joined view", vw_name+".Dest", stp_lyr+".NODENUMBER",{{"O",}})
     ExportView(view_name+"|", "FFB", tempfile4, {"Orig","Dest","Length","Route_ID","EATime","AMTime","MDTime","PMTime","EVTime","Mode"},)
-
+    CloseView(vw_name)
 
     /* Open the walk-transit temp file file temp_valid4.bin:
         Orig:  Origin TAZ
@@ -896,8 +849,9 @@ Macro "KNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
         EVTime: Evening auto time
         Mode: Mode type
     */
-    view_name = OpenTable("valid knr length", "FFB", {tempfile4,})
-    
+    // view_name = OpenTable("valid knr length", "FFB", {tempfile4,})
+    view_name = OpenTable("valid knr", "FFB", {tempfile4,})
+
     //Iterate through the centroid->KNR nodes, sorted in ascending order by length from origin
     counter=0
     nrec = GetRecordCount(view_name, )
@@ -905,18 +859,126 @@ Macro "KNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
     numberConnected=0
     railConnected=0
 
+    /**************************************
+    Kyle: Rewriting to speed up the process
+    **************************************/
+
+    // Create an array of attribute information wanted
+    a_fields = {"Orig","Dest","Length","Route_ID","EATime","AMTime","MDTime","PMTime","EVTime","Mode"}
+
+    // Get unique list of Origins
+    v_allOrigs = GetDataVector(view_name + "|","Orig",)
+    opts = null
+    opts.Unique = "True"
+    v_uniqOrigs = SortVector(v_allOrigs,opts)
+
+    // loop over each unique origin
+    CreateProgressBar("Generating KNR links...", "True")
+    for o = 1 to v_uniqOrigs.length do
+        origin = v_uniqOrigs[o]
+
+        // Update the status bar
+        status = UpdateProgressBar("Generating KNR links...", RealToInt(o/v_uniqOrigs.length*100) )
+        if status = "True" then do
+            ShowMessage("User pressed cancel.  Throwing error.")
+            ShowMessage(1)
+        end
+
+        // initialize counters
+        numSelected = 0
+        numRail = 0
+
+        // Select all records for current origin
+        SetView(view_name)
+        origSet = "current origin"
+        SelectByQuery(origSet,"Several","Select * where Orig = " + String(origin))
+
+        // Get unique list of route IDs
+        v_allRouteIDs = GetDataVector(view_name + "|" + origSet,"Route_ID",)
+        opts = null
+        opts.Unique = "True"
+        v_uniqRouteIDs = SortVector(v_allRouteIDs,opts)
+
+        // loop over each unique route for the current origin
+        for r = 1 to v_uniqRouteIDs.length do
+            routeID = v_uniqRouteIDs[r]
+
+            // Select all records for current origin and route id (use "Source And" to reduce search space for speed)
+            oNrSet = "current origin and route"
+            // SelectByQuery(oNrSet,"Several","Select * where Orig = " + String(origin) + " and Route_ID = " + String(routeID))
+            opts = null
+            opts.[Source And] = origSet
+            SelectByQuery(oNrSet,"Several","Select * where Route_ID = " + String(routeID),opts)
+
+            // Get data for all records with the same origin and route and store in data array
+            data = null
+            opts = null
+            opts.[Sort Order] = {{"Length", "Ascending"}}
+            a_data = GetDataVectors(view_name + "|" + oNrSet,a_fields,opts)
+            for i = 1 to a_fields.length do
+                data.(a_fields[i]) = a_data[i]
+            end
+
+            // for each row of the orig+route set (which moves from shortest distance to longest)
+            for onr = 1 to data.Orig.length do
+
+                // check to make sure that, if the current record is rail, that the max rail connections
+                // haven't been made.
+                if (data.Mode = 7 and numRail < maxRailLinks) or data.Mode <> 7 then do
+                    // fill the result array with the record data
+                    for i = 1 to a_fields.length do
+                        temp = data.(a_fields[i])       // needed because data.(a_fields[i])[onr] didn't work
+                        result.(a_fields[i]) = result.(a_fields[i]) + {temp[onr]}
+                    end
+
+                    if data.Mode = 7 then numRail = numRail + 1
+                    onr = data.Orig.length + 1                              // stop looping once a suitable record has been found
+                end
+            end
+
+
+
+            numSelected = numSelected + 1
+            if numSelected = maxLinks then r = v_uniqRouteIDs.length + 1    // stop looping once max connections are made
+        end
+    end
+    DestroyProgressBar()
+
+    // Create tempfile6 to hold the results
+    a_strct = GetViewStructure(view_name)
+    CloseView(view_name)
+    tbl6 = CreateTable("tempfile6",tempfile6,"FFB",a_strct)
+    view_name = OpenTable("valid", "FFB", {tempfile6,})
+    opts = null
+    opts.[Empty Records] = result.(a_fields[1]).length
+    AddRecords(view_name,,,opts)
+
+    // Convert the data subarrays of 'result' into vectors for SetDataVectors()
+    for f = 1 to a_fields.length do
+        result.(a_fields[f]) = A2V(result.(a_fields[f]))
+    end
+
+    // Set Values
+    SetDataVectors(view_name + "|",result,)
+
+
+
+/*
 //  Iterate through the zone -> stop list
 //  EnableProgressBar("Generating KNR links...", 1)     // Allow only a single progress bar
     CreateProgressBar("Generating KNR links...", "True")
 
+// Kyle: this while loop iterates over 2+ million records to remove the travel times
+// from ~90% of the records.
+
     while record<>null do
         counter = counter + 1
-        
+
         // update status bar
-        stat = UpdateProgressBar("", RealToInt(counter/nrec*100) )
+        stat = UpdateProgressBar("Generating KNR links...", RealToInt(counter/nrec*100) )
 
     	rec_vals = GetRecordValues(view_name, record, {"Orig", "Dest", "Length", "Route_ID","EATime","AMTime","MDTime","PMTime","EVTime","Mode"})
-        
+
         //If first stop for this origin, reset numberConnected
         if numberConnected<>0 then do
 	    	    if (rec_vals[1][2]<>org) then do
@@ -924,20 +986,20 @@ Macro "KNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
 	    	        railConnected=0
 	    	    end
       	end
-    	
+
     	//If not first stop for this origin, and numberConnected less than maxLinks, and this route hasn't been added to rout array, add it to the array
         if numberConnected<>0 then do
             // If the number connected is less than maximum link
            if ((numberConnected<maxLinks) or (railConnected<maxRailLinks)) then do
                //If the route hasn't been added to the rout array yet
-               if ((ArrayPosition(rout,{rec_vals[4][2]},) = 0) or rec_vals[5][2]=7) then do                  
+               if ((ArrayPosition(rout,{rec_vals[4][2]},) = 0) or rec_vals[5][2]=7) then do
     	       	    rout=rout+{rec_vals[4][2]}
-    	       	    
+
     	       	    //If this is a new KNR node, increase the numberConnected counter
     	       	    if (rec_vals[2][2]<>dst) then do
     	      	        dst=rec_vals[2][2]
 	        	          numberConnected=numberConnected+1
-			                if(rec_vals[5][2]=7) then do
+			                if(rec_vals[5][2]=7) then do                // Kyle: this is wrong, mode field is rec_vals[10][2]
 			                   railConnected = railConnected + 1
 			                end
        	    	    end
@@ -952,42 +1014,42 @@ Macro "KNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
                end
        	    end
        	    else do
-       	        // If the number connected is less than the maximum number of links,  set the times in the centroid->KNR node record to null
-	    	        SetRecordValues(view_name, record , {{"EATime",null},{"AMTime",null},{"MDTime",null},{"PMTime",null},{"EVTime",null}})
+       	        // If the number connected is not less than the maximum number of links,  set the times in the centroid->KNR node record to null
+                SetRecordValues(view_name, record , {{"EATime",null},{"AMTime",null},{"MDTime",null},{"PMTime",null},{"EVTime",null}})
        	    end
-    	  end
+        end
 	    	// If it is the first link for this KNR node, set the origin, destination, and route array, and increment numberConnected up by one
-	    	else do
+        else do
 	    	    org=rec_vals[1][2]
 	    	    dst=rec_vals[2][2]
 	    	    rout={rec_vals[4][2]}
 		        numberConnected=numberConnected+1
-	          if(rec_vals[5][2]=7) then do
-	             railConnected = railConnected + 1
-	          end
-	      end
-	      record = GetNextRecord(view_name+ "|", record, {{"Orig", "Ascending"},{"Length", "Ascending"},{"Dest", "Ascending"}})
-	     end	
+            if(rec_vals[5][2]=7) then do
+                railConnected = railConnected + 1
+            end
+        end
+        record = GetNextRecord(view_name+ "|", record, {{"Orig", "Ascending"},{"Length", "Ascending"},{"Dest", "Ascending"}})
+    end
     DestroyProgressBar()
+
 
     // Select rows from the table where knr time is valid and export to a temp file (temp_valid6.bin)
     SetView(view_name)
     n= SelectByQuery("ValidLink", "Several", "Select * where AMTime != null",)
     ExportView(view_name+"|ValidLink", "FFB", tempfile6,,)
-    CloseView(view_name) 
-
+    CloseView(view_name)
+*/
     //*********************** Convert to KNR Matrix ***********************
-    view_name = OpenTable("valid", "FFB", {tempfile6,})
+    // view_name = OpenTable("valid", "FFB", {tempfile6,})
     SetView(view_name)
     m = CreateMatrixFromView("KNR Matrix", view_name+"|", "Orig", "Dest", {"Length", "EATime", "AMTime", "MDTime", "PMTime", "EVTime"}, {{ "File Name", KNRfile},{ "Sparse", "No"}})
-    
+
     ret_value = RunMacro("Close All")
     if !ret_value then goto quit
-
     return(1)
     quit:
         Return( RunMacro("TCB Closing", ret_value, True ) )
-EndMacro    
+EndMacro
 
 /****************************************************************************************************************
     PNR Access Link Generation
@@ -996,22 +1058,22 @@ EndMacro
         2.  Selects links within the maximum drive distance
         3.  Adds links up to the maximum number allowed for each origin zone
         4.  Creates a matrix of length, pktime, and optime for each zone (rows) -> Pnr lot (cols) pair within the maximum distance and maximum number of links
-    
+
 ****************************************************************************************************************/
 Macro "PNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, nzones)
-    
+
     //inputs
     hbin_pnrdist=scenarioDirectory+"\\outputs\\SP_pnrdist.bin"
 
     //output
     PNRfile=scenarioDirectory+"\\outputs\\pnracc.mtx"
- 
+
     maxLinks=cond[1]
     maxLength=cond[2]
-    
+
     //Add the highway, route layers
-    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)  
-    rte_lyr = RunMacro("TCB Add RS Layers", rtsfile, , )           
+    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)
+    rte_lyr = RunMacro("TCB Add RS Layers", rtsfile, , )
     stp_lyr = GetStopsLayerFromRS(rte_lyr)
 
     /* Open the SP_pnrdist.bin
@@ -1026,28 +1088,28 @@ Macro "PNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
     */
     view_name = OpenTable("drive length", "FFB", {hbin_pnrdist,})
     SetView(view_name)
-    
+
     // Select drive connectors within maximum drive distance
     n= SelectByQuery("ValidDRLength", "Several", "Select * where Length <= "+string(maxLength),)
-    
+
     // Iterate through records, sorted by origin zone and length
     record = GetFirstRecord(view_name+ "|ValidDRLength", {{"Orig", "Ascending"},{"Length", "Ascending"}})
     numberConnected=0
      counter=0
     nrec = GetRecordCount(view_name, )
-   
+
 //    EnableProgressBar("Generating knr links...", 1)     // Allow only a single progress bar
     CreateProgressBar("Generating pnr links...", "True")
     while record<>null do
         counter = counter + 1
-        
+
         // update status bar
-        stat = UpdateProgressBar("", RealToInt(counter/nrec*100) )
+        stat = UpdateProgressBar("Generating pnr links...", RealToInt(counter/nrec*100) )
     	rec_vals = GetRecordValues(view_name, record, {"Orig", "Dest", "Length", "EATime", "AMTime", "MDTime", "PMTime", "EVTime"})
-        
+
         if numberConnected<>0 then do
-    
-            // If not the first connected, but new origin, reset numberConnected 
+
+            // If not the first connected, but new origin, reset numberConnected
             if orig<>rec_vals[1][2] then numberConnected=0
 
             // If numberConnected less than maxLinks, increment up numberConnected
@@ -1067,12 +1129,12 @@ Macro "PNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
 	    record = GetNextRecord(view_name+ "|ValidDRLength", record, {{"Orig", "Ascending"},{"Length", "Ascending"}})
     end
     DestroyProgressBar()
-    
+
     // set the links over the max length to 0
     n= SelectByQuery("InValidDRLength", "Several", "Select * where Length > "+string(maxLength),)
     invalidRecords = GetRecords(view_name+ "|InValidDRLength", {{"Sort Order",{{"Orig", "Ascending"}}}} )
 	SetRecordsValues(view_name+ "|InValidDRLength", { {"EATime","AMTime","MDTime","PMTime","EVTime"},invalidRecords}, "Value", {null,null,null,null,null},)
-    
+
     //*********************** Convert to PNR Matrix ***********************
     SetView(view_name)
     m = CreateMatrixFromView("PNR Matrix", view_name+"|", "Orig", "Dest", {"Length", "EATime","AMTime","MDTime","PMTime","EVTime"}, {{ "File Name", PNRfile},{ "Sparse", "No"}})
@@ -1083,7 +1145,7 @@ Macro "PNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
     return(1)
     quit:
         Return( RunMacro("TCB Closing", ret_value, True ) )
-endMacro    
+endMacro
 
 /***************************************************************
 *
@@ -1105,29 +1167,29 @@ Macro "Write Station File" (scenarioDirectory, hwyfile, rtsfile)
     stp_lyr = lyrs[2]
     node_lyr = lyrs[4]
     link_lyr = lyrs[5]
-    
+
     Setlayer(node_lyr)
-    
+
     // Select PNR Lots
-    n = Selectbyquery("PNRLots", "Several", "Select * where PNR=1",)     
-    
+    n = Selectbyquery("PNRLots", "Several", "Select * where PNR=1",)
+
     // Iterate through the lots and write out data
     PNRLot = GetFirstRecord(node_lyr + "|PNRLots", null)
      while PNRLot <> null do
-        
+
         nodeNumber = IntToString(node_lyr.ID)
 
         //pad the lot number if it has four digits
         if(node_lyr.ID<=9999) then nodeNumber = " "+nodeNumber
-        
+
         // assume unlimited spaces and no cost
         spaces = " 9999"
         cost   = "    0"
         blank  = "     "
         lotName = node_lyr.[PNR Lot Name]
-        
+
         writeString = nodeNumber + spaces + blank + cost + blank + blank + lotName
-        
+
         WriteLine(ptr,writeString )
 
         PNRLot = GetNextRecord(node_lyr + "|PNRLots", null, null)
@@ -1135,7 +1197,7 @@ Macro "Write Station File" (scenarioDirectory, hwyfile, rtsfile)
      end
 
     CloseFile(ptr)
-    
+
     ret_value = RunMacro("Close All")
     if !ret_value then goto quit
 
