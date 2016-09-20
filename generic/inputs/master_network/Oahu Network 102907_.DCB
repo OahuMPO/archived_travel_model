@@ -1,6 +1,6 @@
 
 198
-"newid:1",I,1,4,0,4,0,,"","",,"Blank",
+"ID",I,1,4,0,4,0,,"","",,"Blank",
 "X",R,5,8,0,10,2,,"","Raw X Coordinate",,"Blank",
 "Y",R,13,8,0,10,2,,"","Raw Y Coordinate",,"Blank",
 "Zone Centroid",C,21,1,0,1,0,,"","Whether the node is a centroid of a zone",,"Blank",
