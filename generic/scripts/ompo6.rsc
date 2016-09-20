@@ -190,7 +190,12 @@ Macro "OMPO6" (path, Options, jump)
         if stop_after_each_step then goto quit
         
         CheckConvergence:
-        if(iteration>1) then do
+        /*
+        The disaggregate java models create partial populations in the first two iterations.
+        The third iteration is the first to use a 100% sample.  Therefore, do not start
+        checking for convergence until the fourth iteration.
+        */
+        if(iteration >= 4) then do
             thisSkim = scenarioDirectory+"\\outputs\\hwyam_sov.mtx"
             lastSkim = scenarioDirectory+"\\outputs\\iter"+String(iteration-1)+"\\hwyam_sov.mtx"
             skimPRMSE = RunMacro("Check Convergence", {thisSkim, 1},{lastSkim,1})        
