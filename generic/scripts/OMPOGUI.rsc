@@ -209,7 +209,11 @@ dbox "Oahu Model"
 
 //**********************************************************************************************************************************************************************
 
-	button "Quit" 12, 55, 24, 1.5 cancel do
+  button "CMP Analysis" 3, 56, , 1.5 do
+    RunDbox("CMP")
+  enditem
+
+	button "Quit" 20, 56, 24, 1.5 cancel do
 		//ShowMessage(" Exit")
 		Return()
 	enditem
@@ -272,13 +276,14 @@ Radio Button 2, 12 Prompt: "Use Data From Urbansim"
 			Showmessage("Insert the UrbanSIM model here")
 		end
 		if selection = 1 then do
-        		RunMacro("Create TAZ File")
+  		RunMacro("Create TAZ File")
+      Showmessage("TAZ Data Created")
 		end
 	enditem
 
 	button "Create Network" 3, 14, 61, 2 do
 	    RunMacro("Create Network", path, Options, year)
-        ShowMessage("Network Created")
+      ShowMessage("Network Created")
 	enditem
 
 //*************************This part of the code is for Navigation**************************************************************************************************************************

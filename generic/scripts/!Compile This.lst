@@ -39,4 +39,5 @@ TollSummaries.rsc
 summarizeTransit.rsc
 HwyTTDistSum.rsc
 V6Summaries.rsc
+CMPAnalysis.rsc
 lib/gplyr/gplyr.rsc
