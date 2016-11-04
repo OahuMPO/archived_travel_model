@@ -40,4 +40,4 @@ summarizeTransit.rsc
 HwyTTDistSum.rsc
 V6Summaries.rsc
 CMPAnalysis.rsc
-lib/gplyr/gplyr.rsc
+gisdk_tools/gplyr/gplyr.rsc
