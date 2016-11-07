@@ -430,7 +430,10 @@ Macro "Trav Time Map" (scenarioDirectory)
   Flds.[Network File] = outputDir + "\\travbands.net"
   Flds.Label = null
   //Length must be included in link options
-  Flds.[Link Options] = {{"Length", {lLyr+".Length", lLyr+".Length",,,"False"}},{"PMTime", {lLyr+".AB_TIME_PM", lLyr+".BA_TIME_PM",,,"True"}}}
+  Flds.[Link Options] = {
+    {"Length", {lLyr+".Length", lLyr+".Length",,, "False"}},
+    {"PMTime", {lLyr+".AB_TIME_PM", lLyr+".BA_TIME_PM",,, "True"}}
+  }
   Flds.[Node Options] = null
   Flds.Options.[Link Type] = null
   Flds.Options.[Link ID] = lLyr+".ID"
@@ -678,10 +681,6 @@ Macro "Transit Boardings" (scenarioDirectory)
   v_rtsMode = if (v_rtsModeN = 7) then "Fixed Guideway" else v_rtsMode
   v_rtsMode = if (v_rtsModeN = 8) then "Ferry"          else v_rtsMode
 
-  // Create final vector to store boardings
-  opts = null
-  opts.Constant = 0
-  v_rtsOn   = Vector(v_rtsID.length,"Double",opts)
 
   // Create arrays to loop over
   a_access = {"KNR","PNR-FML","PNR-INF","WLK-EXP","WLK-GDWY","WLK-LOC"}
@@ -691,11 +690,16 @@ Macro "Transit Boardings" (scenarioDirectory)
   // Sample table name of ON/OFF tale collapsed by route
   // PNR-FML_MD_ONOFF_COLL_JOIN.bin
 
-  for a = 1 to a_access.length do
-    access = a_access[a]
+  for t = 1 to a_tod.length do
+    tod = a_tod[t]
 
-    for t = 1 to a_tod.length do
-      tod = a_tod[t]
+    // Create vector to store boardings across access modes for current tod
+    opts = null
+    opts.Constant = 0
+    v_rtsOn = Vector(v_rtsID.length, "Double", opts)
+
+    for a = 1 to a_access.length do
+      access = a_access[a]
       fileName = outputDir + "\\" + access + "_" + tod + "_ONOFF_COLL_JOIN.bin"
 
       // Open table and collect the ID and "ON" columns
@@ -716,16 +720,22 @@ Macro "Transit Boardings" (scenarioDirectory)
         end
       end
     end
+
+    // Write out the results to a CSV
+    if t = 1 then do
+      transitCSV = OpenFile(transitCSV, "w")
+      WriteLine(transitCSV,"Route ID,Route Name,Mode,Period,Boardings")
+    end
+    for i = 1 to v_rtsID.length do
+      WriteLine(
+        transitCSV,
+        String(v_rtsID[i]) + "," +
+        v_rtsName[i] + "," +
+        v_rtsMode[i] + "," +
+        tod + "," +
+        String(v_rtsOn[i]))
+    end
   end
 
-  // Write out the results to a CSV
-  transitCSV = OpenFile(transitCSV,"w")
-  WriteLine(transitCSV,"Route ID,Route Name,Mode,Boardings")
-  for i = 1 to v_rtsID.length do
-    WriteLine(transitCSV,String(v_rtsID[i]) + "," + v_rtsName[i] + "," + v_rtsMode[i] + "," + String(v_rtsOn[i]))
-  end
-
-  CloseView(tbl)
-  CloseMap(map)
-  CloseFile(transitCSV)
+  RunMacro("Close All")
 EndMacro
