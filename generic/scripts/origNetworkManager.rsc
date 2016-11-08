@@ -206,89 +206,89 @@ Macro "Change Lanes" (tempFile, currentYear)
     futureLink = GetDataVector(linkLayer+"|","[future link]",)
     year = GetDataVector(linkLayer+"|","year",)
          
-    //AB LANEA
-    futureVector = GetDataVector(linkLayer+"|","[futureAB LaneA]",)
-    currentVector = GetDataVector(linkLayer+"|","[AB LANEA]",)
+    //AB_LANEA
+    futureVector = GetDataVector(linkLayer+"|","[futureAB_LANEA]",)
+    currentVector = GetDataVector(linkLayer+"|","[AB_LANEA]",)
     newVector = if ((futureLink='c' or futureLink='a' or futureLink='l')and (year<=currentYear)) then futureVector else currentVector
-    SetDataVector(linkLayer+"|","[AB LANEA]",newVector,) 
+    SetDataVector(linkLayer+"|","[AB_LANEA]",newVector,) 
 
-    //BA LANEA
-    futureVector = GetDataVector(linkLayer+"|","[futureBA LaneA]",)
-    currentVector = GetDataVector(linkLayer+"|","[BA LANEA]",)
+    //BA_LANEA
+    futureVector = GetDataVector(linkLayer+"|","[futureBA_LANEA]",)
+    currentVector = GetDataVector(linkLayer+"|","[BA_LANEA]",)
     newVector = if ((futureLink='c' or futureLink='a' or futureLink='l')and (year<=currentYear)) then futureVector else currentVector
-    SetDataVector(linkLayer+"|","[BA LANEA]",newVector,) 
+    SetDataVector(linkLayer+"|","[BA_LANEA]",newVector,) 
 
-    //AB LANEM
-    futureVector = GetDataVector(linkLayer+"|","[futureAB LaneM]",)
-    currentVector = GetDataVector(linkLayer+"|","[AB LANEM]",)
+    //AB_LANEM
+    futureVector = GetDataVector(linkLayer+"|","[futureAB_LANEM]",)
+    currentVector = GetDataVector(linkLayer+"|","[AB_LANEM]",)
     newVector = if ((futureLink='c' or futureLink='a' or futureLink='l')and (year<=currentYear)) then futureVector else currentVector
-    SetDataVector(linkLayer+"|","[AB LANEM]",newVector,) 
+    SetDataVector(linkLayer+"|","[AB_LANEM]",newVector,) 
 
-    //BA LANEM
-    futureVector = GetDataVector(linkLayer+"|","[futureBA LaneM]",)
-    currentVector = GetDataVector(linkLayer+"|","[BA LANEM]",)
+    //BA_LANEM
+    futureVector = GetDataVector(linkLayer+"|","[futureBA_LANEM]",)
+    currentVector = GetDataVector(linkLayer+"|","[BA_LANEM]",)
     newVector = if ((futureLink='c' or futureLink='a' or futureLink='l')and (year<=currentYear)) then futureVector else currentVector
-    SetDataVector(linkLayer+"|","[BA LANEM]",newVector,) 
+    SetDataVector(linkLayer+"|","[BA_LANEM]",newVector,) 
 
-    //AB LANEP
-    futureVector = GetDataVector(linkLayer+"|","[futureAB LaneP]",)
-    currentVector = GetDataVector(linkLayer+"|","[AB LANEP]",)
+    //AB_LANEP
+    futureVector = GetDataVector(linkLayer+"|","[futureAB_LANEP]",)
+    currentVector = GetDataVector(linkLayer+"|","[AB_LANEP]",)
     newVector = if ((futureLink='c' or futureLink='a' or futureLink='l')and (year<=currentYear)) then futureVector else currentVector
-    SetDataVector(linkLayer+"|","[AB LANEP]",newVector,) 
+    SetDataVector(linkLayer+"|","[AB_LANEP]",newVector,) 
 
-    //BA LANEP
-    futureVector = GetDataVector(linkLayer+"|","[futureBA LaneP]",)
-    currentVector = GetDataVector(linkLayer+"|","[BA LANEP]",)
+    //BA_LANEP
+    futureVector = GetDataVector(linkLayer+"|","[futureBA_LANEP]",)
+    currentVector = GetDataVector(linkLayer+"|","[BA_LANEP]",)
     newVector = if ((futureLink='c' or futureLink='a' or futureLink='l')and (year<=currentYear)) then futureVector else currentVector
-    SetDataVector(linkLayer+"|","[BA LANEP]",newVector,) 
+    SetDataVector(linkLayer+"|","[BA_LANEP]",newVector,) 
 
-    //AB LIMITA
-    futureVector = GetDataVector(linkLayer+"|","[future AB limitA]",)
-    currentVector = GetDataVector(linkLayer+"|","[AB LIMITA]",)
+    //AB_LIMITA
+    futureVector = GetDataVector(linkLayer+"|","[future AB_LIMITA]",)
+    currentVector = GetDataVector(linkLayer+"|","[AB_LIMITA]",)
     newVector = if ((futureLink='c' or futureLink='a' or futureLink='l')and (year<=currentYear)) then futureVector else currentVector
-    SetDataVector(linkLayer+"|","[AB LIMITA]",newVector,) 
+    SetDataVector(linkLayer+"|","[AB_LIMITA]",newVector,) 
 
-    //BA LIMITA
-    futureVector = GetDataVector(linkLayer+"|","[future BA limitA]",)
-    currentVector = GetDataVector(linkLayer+"|","[BA LIMITA]",)
+    //BA_LIMITA
+    futureVector = GetDataVector(linkLayer+"|","[future BA_LIMITA]",)
+    currentVector = GetDataVector(linkLayer+"|","[BA_LIMITA]",)
     newVector = if ((futureLink='c' or futureLink='a' or futureLink='l')and (year<=currentYear)) then futureVector else currentVector
-    SetDataVector(linkLayer+"|","[BA LIMITA]",newVector,) 
+    SetDataVector(linkLayer+"|","[BA_LIMITA]",newVector,) 
 
-    //AB LIMITM
-    futureVector = GetDataVector(linkLayer+"|","[future AB limitM]",)
-    currentVector = GetDataVector(linkLayer+"|","[AB LIMITM]",)
+    //AB_LIMITM
+    futureVector = GetDataVector(linkLayer+"|","[future AB_LIMITM]",)
+    currentVector = GetDataVector(linkLayer+"|","[AB_LIMITM]",)
     newVector = if ((futureLink='c' or futureLink='a' or futureLink='l')and (year<=currentYear)) then futureVector else currentVector
-    SetDataVector(linkLayer+"|","[AB LIMITM]",newVector,) 
+    SetDataVector(linkLayer+"|","[AB_LIMITM]",newVector,) 
 
-    //BA LIMITM
-    futureVector = GetDataVector(linkLayer+"|","[future BA limitM]",)
-    currentVector = GetDataVector(linkLayer+"|","[BA LIMITM]",)
+    //BA_LIMITM
+    futureVector = GetDataVector(linkLayer+"|","[future BA_LIMITM]",)
+    currentVector = GetDataVector(linkLayer+"|","[BA_LIMITM]",)
     newVector = if ((futureLink='c' or futureLink='a' or futureLink='l')and (year<=currentYear)) then futureVector else currentVector
-    SetDataVector(linkLayer+"|","[BA LIMITM]",newVector,) 
+    SetDataVector(linkLayer+"|","[BA_LIMITM]",newVector,) 
 
-    //AB LIMITP
-    futureVector = GetDataVector(linkLayer+"|","[future AB limitP]",)
-    currentVector = GetDataVector(linkLayer+"|","[AB LIMITP]",)
+    //AB_LIMITP
+    futureVector = GetDataVector(linkLayer+"|","[future AB_LIMITP]",)
+    currentVector = GetDataVector(linkLayer+"|","[AB_LIMITP]",)
     newVector = if ((futureLink='c' or futureLink='a' or futureLink='l')and (year<=currentYear)) then futureVector else currentVector
-    SetDataVector(linkLayer+"|","[AB LIMITP]",newVector,) 
+    SetDataVector(linkLayer+"|","[AB_LIMITP]",newVector,) 
 
-    //BA LIMITP
-    futureVector = GetDataVector(linkLayer+"|","[future BA limitP]",)
-    currentVector = GetDataVector(linkLayer+"|","[BA LIMITP]",)
+    //BA_LIMITP
+    futureVector = GetDataVector(linkLayer+"|","[future BA_LIMITP]",)
+    currentVector = GetDataVector(linkLayer+"|","[BA_LIMITP]",)
     newVector = if ((futureLink='c' or futureLink='a' or futureLink='l')and (year<=currentYear)) then futureVector else currentVector
-    SetDataVector(linkLayer+"|","[BA LIMITP]",newVector,) 
+    SetDataVector(linkLayer+"|","[BA_LIMITP]",newVector,) 
 
-    //AB FNCLASS
+    //AB_FNCLASS
     futureVector = GetDataVector(linkLayer+"|","[future AB funcclass]",)
-    currentVector = GetDataVector(linkLayer+"|","[AB FNCLASS]",)
+    currentVector = GetDataVector(linkLayer+"|","[AB_FNCLASS]",)
     newVector = if ((futureLink='c' or futureLink='a' or futureLink='l')and (year<=currentYear)) then futureVector else currentVector
-    SetDataVector(linkLayer+"|","[AB FNCLASS]",newVector,) 
+    SetDataVector(linkLayer+"|","[AB_FNCLASS]",newVector,) 
 
-    //BA FNCLASS
+    //BA_FNCLASS
     futureVector = GetDataVector(linkLayer+"|","[future BA funcclass]",)
-    currentVector = GetDataVector(linkLayer+"|","[BA FNCLASS]",)
+    currentVector = GetDataVector(linkLayer+"|","[BA_FNCLASS]",)
     newVector = if ((futureLink='c' or futureLink='a' or futureLink='l')and (year<=currentYear)) then futureVector else currentVector
-    SetDataVector(linkLayer+"|","[BA FNCLASS]",newVector,) 
+    SetDataVector(linkLayer+"|","[BA_FNCLASS]",newVector,) 
 
     CloseView(linkLayer)
     CloseView(nodeLayer)

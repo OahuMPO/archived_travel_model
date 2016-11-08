@@ -353,12 +353,12 @@ Macro "Walk Links" (scenarioDirectory, hwyfile, rtsfile,fixgdwy,type,maxLinks,ma
     if type = "Walk" then do
         a_fieldVals = {{"Dir",1},
                       {"[Road Name]", "Walk Access"},
-                      {"[AB LaneA]",1},
-                      // {"[BA LaneA]",1},
-                      {"[AB LaneM]",1},
-                      // {"[BA LaneM]",1},
-                      {"[AB LaneP]",1},
-                      // {"[BA LaneP]",1},
+                      {"[AB_LANEA]",1},
+                      // {"[BA_LANEA]",1},
+                      {"[AB_LANEM]",1},
+                      // {"[BA_LANEM]",1},
+                      {"[AB_LANEP]",1},
+                      // {"[BA_LANEP]",1},
                       {"[AB Capacity]",9999},
                       // {"[BA Capacity]",9999},
                       {"[AB FACTYPE]", 197},
@@ -691,8 +691,8 @@ Macro "PNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     hbin_pnrdist=scenarioDirectory+"\\outputs\\SP_pnrdist.bin"
 
     validlinks="ID>0"
-    ab_limita="[AB LIMITA]"
-    ba_limita="[BA LIMITA]"
+    ab_limita="[AB_LIMITA]"
+    ba_limita="[BA_LIMITA]"
 
     // Add the highway and route layers
     {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)

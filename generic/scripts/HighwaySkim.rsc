@@ -17,12 +17,12 @@
 *       ATYPE                           Zonal area type 1-8 (calculated)
 *    (2) Link layer: 												
 *       [AB FACTYPE],[BA FACTYPE]       Link facility type (input)
-*    	[AB limit[i]],[BA limit[i]]         AM Peak period limit field (input)
-*    	[AB LIMITM],[BA LIMITM]         Midday period limit field (input)
-*    	[AB LIMITP],[BA LIMITP]         PM Peak period limit field (input)
-*       [AB LaneA],[BA LaneA]           AM Number of lanes (input)
-*       [AB LaneM],[BA LaneM]           Midday number of lanes (input)
-*       [AB LaneP],[BA LaneP]	        PM Number of lanes (input)
+*    	[AB_LIMIT[i]],[BA_LIMIT[i]]         AM Peak period limit field (input)
+*    	[AB_LIMITM],[BA_LIMITM]         Midday period limit field (input)
+*    	[AB_LIMITP],[BA_LIMITP]         PM Peak period limit field (input)
+*       [AB_LANEA],[BA_LANEA]           AM Number of lanes (input)
+*       [AB_LANEM],[BA_LANEM]           Midday number of lanes (input)
+*       [AB_LANEP],[BA_LANEP]	        PM Number of lanes (input)
 *       [AB ATYPE],[BA ATYPE]           Link area type 1-8 (calculated based on zone that link is in)
 * 	    [AB Speed],[BA Speed]           Free-flow speed (calculated based on fspd file)
 *       AB_FFTIME,BA_FFTIME             Free-flow time (calculated) 
@@ -150,8 +150,8 @@ Macro "Highway Skim" (scenarioDirectory, hwyfile,  tpen, nzones, iftoll, iterati
 
     turnPen = {tpen[2],tpen[1],tpen[2],tpen[1],tpen[2]}
      
-    ab_limit= {"[AB LIMITM]","[AB LIMITA]","[AB LIMITM]","[AB LIMITP]","[AB LIMITM]"}
-    ba_limit= {"[BA LIMITM]","[BA LIMITA]","[BA LIMITM]","[BA LIMITP]","[BA LIMITM]"}
+    ab_limit= {"[AB_LIMITM]","[AB_LIMITA]","[AB_LIMITM]","[AB_LIMITP]","[AB_LIMITM]"}
+    ba_limit= {"[BA_LIMITM]","[BA_LIMITA]","[BA_LIMITM]","[BA_LIMITP]","[BA_LIMITM]"}
 
   //recompute peak and off-peak speed in case model is being re-run in iteration 1
     if(iteration = 1) then do

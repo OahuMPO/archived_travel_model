@@ -55,16 +55,16 @@ Macro "Highway Assignment Summary" (scenarioDirectory)
         bavoc[1] =   GetDataVector(view_name + "|", "BA_VOC_"+periods[period],)         // vol to cap ratio BA direction
                             
         if period = 1 then do
-            ablane[1] =   GetDataVector(view_name + "|", "[AB LANEA]",)  
-            balane[1] =   GetDataVector(view_name + "|", "[BA LANEA]",)  
+            ablane[1] =   GetDataVector(view_name + "|", "[AB_LANEA]",)  
+            balane[1] =   GetDataVector(view_name + "|", "[BA_LANEA]",)  
             end
         else if period = 2 then do
-            ablane[1] =   GetDataVector(view_name + "|", "[AB LANEM]",)  
-            balane[1] =   GetDataVector(view_name + "|", "[BA LANEM]",)  
+            ablane[1] =   GetDataVector(view_name + "|", "[AB_LANEM]",)  
+            balane[1] =   GetDataVector(view_name + "|", "[BA_LANEM]",)  
             end
         else do
-            ablane[1] =   GetDataVector(view_name + "|", "[AB LANEP]",)  
-            balane[1] =   GetDataVector(view_name + "|", "[BA LANEP]",)  
+            ablane[1] =   GetDataVector(view_name + "|", "[AB_LANEP]",)  
+            balane[1] =   GetDataVector(view_name + "|", "[BA_LANEP]",)  
         end
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
         //  Fill the missing values with zeros to make computations(finding maximum values) easier                                                                                                                                                                                                                                                                                                                                                                                          

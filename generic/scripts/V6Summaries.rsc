@@ -39,7 +39,7 @@ Macro "Summarize by FT and AT" (scenarioDirectory)
   // looping arrays
   a_dir = {"AB","BA"}
   a_at = {1,2,3,4,5,6,7,8}        //FIELD: [AB/BA ATYPE]
-  a_ft = {1,2,3,4,5,6,7,8,9}    //Field: [AB/BA FNCLASS]
+  a_ft = {1,2,3,4,5,6,7,8,9}    //Field: [AB/BA_FNCLASS]
   a_ftname = {"Freeway","Expressway","Principal Arterial","Minor Arterial","Major Collector","Minor Collector","Local","Ramp","CC"}
   a_tod = {"EA","AM","MD","PM","EV"}
 
@@ -154,7 +154,7 @@ Macro "Emission Estimation" (scenarioDirectory)
   // looping arrays
   a_dir = {"AB","BA"}
   a_at = {1,2,3,4,5,6,7,8}        //FIELD: [AB/BA ATYPE]
-  a_ft = {1,2,3,4,5,6,7,8,9}    //Field: [AB/BA FNCLASS]
+  a_ft = {1,2,3,4,5,6,7,8,9}    //Field: [AB/BA_FNCLASS]
   a_ftname = {"Freeway","Expressway","Principal Arterial","Minor Arterial","Major Collector","Minor Collector","Local","Ramp","CC"}
   speedStart = 0      // start at 0
   speedMax = 75      // stop at 75
@@ -420,8 +420,8 @@ Macro "Trav Time Map" (scenarioDirectory)
   // Create a link set of links that SOV can travel in the PM
   SetLayer(lLyr)
   setname = "sov pm links"
-  qry =       "Select * where nz([AB LIMITP]) not between 2 and 3 and nz([BA LIMITP]) not between 2 and 3"
-  qry = qry + " and (nz([AB LANEP]) + nz([BA LANEP])) > 0 and [Road Name] <> 'Walk Access'"
+  qry =       "Select * where nz([AB_LIMITP]) not between 2 and 3 and nz([BA_LIMITP]) not between 2 and 3"
+  qry = qry + " and (nz([AB_LANEP]) + nz([BA_LANEP])) > 0 and [Road Name] <> 'Walk Access'"
   SelectByQuery(setname, "Several", qry)
 
   // Create a network
@@ -541,8 +541,8 @@ Macro "Trav Time Map - Zonal" (scenarioDirectory)
   // Create a link set of links that SOV can travel in the AM
   SetLayer(lLyr)
   setname = "sov am links"
-  qry =       "Select * where nz([AB LIMITA]) not between 2 and 3 and nz([BA LIMITA]) not between 2 and 3"
-  qry = qry + " and (nz([AB LANEA]) + nz([BA LANEA])) > 0 and [Road Name] <> 'Walk Access'"
+  qry =       "Select * where nz([AB_LIMITA]) not between 2 and 3 and nz([BA_LIMITA]) not between 2 and 3"
+  qry = qry + " and (nz([AB_LANEA]) + nz([BA_LANEA])) > 0 and [Road Name] <> 'Walk Access'"
   SelectByQuery(setname, "Several", qry)
 
   // Create a node set of centroids

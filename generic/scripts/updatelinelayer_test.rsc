@@ -23,12 +23,12 @@ Macro "Update Line Layer"
     EMP_fld="TOTALEMP"
     taz_at="ATYPE"
     link_at={"[AB ATYPE]","[BA ATYPE]"}
-    ab_lanea="[AB LaneA]"
-    ab_lanem="[AB LaneM]"
-    ab_lanep="[AB LaneP]"
-    ba_lanea="[BA LaneA]"
-    ba_lanem="[BA LaneM]"
-    ba_lanep="[BA LaneP]"
+    ab_lanea="[AB_LANEA]"
+    ab_lanem="[AB_LANEM]"
+    ab_lanep="[AB_LANEP]"
+    ba_lanea="[BA_LANEA]"
+    ba_lanem="[BA_LANEM]"
+    ba_lanep="[BA_LANEP]"
     
     aa = GetDBInfo(hwyfile)
     cc = CreateMap("bb",{{"Scope",aa[1]}})

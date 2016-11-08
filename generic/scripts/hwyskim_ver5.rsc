@@ -17,12 +17,12 @@
 *       ATYPE                           Zonal area type 1-8 (calculated)
 *    (2) Link layer: 												
 *       [AB FACTYPE],[BA FACTYPE]       Link facility type (input)
-*    	[AB LIMITA],[BA LIMITA]         AM Peak period limit field (input)
-*    	[AB LIMITM],[BA LIMITM]         Midday period limit field (input)
-*    	[AB LIMITP],[BA LIMITP]         PM Peak period limit field (input)
-*       [AB LaneA],[BA LaneA]           AM Number of lanes (input)
-*       [AB LaneM],[BA LaneM]           Midday number of lanes (input)
-*       [AB LaneP],[BA LaneP]	        PM Number of lanes (input)
+*    	[AB_LIMITA],[BA_LIMITA]         AM Peak period limit field (input)
+*    	[AB_LIMITM],[BA_LIMITM]         Midday period limit field (input)
+*    	[AB_LIMITP],[BA_LIMITP]         PM Peak period limit field (input)
+*       [AB_LANEA],[BA_LANEA]           AM Number of lanes (input)
+*       [AB_LANEM],[BA_LANEM]           Midday number of lanes (input)
+*       [AB_LANEP],[BA_LANEP]	        PM Number of lanes (input)
 *       [AB ATYPE],[BA ATYPE]           Link area type 1-8 (calculated based on zone that link is in)
 * 	    [AB Speed],[BA Speed]           Free-flow speed (calculated based on fspd file)
 *       AB_FFTIME,BA_FFTIME             Free-flow time (calculated) 
@@ -135,12 +135,12 @@ Macro "Highway Skim" (hwyfile, hnetfile, hskimfile, tpen, nzones, iftoll)
 
     linktypeturns = tpen[3]
     
-    ab_limita="[AB LIMITA]"
-    ab_limitm="[AB LIMITM]"
-    ab_limitp="[AB LIMITP]"
-    ba_limita="[BA LIMITA]"
-    ba_limitm="[BA LIMITM]"
-    ba_limitp="[BA LIMITP]"
+    ab_limita="[AB_LIMITA]"
+    ab_limitm="[AB_LIMITM]"
+    ab_limitp="[AB_LIMITP]"
+    ba_limita="[BA_LIMITA]"
+    ba_limitm="[BA_LIMITM]"
+    ba_limitp="[BA_LIMITP]"
     
     {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)  
     hwy_node_lyr = hwyfile + "|" + node_lyr

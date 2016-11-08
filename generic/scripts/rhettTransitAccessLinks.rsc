@@ -146,18 +146,18 @@ Macro "Initial Setup" (scenarioDirectory, hwyfile, rtsfile)
     // to prohibit walking on freeways, ramps, centroid connectors, HOV lanes, and transit-only links.
     // 
     // Facility Type:
-    //      1 – Freeways; 
-    //      2 – Expressways; 
-    //      3 – Class I arterials; 
-    //      4 – Class II arterials; 
-    //      5 – Class III arterials; 
-    //      6 – Class I collectors; 
-    //      7 – Class II collectors; 
-    //      8 – local streets;
-    //      9 – High speed Ramps; 
-    //      10 – Low Speed Ramps; 
-    //      12 – centroid connectors; 
-    //      13 – HOV lanes.
+    //      1 ï¿½ Freeways; 
+    //      2 ï¿½ Expressways; 
+    //      3 ï¿½ Class I arterials; 
+    //      4 ï¿½ Class II arterials; 
+    //      5 ï¿½ Class III arterials; 
+    //      6 ï¿½ Class I collectors; 
+    //      7 ï¿½ Class II collectors; 
+    //      8 ï¿½ local streets;
+    //      9 ï¿½ High speed Ramps; 
+    //      10 ï¿½ Low Speed Ramps; 
+    //      12 ï¿½ centroid connectors; 
+    //      13 ï¿½ HOV lanes.
     //      14 - Transit-only links
 
     Opts = null
@@ -543,8 +543,8 @@ Macro "PNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     hbin_pnrdist=scenarioDirectory+"\\outputs\\SP_pnrdist.bin"
     
     validlinks="ID>0"
-    ab_limita="[AB LIMITA]"
-    ba_limita="[AB LIMITA]"
+    ab_limita="[AB_LIMITA]"
+    ba_limita="[AB_LIMITA]"
 
     // Add the highway and route layers
     {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)  
@@ -655,9 +655,9 @@ Macro "Walk Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, 
     maxLinks=cond[1]
     maxLength=cond[2]
 
-    ab_lanea="[AB LaneA]"
-    ab_lanem="[AB LaneM]"
-    ab_lanep="[AB LaneP]"
+    ab_lanea="[AB_LANEA]"
+    ab_lanem="[AB_LANEM]"
+    ab_lanep="[AB_LANEP]"
 
     //Add the highway, route layers
     {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)  

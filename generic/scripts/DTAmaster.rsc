@@ -281,7 +281,7 @@ Macro "Process HighwayFile"(scenarioDirectory,DTA_DBD,odMatrix)
     Opts.Input.[Dataview Set] = {DTA_DBD + "|" + link_lyr, link_lyr,"AB Links","Select * where Dir<>-1"}
     Opts.Global.Fields = {"AB_CAP_AM15Min", "AB_2hr_AM_SC"}
     Opts.Global.Method = "Formula"
-    Opts.Global.Parameter = {"AB_CAP_AM2HR*"+I2S(TimePeriod)+"/120", "Max(1,"+I2S(StorageCapacity)+"*Length*[AB LANE])"}
+    Opts.Global.Parameter = {"AB_CAP_AM2HR*"+I2S(TimePeriod)+"/120", "Max(1,"+I2S(StorageCapacity)+"*Length*[AB_LANE])"}
     ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
 		if !ret_value then goto quit
 		
@@ -289,7 +289,7 @@ Macro "Process HighwayFile"(scenarioDirectory,DTA_DBD,odMatrix)
     Opts.Input.[Dataview Set] = {DTA_DBD + "|" + link_lyr, link_lyr,"BA Links","Select * where Dir<>1"}
     Opts.Global.Fields = {"BA_CAP_AM15Min", "BA_2hr_AM_SC"}
     Opts.Global.Method = "Formula"
-    Opts.Global.Parameter = {"BA_CAP_AM2HR*"+I2S(TimePeriod)+"/120", "Max(1,"+I2S(StorageCapacity)+"*Length*[BA LANE])"}
+    Opts.Global.Parameter = {"BA_CAP_AM2HR*"+I2S(TimePeriod)+"/120", "Max(1,"+I2S(StorageCapacity)+"*Length*[BA_LANE])"}
     ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
     if !ret_value then goto quit
 
@@ -384,9 +384,9 @@ Macro "Set 4Hr AM Peak Network"(scenarioDirectory, period, highway_net, DTA_DBD)
         Opts.Global.[Link Options] = {{"Length", {link_lyr+".Length", link_lyr+".Length", , , "False"}}, 
                       {"*_Speed", {link_lyr+".[AB Speed]", link_lyr+".[BA Speed]", , , "False"}}, 
      				  {"*_FACTYPE", {link_lyr+".[AB FACTYPE]", link_lyr+".[BA FACTYPE]", , , "False"}}, 
-     				  {"*_LIMITA", {link_lyr+".[AB LIMITA]", link_lyr+".[BA LIMITA]", , , "False"}}, 
-     				  {"*_LIMITM", {link_lyr+".[AB LIMITM]", link_lyr+".[BA LIMITM]", , , "False"}}, 
-     				  {"*_LIMITP", {link_lyr+".[AB LIMITP]", link_lyr+".[BA LIMITP]", , , "False"}}, 
+     				  {"*_LIMITA", {link_lyr+".[AB_LIMITA]", link_lyr+".[BA_LIMITA]", , , "False"}}, 
+     				  {"*_LIMITM", {link_lyr+".[AB_LIMITM]", link_lyr+".[BA_LIMITM]", , , "False"}}, 
+     				  {"*_LIMITP", {link_lyr+".[AB_LIMITP]", link_lyr+".[BA_LIMITP]", , , "False"}}, 
      				  {"*_FFTIME", {link_lyr+".AB_FFTIME", link_lyr+".BA_FFTIME", , , "False"}}, 
      				  {"*_CAPACITY", {link_lyr+"."+ab_capacity, link_lyr+"."+ba_capacity, , , "False"}},
      				  {"*_ALPHA", {link_lyr+".[AB_ALPHA]", link_lyr+".[BA_ALPHA]", , , "False"}},
