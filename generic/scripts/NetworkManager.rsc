@@ -21,7 +21,7 @@ Macro "Create Network"(path, Options, year)
     tempDirectory = path[10]
     // Kyle: reset the temp directory to be inside the scenario directory
     tempDirectory = ScenarioDirectory + "/outputs/temp/"
-    
+
     // Set the master network directory
     masterNetworkDirectory =path[4]
 
@@ -163,13 +163,15 @@ Macro "Create Network"(path, Options, year)
     UpdateProgressBar("Select from Master Line Layer",0)
     tempFile = RunMacro("Select from Master Line Layer",masterLine,extractLineString,tempDirectory)
 
-    // Run the Change Lanes macro
-    // tempFile = RunMacro("Change Lanes",tempFile,year)
-
-    // Kyle: instead of running the change lanes macro,
-    //       run the new management system
+    // Run the project management library in gisdk_tools
     UpdateProgressBar("Update Project Links",0)
-    tempFile = RunMacro("Update Project Links",tempFile,year,ScenarioDirectory)
+    RunMacro("Close All")
+    proj_csv = ScenarioDirectory + "/ProjectList.csv"
+    opts = null
+    opts.hwyDBD = tempFile
+    opts.projList = proj_csv
+    opts.masterDBD = masterLine
+    RunMacro("Select Projects", opts)
 
     extractPNRString = "("+String(currentYear)+">=[Start Year_PNR Lot] & "+String(currentYear)+"<=[End Year_PNR Lot])"
     //Assign the parking lots based on the start and end year
@@ -179,11 +181,6 @@ Macro "Create Network"(path, Options, year)
     // Export the highway line layer with the fields I want
     UpdateProgressBar("Export Highway Line Layer",0)
     RunMacro("Export Highway Line Layer",tempFile,scenarioLineFile)
-
-    // Kyle: once exported, delete the temp directory
-    // DeleteDatabase(tempFile)
-    // DeleteDatabase(masterLine)      // this is the copy in the temp folder
-    // RemoveDirectory(tempDirectory)
 
     extractRouteString = "[begin year] <= "+String(currentYear)+" and [end year]>= "+String(currentYear)
 
