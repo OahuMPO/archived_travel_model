@@ -170,8 +170,8 @@ Macro "Create Network"(path, Options, year)
     opts = null
     opts.hwyDBD = tempFile
     opts.projList = proj_csv
-    opts.masterDBD = masterLine
-    RunMacro("Select Projects", opts)
+    opts.masterDBD = masterNetworkDirectory + masterLineFile
+    RunMacro("Road Project Management", opts)
 
     extractPNRString = "("+String(currentYear)+">=[Start Year_PNR Lot] & "+String(currentYear)+"<=[End Year_PNR Lot])"
     //Assign the parking lots based on the start and end year
