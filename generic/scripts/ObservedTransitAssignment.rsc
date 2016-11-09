@@ -2,7 +2,7 @@
 *
 * Observed Transit Assignment
 *
-* This macro assigns observed transit trip tables to transit networks.  The transit networks and trip tables must exist in the 
+* This macro assigns observed transit trip tables to transit networks.  The transit networks and trip tables must exist in the
 * scenarioDirectory\outputs folder.  Transit network settings assumed set already (for skim-building).
 *
 * 4/08 - jef - pb
@@ -12,12 +12,12 @@
 *   rtsfile             Transit route file
 *
 **********************************************************************************************************************/
-Macro "Observed Transit Assignment" 
+Macro "Observed Transit Assignment"
 
     RunMacro("TCB Init")
     scenarioDirectory = "c:\\projects\\ompo\\conversion\\application\\2005_base"
     observedDirectory = "c:\\projects\\ompo\\conversion\\data\\observed_trips"
-    
+
     trn_pk=observedDirectory+"\\outputs\\transit_pk_obs.tnw"
     trn_op=observedDirectory+"\\outputs\\transit_op_obs.tnw"
 
@@ -26,7 +26,7 @@ Macro "Observed Transit Assignment"
     trn_wfxg_pk=observedDirectory+"\\outputs\\trn_wfxg_pk_obs.tnw"
     trn_pnr_pk=observedDirectory+"\\outputs\\trn_pnr_pk_obs.tnw"
     trn_knr_pk=observedDirectory+"\\outputs\\trn_knr_pk_obs.tnw"
- 
+
     trn_wloc_op=observedDirectory+"\\outputs\\trn_wloc_op_obs.tnw"
     trn_wexp_op=observedDirectory+"\\outputs\\trn_wexp_op_obs.tnw"
     trn_wfxg_op=observedDirectory+"\\outputs\\trn_wfxg_op_obs.tnw"
@@ -43,20 +43,20 @@ Macro "Observed Transit Assignment"
     PNRfile=scenarioDirectory+"\\outputs\\pnracc.mtx"
     KNRfile=scenarioDirectory+"\\outputs\\knracc.mtx"
     nzones=764
-  
-   
+
+
     // an array of networks
     trnnet={trn_wloc_pk, trn_wexp_pk, trn_pnr_pk, trn_knr_pk, trn_wloc_op, trn_wexp_op, trn_pnr_op, trn_knr_op}
 
     // an array of trip tables
     trntrip={trn_obtrips, trn_obtrips, trn_obtrips, trn_obtrips, trn_obtrips, trn_obtrips, trn_obtrips, trn_obtrips}
-    
+
     // an array of core names
     trnname={"Peak Walk Local", "Peak Walk Express", "Peak PNR", "Peak KNR", "Off-Peak Walk Local", "Off-Peak Walk Express", "Off-Peak PNR", "Off-Peak KNR" }
-    
-    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)  
-    {rte_lyr,stp_lyr,} = RunMacro("TCB Add RS Layers", rtsfile, "ALL", )   
-    
+
+    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)
+    {rte_lyr,stp_lyr,} = RunMacro("TCB Add RS Layers", rtsfile, "ALL", )
+
     SetLayer(node_lyr)
     n = SelectByQuery("centroid", "Several","Select * where ID <= "+String(nzones),)
 
@@ -74,8 +74,8 @@ Macro "Observed Transit Assignment"
     Opts.Global.[Network Options].[Walk Mode] = {link_lyr+".Mode_ID", link_lyr+".Mode_ID"}
 
     Opts.Global.[Network Options].[Link Attributes] = {
-        {"Length", {link_lyr+".Length", link_lyr+".Length"}, "SUMFRAC"}, 
-        {"Dir", {link_lyr+".Dir", link_lyr+".Dir"}, "SUMFRAC"}, 
+        {"Length", {link_lyr+".Length", link_lyr+".Length"}, "SUMFRAC"},
+        {"Dir", {link_lyr+".Dir", link_lyr+".Dir"}, "SUMFRAC"},
         {"WALKTIME", {link_lyr+".WALKTIME", link_lyr+".WALKTIME"}, "SUMFRAC"},
         {"[AB_PKTIME / BA_PKTIME]", {link_lyr+".AB_PKTIME", link_lyr+".BA_PKTIME"}, "SUMFRAC"},
         {"[AB_OPTIME / BA_OPTIME]", {link_lyr+".AB_OPTIME", link_lyr+".BA_OPTIME"}, "SUMFRAC"},
@@ -83,19 +83,19 @@ Macro "Observed Transit Assignment"
         {"[AB_OPTRNTIME / BA_OPTRNTIME]", {link_lyr+".AB_OPTRNTIME", link_lyr+".BA_OPTRNTIME"}, "SUMFRAC"},
         {"MODE_ID", {link_lyr+".MODE_ID", link_lyr+".MODE_ID"}, "SUMFRAC"}
         }
-     
+
      //must have the same number of street and link attributes
      Opts.Global.[Network Options].[Street Attributes] = {
-        {"Length", {link_lyr+".Length", link_lyr+".Length"}}, 
-        {"Dir", {link_lyr+".Dir", link_lyr+".Dir"}}, 
+        {"Length", {link_lyr+".Length", link_lyr+".Length"}},
+        {"Dir", {link_lyr+".Dir", link_lyr+".Dir"}},
         {"WALKTIME", {link_lyr+".WALKTIME", link_lyr+".WALKTIME"}},
-        {"[AB_PKTIME / BA_PKTIME]", {link_lyr+".AB_PKTIME", link_lyr+".BA_PKTIME"}}, 
-        {"[AB_OPTIME / BA_OPTIME]", {link_lyr+".AB_OPTIME", link_lyr+".BA_OPTIME"}}, 
-        {"[AB_PKTRNTIME / BA_PKTRNTIME]", {link_lyr+".AB_PKTRNTIME", link_lyr+".BA_PKTRNTIME"}}, 
-        {"[AB_OPTRNTIME / BA_OPTRNTIME]", {link_lyr+".AB_OPTRNTIME", link_lyr+".BA_OPTRNTIME"}}, 
+        {"[AB_PKTIME / BA_PKTIME]", {link_lyr+".AB_PKTIME", link_lyr+".BA_PKTIME"}},
+        {"[AB_OPTIME / BA_OPTIME]", {link_lyr+".AB_OPTIME", link_lyr+".BA_OPTIME"}},
+        {"[AB_PKTRNTIME / BA_PKTRNTIME]", {link_lyr+".AB_PKTRNTIME", link_lyr+".BA_PKTRNTIME"}},
+        {"[AB_OPTRNTIME / BA_OPTRNTIME]", {link_lyr+".AB_OPTRNTIME", link_lyr+".BA_OPTRNTIME"}},
         {"MODE_ID", {link_lyr+".MODE_ID", link_lyr+".MODE_ID"}}
         }
-     	
+
     Opts.Global.[Network Options].[Route Attributes].Route_ID = {rte_lyr+".Route_ID"}
     Opts.Global.[Network Options].[Route Attributes].Mode = {rte_lyr+".Mode"}
     Opts.Global.[Network Options].[Route Attributes].AM_Headway = {rte_lyr+".AM_Headway"}
@@ -130,7 +130,7 @@ Macro "Observed Transit Assignment"
     modes_vw = pth[3]
     pth = SplitPath(xferfile)
     xfer_vw = pth[3]
-    
+
     //  PEAK Walk Access Transit Network Setting PF
     CopyFile(trn_pk, trn_wloc_pk)
     Opts = null
@@ -145,9 +145,9 @@ Macro "Observed Transit Assignment"
     Opts.Field.[Mode Used] = modes_vw+".Walk_Local"
     Opts.Field.[Mode Access] = modes_vw+".Access"
     Opts.Field.[Mode Egress] = modes_vw+".Egress"
-    Opts.Field.[Mode Imp Weight]   = modes_vw + ".Local_Weight" 
-    Opts.Field.[Mode IWait Weight] = modes_vw + ".IWait_Weight" 
-    Opts.Field.[Mode XWait Weight] = modes_vw + ".XWait_Weight" 
+    Opts.Field.[Mode Imp Weight]   = modes_vw + ".Local_Weight"
+    Opts.Field.[Mode IWait Weight] = modes_vw + ".IWait_Weight"
+    Opts.Field.[Mode XWait Weight] = modes_vw + ".XWait_Weight"
     Opts.Field.[Inter-Mode Xfer From] = xfer_vw+".FROM"
     Opts.Field.[Inter-Mode Xfer To] = xfer_vw+".TO"
     Opts.Field.[Inter-Mode Xfer Stop] = xfer_vw+".STOP"
@@ -279,23 +279,23 @@ Macro "Observed Transit Assignment"
     Opts.Field.[Mode Used] = modes_vw+".KNR"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
     if !ret_value then goto quit
-    
+
     dim onOffTables[trnnet.length]
-    
+
     // for every network
     for i = 1 to trnnet.length do
-    
+
         path = SplitPath(trntrip[i])
         tripFileName = path[3]
         path = SplitPath(trnname[i])
         tripCoreName = path[3]
-        
+
         //output file path/names
         outputFlowTable = observedDirectory+"\\outputs\\"+tripFileName+"_"+tripCoreName+"_FLOW.bin"
         outputWalkFlowTable = observedDirectory+"\\outputs\\"+tripFileName+"_"+tripCoreName+"_WLKFLOW.bin"
         outputOnOffTable = observedDirectory+"\\outputs\\"+tripFileName+"_"+tripCoreName+"_ONOFF.bin"
         onOffTables[i] = outputOnOffTable
-        
+
         // assign
         Opts = null
         Opts.Input.[Transit RS] = rtsfile
@@ -309,10 +309,9 @@ Macro "Observed Transit Assignment"
         if !ret_value then goto quit
 
     end
-    
-    ret_value = RunMacro("Close All")
-    if !ret_value then goto quit
-    
+
+    RunMacro("Close All")
+
     ret_value = RunMacro("Collapse OnOffs By Route", onOffTables, hwyfile, rtsfile)
     if !ret_value then goto quit
 
@@ -320,36 +319,11 @@ Macro "Observed Transit Assignment"
         Return( RunMacro("TCB Closing", ret_value, True ) )
 
 EndMacro
-//*************************************************************
-//
-// A utility macro that will close all open map windows
-//
-//*************************************************************
-Macro "Close All"
-    maps = GetMapNames()
-    
-    if(maps = null) then goto view
-    for i = 1 to maps.length do
-	    CloseMap(maps[i])
-    end
-    
-    view:
-    views = GetViewNames()
-    if(views = null) then goto quit
-    for i = 1 to views.length do
-        if( !Left(views[i],2)="c:") then CloseView(views[i])
-    end
-
-    return(RunMacro("G30 File Close All"))
-
-    quit:
-    Return(1)
-EndMacro
 /*************************************************************
 *
 * A macro that will collapse transit on-offs by route and append
 * route name.
-* 
+*
 * Arguments
 *   onOffTables     An array of on-off tables
 *   hwyfile         A highway line layer
@@ -357,9 +331,9 @@ EndMacro
 *
 *************************************************************/
 Macro "Collapse OnOffs By Route" (onOffTables, hwyfile, rtsfile)
-    
-    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)  
-    {rte_lyr,stp_lyr,} = RunMacro("TCB Add RS Layers", rtsfile, "ALL", )   
+
+    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)
+    {rte_lyr,stp_lyr,} = RunMacro("TCB Add RS Layers", rtsfile, "ALL", )
 
     fields = {
         {"On","Sum",},
@@ -372,32 +346,32 @@ Macro "Collapse OnOffs By Route" (onOffTables, hwyfile, rtsfile)
         {"WalkTransferOff","Sum",},
         {"EgressOff","Sum",}
     }
-    
+
     // for all on off tables
     for i = 1 to onOffTables.length do
 
         onOffView = OpenTable("OnOffTable", "FFB", {onOffTables[i], null})
         path = SplitPath(onOffTables[i])
         outFile = path[1]+path[2]+path[3]+"_COLL.bin"
-        
+
         fields = GetFields(onOffView, "All")
-        
+
         //include all fields in each table except for STOP and ROUTE
         collFields = null
-        for j = 1 to fields[1].length do 
-            
+        for j = 1 to fields[1].length do
+
             if(fields[1][j] !="STOP" and fields[1][j]!= "ROUTE") then do
-            
+
                 collFields = collFields + {{fields[1][j],"Sum",}}
-            
+
             end
-       end 
-        
+       end
+
         // Collapse stops out of the table by collapsing on ROUTE
         rslt = AggregateTable("CollapsedView", onOffView+"|", "FFB", outFile, "ROUTE", collFields, )
 
         CloseView(onOffView)
-        
+
         // Join the route layer for route name and other potentially useful data
         onOffCollView = OpenTable("OnOffTableColl", "FFB", {outFile})
         joinedView = JoinViews("OnOffJoin", onOffCollView+".Route", rte_lyr+".Route_ID",)

@@ -6,7 +6,6 @@ ConvertMatricesToBinary.rsc
 ConvertMatricesToCSV.rsc
 ConvertBinaryToMtx.rsc
 CopyFiles.rsc
-CloseAll.rsc
 RecodeValues.rsc
 HighwaySkim.rsc
 TransitSkim.rsc
@@ -25,7 +24,6 @@ CheckConvergence.rsc
 OMPOGUI.rsc
 tazmanager.rsc
 CopyFiles.rsc
-CloseAll.rsc
 NetworkManager.rsc
 AppendAssign.rsc
 DistrictSummaries.rsc

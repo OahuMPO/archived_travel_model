@@ -119,7 +119,7 @@ dbox "Oahu Model"
 	 	     maps = GetMapNames()
 	 	     views = GetViewNames()
 	 	     if((maps <> null) or (views <> null)) then do
-	 	         ret_value = RunMacro("Close All")
+	 	         RunMacro("Close All")
 				 end
 				 else do
 	 	 	 	      	// add the hwyfile, and make the route system refer to it
@@ -146,7 +146,7 @@ dbox "Oahu Model"
 	 	     maps = GetMapNames()
 	 	     views = GetViewNames()
 	 	     if((maps <> null) or (views <> null)) then do
-   	 	         ret_value = RunMacro("Close All")
+   	 	         RunMacro("Close All")
 				 end
 				 else do
                 scenarioTAZFile = path[2] + "\\inputs\\taz\\Scenario TAZ Layer.DBD"

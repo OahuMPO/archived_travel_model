@@ -1,19 +1,19 @@
 Macro "Highway Assignment Summary"
 
 //    RunMacro("TCB Init")
-    
+
     scenarioDirectory = "C:\\Projects\\Ompo\\Conversion\\Application\\2005-5"
     genericDirectory = "C:\\Projects\\Ompo\\Conversion\\Application\\generic"
-    
+
     RunMacro("AllDay", scenarioDirectory)
-	// This section reads the line layer, count layer, and assignment results table 
+	// This section reads the line layer, count layer, and assignment results table
 	//and then combines the three databases into one single dataview
-	
+
 	// Open the taz layer, which contains the district field
 	TAZ_geography = genericDirectory+"\\inputs\\taz\\Master TAZ Layer.dbd"
 	TAZlayers = GetDBLayers(TAZ_geography)
 
-	
+
 	//Open the scenario line layer and set the link layer as active layer
 	line_geography = genericDirectory+"\\inputs\\master_network\\Oahu Network 102907.dbd"
 	llayers = GetDBLayers(line_geography)
@@ -37,7 +37,7 @@ Macro "Highway Assignment Summary"
 	Asn = OpenTable("Asn", "FFB", {DayAssign})
 	VIEW1 = JoinViews("VIEW1", llayers[2]+".ID", Asn + ".ID1",)
 
-	//Open the geographic layer containing the count data 
+	//Open the geographic layer containing the count data
 	Count_geography = genericDirectory+"\\counts\\2005 OahuFinalCounts_mar2508.dbd"
 	Clayers = GetDBLayers(Count_geography)
 	map = RunMacro("G30 new map",Count_geography, "False")
@@ -49,8 +49,8 @@ Macro "Highway Assignment Summary"
     dim Dir[1], CountID[1], ABFACTYPE[1], BAFACTYPE[1], ABATYPE[1], BAATYPE[1], District[1], LinkID[1]
     dim abflow[1], abVMT[1], baflow[1], baVMT[1], totflow[1], totVMT[1], AADT[1]
     dim Scr_Line[1]
-        
-//  Create Vectors/Arrays to read data from tables/Dataviews        
+
+//  Create Vectors/Arrays to read data from tables/Dataviews
     Dir[1] = GetDataVector(VIEW2 + "|", "Dir",)                                     // Direction of the Link
     LinkID[1] = GetDataVector(VIEW2 + "|", "[Oahu Links].ID",)				    // Link ID number
     CountID[1] = VectorToArray(GetDataVector(VIEW2 + "|", "[CountID]",))            // ID of count station on each Link
@@ -67,25 +67,25 @@ Macro "Highway Assignment Summary"
     AADT[1] = GetDataVector(VIEW2 + "|", "[24 Hour Volume]",)                                   // Count Data
     Scr_Line[1] = VectorToArray(GetDataVector(VIEW2 + "|", "Scr_Line",))                               // Screenline data
     District[1] = VectorToArray(GetDataVector(VIEW2 + "|", "District",))
-    RunMacro("Close All") 
-    
+    RunMacro("Close All")
+
 //    Fill the missing values with zeros to make computations(finding maximum values) easier
     NumRec = Dir[1].length
     for j = 1 to NumRec do
         if CountID[1][j] = "" then
-           CountID[1][j] = 0 
+           CountID[1][j] = 0
         if ABFACTYPE[1][j] = "" then
-           ABFACTYPE[1][j] = 0 
+           ABFACTYPE[1][j] = 0
         if ABATYPE[1][j] = "" then
-           ABATYPE[1][j] = 0 
+           ABATYPE[1][j] = 0
         if Scr_Line[1][j] = "" then
-           Scr_Line[1][j] = 0 
+           Scr_Line[1][j] = 0
         if District[1][j] = "" then
-           District[1][j] = 0 
+           District[1][j] = 0
         if ABFACTYPE[1][j] = 197 then
-           ABFACTYPE[1][j] = 15 
+           ABFACTYPE[1][j] = 15
         if ABATYPE[1][j] = 197 then
-           ABATYPE[1][j] = 15 
+           ABATYPE[1][j] = 15
         totflow[1][j] = RealToInt(totflow[1][j])
     end
 
@@ -97,27 +97,27 @@ Macro "Highway Assignment Summary"
     MaxScrLine = RealToInt(ArrayMax(Scr_Line[1]))
     MaxDistrict = RealToInt(ArrayMax(District[1]))
 
-    
+
 //    Fill zeros with missing values after computations (finding maximum values) are done
     for j = 1 to NumRec do
         if CountID[1][j] = 0 then
-           CountID[1][j] = "" 
+           CountID[1][j] = ""
         if ABFACTYPE[1][j] = 0 then
-           ABFACTYPE[1][j] = "" 
+           ABFACTYPE[1][j] = ""
         if ABATYPE[1][j] = 0 then
-           ABATYPE[1][j] = "" 
+           ABATYPE[1][j] = ""
         if Scr_Line[1][j] = 0 then
-           Scr_Line[1][j] = "" 
+           Scr_Line[1][j] = ""
         if District[1][j] = 0 then
-           District[1][j] = "" 
+           District[1][j] = ""
     end
-    
-//  Initialize the Vectors that are used to estimate the statistics for comparing observed and assigned flows   
+
+//  Initialize the Vectors that are used to estimate the statistics for comparing observed and assigned flows
     Dim  NumLinkCS[MaxFACTYPE + 4,MaxAREATYPE + 1], Obs_Link_Count[MaxFACTYPE + 4,MaxAREATYPE + 1], Est_Link_Count[MaxFACTYPE + 4,MaxAREATYPE + 1]
     Dim  Obs_Sta_Count[5,MaxCountID], Est_Sta_Count[MaxCountID]
-    Dim  Diff_Count[MaxFACTYPE + 4,MaxAREATYPE + 1], Abs_Diff_Count[MaxFACTYPE + 4,MaxAREATYPE + 1], Relative_Error[MaxFACTYPE + 4,MaxAREATYPE + 1], RMSE[4,MaxFACTYPE + 4,MaxAREATYPE + 1] 
+    Dim  Diff_Count[MaxFACTYPE + 4,MaxAREATYPE + 1], Abs_Diff_Count[MaxFACTYPE + 4,MaxAREATYPE + 1], Relative_Error[MaxFACTYPE + 4,MaxAREATYPE + 1], RMSE[4,MaxFACTYPE + 4,MaxAREATYPE + 1]
     Dim  Volume_Groups[8,3]
-    
+
     Volume_Groups = {
         {"0-5,000",0,5000},
         {"5,000-10,000",5001,10000},
@@ -147,21 +147,21 @@ Macro "Highway Assignment Summary"
         end
     end
 
-    
+
     dim Links_Per_Station[MaxCountID], ScreenLines[10, MaxScrLine + 3]
     Dim Dist[10, MaxDistrict + 1]
 
     for i = 1 to MaxCountID do
         Links_Per_Station[i] = 0
     end
-    
+
     for i = 1 to MaxScrLine + 3 do
         ScreenLines[1][i] = IntToString(i)
         for j = 2 to 10 do
             ScreenLines[j][i] = 0
         end
     end
-    
+
     for i = 1 to MaxDistrict + 1 do
         Dist[1][i] = IntToString(i)
         for j = 2 to 10 do
@@ -182,13 +182,13 @@ Macro "Highway Assignment Summary"
             end
 
 //            if Scr_Line[1][i] <> "" then do
-//                ScreenLines[2][Scr_Line[1][i]] = ScreenLines[2][Scr_Line[1][i]] + 1  
+//                ScreenLines[2][Scr_Line[1][i]] = ScreenLines[2][Scr_Line[1][i]] + 1
 //            end
 
 //            if District[1][i] <> "" then do
-//                Dist[2][District[1][i]] = Dist[2][District[1][i]] + 1  
+//                Dist[2][District[1][i]] = Dist[2][District[1][i]] + 1
 //            end
-                      
+
             if Links_Per_Station[CountID[1][i]] < 1 then do
 //              Obs_Link_Count[FacType][ATYPE] =  Obs_Link_Count[FacType][ATYPE] + AADT[1][i]
                 Obs_Sta_Count[2][CountID[1][i]] =  AADT[1][i]
@@ -203,7 +203,7 @@ Macro "Highway Assignment Summary"
                 Est_Sta_Count[CountID[1][i]] = totflow[1][i]
                 NumLinkCS[FacType][ATYPE] = NumLinkCS[FacType][ATYPE] + 1
             end
-            
+
             if Links_Per_Station[CountID[1][i]] >= 1 then do
 //                CS_Counte = Links_Per_Station[CountID[1][i]]
                 if Obs_Sta_Count[1][CountID[1][i]] <> FacType then do
@@ -225,13 +225,13 @@ Macro "Highway Assignment Summary"
                     else do
                         NumLinkCS[FacType][ATYPE] = NumLinkCS[FacType][ATYPE] + 1
                     end
-                        
+
                 end
                 Est_Sta_Count[CountID[1][i]] = Est_Sta_Count[CountID[1][i]] + totflow[1][i]
-            end 
+            end
 
-            Links_Per_Station[CountID[1][i]] = Links_Per_Station[CountID[1][i]] + 1 
-            
+            Links_Per_Station[CountID[1][i]] = Links_Per_Station[CountID[1][i]] + 1
+
 //            Est_Link_Count[FacType][ATYPE] = Est_Link_Count[FacType][ATYPE] + totflow[1][i]
 //            Est_Sta_Count[CountID[1][i]] = Est_Sta_Count[CountID[1][i]] + totflow[1][i]
         end
@@ -242,7 +242,7 @@ Macro "Highway Assignment Summary"
 //  Compute the Observed and estimated flows by AreaType & Facility type
 //          Which are: Obs_Link_Count & Est_Link_Count
 //                           using
-//   Observed and estimated flows by count station 
+//   Observed and estimated flows by count station
 //          Which are:  Obs_Sta_Count & Est_Sta_Count
     for i = 1 to MaxCountID do
         if Obs_Sta_Count[2][i] <> null then do
@@ -295,26 +295,26 @@ Macro "Highway Assignment Summary"
         Vol_Groups[ArrayLength(Volume_Groups) + 1][10] = Vol_Groups[ArrayLength(Volume_Groups) + 1][10] + Vol_Groups[j][10]
     end
 
-    
+
 // Format the Volume groups table
     for i = 1 to ArrayLength(Volume_Groups) + 1 do
         if Vol_Groups[i][2] <> 0 then do
             Vol_Groups[i][5] = Format(Vol_Groups[i][4]/Vol_Groups[i][3], "*.00")
-            Vol_Groups[i][6] = Format((Vol_Groups[i][4]- Vol_Groups[i][3])/Vol_Groups[i][3], ",*.00 %")        
+            Vol_Groups[i][6] = Format((Vol_Groups[i][4]- Vol_Groups[i][3])/Vol_Groups[i][3], ",*.00 %")
             Vol_Groups[i][7] = Format(((Sqrt(Vol_Groups[i][8]/Vol_Groups[i][10]))/(Vol_Groups[i][9]/Vol_Groups[i][10])), ",*.00 %")
         end
             Vol_Groups[i][2] = Format(Vol_Groups[i][2], ",*")
             Vol_Groups[i][3] = Format(Vol_Groups[i][3], ",*")
             Vol_Groups[i][4] = Format(Vol_Groups[i][4], ",*")
     end
-            
-//  Compute the Aggregate statistics(Difference: "Diff_Count[i][j]", Absolute-Difference: Abs_Diff_Count[i][j], Relative Error: "Relative_Error[i][j]") 
+
+//  Compute the Aggregate statistics(Difference: "Diff_Count[i][j]", Absolute-Difference: Abs_Diff_Count[i][j], Relative Error: "Relative_Error[i][j]")
 //  for comparing the observed and estimated flows
     for i = 1 to MaxFACTYPE + 3 do
         for j = 1 to MaxAREATYPE do
             Diff_Count[i][j] = (Est_Link_Count[i][j] - Obs_Link_Count[i][j])
             Abs_Diff_Count[i][j] = Abs(Est_Link_Count[i][j] - Obs_Link_Count[i][j])
-            if Obs_Link_Count[i][j] <> 0 then 
+            if Obs_Link_Count[i][j] <> 0 then
                 Relative_Error[i][j] = ((Est_Link_Count[i][j] - Obs_Link_Count[i][j])/Obs_Link_Count[i][j])
             else do
                 Relative_Error[i][j] = 0
@@ -332,7 +332,7 @@ Macro "Highway Assignment Summary"
                 RMSE[4][i][j] = 0
             end
         end
-    end    
+    end
 
 
 // Compute the marginal statistics for each Facility Type
@@ -347,7 +347,7 @@ for i = 1 to MaxFACTYPE + 3 do
     end
         Diff_Count[i][MaxAREATYPE + 1] = Est_Link_Count[i][MaxAREATYPE + 1] - Obs_Link_Count[i][MaxAREATYPE + 1]
         Abs_Diff_Count[i][MaxAREATYPE + 1] = Abs(Est_Link_Count[i][MaxAREATYPE + 1] - Obs_Link_Count[i][MaxAREATYPE + 1])
-        if Obs_Link_Count[i][MaxAREATYPE + 1] <> 0 then 
+        if Obs_Link_Count[i][MaxAREATYPE + 1] <> 0 then
             Relative_Error[i][MaxAREATYPE + 1] = (Est_Link_Count[i][MaxAREATYPE + 1] - Obs_Link_Count[i][MaxAREATYPE + 1])/Obs_Link_Count[i][MaxAREATYPE + 1]
         else do
             Relative_Error[i][MaxAREATYPE + 1] = 0
@@ -371,7 +371,7 @@ for j = 1 to MaxAREATYPE + 1 do
     end
         Diff_Count[MaxFACTYPE + 4][j] = Est_Link_Count[MaxFACTYPE + 4][j] - Obs_Link_Count[MaxFACTYPE + 4][j]
         Abs_Diff_Count[MaxFACTYPE + 4][j] = Abs(Est_Link_Count[MaxFACTYPE + 4][j] - Obs_Link_Count[MaxFACTYPE + 4][j])
-        if Obs_Link_Count[MaxFACTYPE + 4][j] <> 0 then 
+        if Obs_Link_Count[MaxFACTYPE + 4][j] <> 0 then
                 Relative_Error[MaxFACTYPE + 4][j] = (Est_Link_Count[MaxFACTYPE + 4][j] - Obs_Link_Count[MaxFACTYPE + 4][j])/Obs_Link_Count[MaxFACTYPE + 4][j]
         else do
             Relative_Error[MaxFACTYPE + 4][j] = 0
@@ -391,7 +391,7 @@ end
     ScreenLines[1][MaxScrLine + 2] = "No-Screenline"
     ScreenLines[1][MaxScrLine + 3] = "Total"
     Dist[1][MaxDistrict + 1] = "Total"
-    
+
 //  Calculate the cumulative statistics for the screenline table and the district table
     for i = 2 to 4 do
         for j = 1 to MaxScrLine do
@@ -414,8 +414,8 @@ end
             Dist[i][MaxDistrict + 1] = Dist[i][MaxDistrict + 1] + Dist[i][j]
         end
     end
-           
-    ScreenLines[2][MaxScrLine + 3] = NumLinkCS[MaxFACTYPE + 4][MaxAREATYPE + 1] 
+
+    ScreenLines[2][MaxScrLine + 3] = NumLinkCS[MaxFACTYPE + 4][MaxAREATYPE + 1]
     ScreenLines[3][MaxScrLine + 3] = Obs_Link_Count[MaxFACTYPE + 4][MaxAREATYPE + 1]
     ScreenLines[4][MaxScrLine + 3] = Est_Link_Count[MaxFACTYPE + 4][MaxAREATYPE + 1]
     ScreenLines[2][MaxScrLine + 2] = NumLinkCS[MaxFACTYPE + 4][MaxAREATYPE + 1] - ScreenLines[2][MaxScrLine + 1]
@@ -427,9 +427,9 @@ end
     ScreenLines[8][MaxScrLine + 2] = RMSE[1][MaxFACTYPE + 4][MaxAREATYPE + 1] - ScreenLines[8][MaxScrLine + 1]
     ScreenLines[9][MaxScrLine + 2] = RMSE[2][MaxFACTYPE + 4][MaxAREATYPE + 1] - ScreenLines[9][MaxScrLine + 1]
     ScreenLines[10][MaxScrLine + 2] = RMSE[3][MaxFACTYPE + 4][MaxAREATYPE + 1] - ScreenLines[10][MaxScrLine + 1]
-              
+
     for i = 1 to MaxScrLine + 3 do
-        if  ScreenLines[3][i] <> 0 then do            
+        if  ScreenLines[3][i] <> 0 then do
             ScreenLines[5][i] = Format((ScreenLines[4][i]/ScreenLines[3][i]),"*.00")
             ScreenLines[6][i] = Format(((ScreenLines[4][i] - ScreenLines[3][i])/(ScreenLines[3][i])),"*.00 %")
             ScreenLines[7][i] = Format(((Sqrt(ScreenLines[8][i]/ScreenLines[10][i]))/(ScreenLines[9][i]/ScreenLines[10][i])), ",*.00 %")
@@ -441,11 +441,11 @@ end
 	end
             ScreenLines[2][i] = Format(ScreenLines[2][i], ",*")
             ScreenLines[3][i] = Format(ScreenLines[3][i], ",*")
-            ScreenLines[4][i] = Format(ScreenLines[4][i], ",*")      
+            ScreenLines[4][i] = Format(ScreenLines[4][i], ",*")
     end
 
     for i = 1 to MaxDistrict + 1 do
-        if  Dist[3][i] <> 0 then do            
+        if  Dist[3][i] <> 0 then do
             Dist[5][i] = (Dist[4][i]/Dist[3][i])
             Dist[6][i] = ((Dist[4][i] - Dist[3][i])/(Dist[3][i]))
             Dist[7][i] = ((Sqrt(Dist[8][i]/Dist[10][i]))/(Dist[9][i]/Dist[10][i]))
@@ -457,28 +457,28 @@ end
 	    Dist[6][i] = Format(Dist[6][i],"*.00 %")
 	    Dist[7][i] = Format(Dist[7][i], ",*.00 %")
     end
-              
-// Format the Statistics appropriately, this has two advantages 
-// (1) Easy to read 
+
+// Format the Statistics appropriately, this has two advantages
+// (1) Easy to read
 // (2) Will convert the numeric values to string, so "+ operator" will concatenate the values later
 for i = 1 to MaxFACTYPE + 4 do
     for j = 1 to MaxAREATYPE + 1 do
         Obs_Link_Count[i][j] = Format(Obs_Link_Count[i][j], ",*")
-        Est_Link_Count[i][j] = Format(Est_Link_Count[i][j], ",*") 
+        Est_Link_Count[i][j] = Format(Est_Link_Count[i][j], ",*")
         Diff_Count[i][j] = Format(Diff_Count[i][j], ",+/-*")
         Relative_Error[i][j] = Format(Relative_Error[i][j], ",+/-*.00 %")
         RMSE[4][i][j] = Format(RMSE[4][i][j],  ",+/-*.00 %")
     end
 end
 
-//  FOrmat the Labels, blank[i][1] is label for Table "i"     
+//  FOrmat the Labels, blank[i][1] is label for Table "i"
 	dim blank[7,MaxFACTYPE + 5]
 	dim blank2[MaxScrLine + 4]
 	dim blank4[MaxDistrict + 2]
 	dim blank3[ArrayLength(Volume_Groups) + 2]
   dim Facility[MaxFACTYPE + 4]
     Facility = {{"1", "Freeways"},{"2", "Expressways"},{"3", "Class I arterials"},{"4", "Class II arterials"},{"5", "Class III arterials"},{"6", "Class I collectors"},{"7", "Class II collectors"},{"8", "local streets"},{"9", "High speed Ramps"},{"10", "Low Speed Ramps"},{"11", "Freeway and Ramps"},{"12", "centroid connectors"},{"13", "HOV lanes"},{"14", "Rail"},{"15", "Walk Access"},{"16","Freeway and HOV"},{"17","Expressway and Ramps"},{"All","All Facility Types"}}
-	  blank[1][1] = "Facility Type                 1         2         3         4         5         6         7         8         All Areas"    		
+	  blank[1][1] = "Facility Type                 1         2         3         4         5         6         7         8         All Areas"
     blank[2][1] = "Facility Type	              1         2         3         4         5         6         7         8         All Areas"
     blank[3][1] = "Facility Type	              1         2         3         4         5         6         7         8         All Areas"
     blank[4][1] = "Facility Type	              1         2         3         4         5         6         7         8         All Areas"
@@ -488,65 +488,65 @@ end
     blank2[1] = "Screenlines   	    Links               Observed Count      Estimated Count     Est/Obs Ratio       Relative Error      %RMSE"
     blank4[1] = "Districts     	    Links               Observed Count      Estimated Count     Est/Obs Ratio       Relative Error      %RMSE"
     blank3[1] = "Observed ADT Range Links               Observed Count      Estimated Count     Est/Obs Ratio       Relative Error      %RMSE"
-        
-            
+
+
 //  For ease of reading, the values are written in a table format, where each cell in the table has a fixed width "w"
 //  The empty space of width = w - length of the cell is filled with spaces
     dim temp[2,MaxFACTYPE + 5]
     for i = 2 to MaxFACTYPE + 5 do
-        for j = 1 to (5 - Len(Facility[i-1][1])) do temp[1][i-1] = temp[1][i-1] + " " end	
-        for j = 1 to (25 - Len(Facility[i-1][2])) do temp[2][i-1] = temp[2][i-1] + " " end	
-        
+        for j = 1 to (5 - Len(Facility[i-1][1])) do temp[1][i-1] = temp[1][i-1] + " " end
+        for j = 1 to (25 - Len(Facility[i-1][2])) do temp[2][i-1] = temp[2][i-1] + " " end
+
         blank[1][i]= Facility[i-1][1] + temp[1][i-1] + Facility[i-1][2] + temp[2][i-1]
-        blank[2][i]= Facility[i-1][1] + temp[1][i-1] + Facility[i-1][2] + temp[2][i-1]       
+        blank[2][i]= Facility[i-1][1] + temp[1][i-1] + Facility[i-1][2] + temp[2][i-1]
         blank[3][i]= Facility[i-1][1] + temp[1][i-1] + Facility[i-1][2] + temp[2][i-1]
         blank[4][i]= Facility[i-1][1] + temp[1][i-1] + Facility[i-1][2] + temp[2][i-1]
-        blank[5][i]= Facility[i-1][1] + temp[1][i-1] + Facility[i-1][2] + temp[2][i-1]       
+        blank[5][i]= Facility[i-1][1] + temp[1][i-1] + Facility[i-1][2] + temp[2][i-1]
         blank[6][i]= Facility[i-1][1] + temp[1][i-1] + Facility[i-1][2] + temp[2][i-1]
         blank[7][i]= Facility[i-1][1] + temp[1][i-1] + Facility[i-1][2] + temp[2][i-1]
     	for j = 1 to MaxAREATYPE + 1 do
-    		blank[1][i]=blank[1][i] + IntToString(NumLinkCS[i-1][j]) 
+    		blank[1][i]=blank[1][i] + IntToString(NumLinkCS[i-1][j])
     		for k = 1 to (10 - Len(IntToString(NumLinkCS[i-1][j]))) do blank[1][i] = blank[1][i] + " " end
-		
-    		blank[2][i]=blank[2][i] + Obs_Link_Count[i-1][j] 
+
+    		blank[2][i]=blank[2][i] + Obs_Link_Count[i-1][j]
     		for k = 1 to (10 - Len(Obs_Link_Count[i-1][j])) do blank[2][i] = blank[2][i] + " " end
 
-    		blank[3][i]=blank[3][i] + Est_Link_Count[i-1][j] 
+    		blank[3][i]=blank[3][i] + Est_Link_Count[i-1][j]
     		for k = 1 to (10 - Len(Est_Link_Count[i-1][j])) do blank[3][i] = blank[3][i] + " " end
 
-    		blank[4][i]=blank[4][i] + (Diff_Count[i-1][j]) 
+    		blank[4][i]=blank[4][i] + (Diff_Count[i-1][j])
     		for k = 1 to (10 - Len((Diff_Count[i-1][j]))) do blank[4][i] = blank[4][i] + " " end
-		
-    		blank[5][i]=blank[5][i] + IntToString(RealToInt(Abs_Diff_Count[i-1][j])) 
+
+    		blank[5][i]=blank[5][i] + IntToString(RealToInt(Abs_Diff_Count[i-1][j]))
     		for k = 1 to (10 - Len(IntToString(RealToInt(Abs_Diff_Count[i-1][j])))) do blank[5][i] = blank[5][i] + " " end
 
-    		blank[6][i]=blank[6][i] + Relative_Error[i-1][j] 
+    		blank[6][i]=blank[6][i] + Relative_Error[i-1][j]
     		for k = 1 to (10 - Len(Relative_Error[i-1][j])) do blank[6][i] = blank[6][i] + " " end
-            
-    		blank[7][i]=blank[7][i] + RMSE[4][i-1][j] 
+
+    		blank[7][i]=blank[7][i] + RMSE[4][i-1][j]
     		for k = 1 to (10 - Len(RMSE[4][i-1][j])) do blank[7][i] = blank[7][i] + " " end
         end
-                       
+
     end
 
         for i = 2 to MaxScrLine + 4 do
             for j = 1 to 7 do
         		blank2[i] = blank2[i] + ScreenLines[j][i-1]
-        		for k = 1 to (20 - Len((ScreenLines[j][i-1]))) do blank2[i] = blank2[i] + " " end            
-            end        
+        		for k = 1 to (20 - Len((ScreenLines[j][i-1]))) do blank2[i] = blank2[i] + " " end
+            end
         end
 
 
         for i = 2 to MaxDistrict + 2 do
             for j = 1 to 7 do
         		blank4[i] = blank4[i] + Dist[j][i-1]
-        		for k = 1 to (20 - Len((Dist[j][i-1]))) do blank4[i] = blank4[i] + " " end            
-            end        
+        		for k = 1 to (20 - Len((Dist[j][i-1]))) do blank4[i] = blank4[i] + " " end
+            end
         end
 
-            
+
         for i = 2 to ArrayLength(Volume_Groups) + 2 do
-            if i = ArrayLength(Volume_Groups) + 2 then do 
+            if i = ArrayLength(Volume_Groups) + 2 then do
                 blank3[i] = blank3[i] + Vol_Groups[i-1][1]
             for k = 1 to (20 - Len((Vol_Groups[i-1][1]))) do blank3[i] = blank3[i] + " " end
             end
@@ -556,8 +556,8 @@ end
             end
             for j = 2 to 7 do
         		blank3[i] = blank3[i] + Vol_Groups[i-1][j]
-        		for k = 1 to (20 - Len((Vol_Groups[i-1][j]))) do blank3[i] = blank3[i] + " " end            
-            end        
+        		for k = 1 to (20 - Len((Vol_Groups[i-1][j]))) do blank3[i] = blank3[i] + " " end
+            end
         end
 
 
@@ -614,11 +614,11 @@ end
      end
 	end
 
-           
-          
-// Print out the Tables            
-	apnd = 5					/*additional # of rows appended, these rows correspond to 
-										  additional facility types and marginal across all facility types */           
+
+
+// Print out the Tables
+	apnd = 5					/*additional # of rows appended, these rows correspond to
+										  additional facility types and marginal across all facility types */
   fp = OpenFile(scenarioDirectory+"\\Highway Assignment Summary.txt", "w")
 	WriteLine(fp, "Total Daily Highway Assignment Results for OMPO Model")
 	Writeline(fp, "")						//--- a blank line
@@ -652,7 +652,7 @@ end
     for i = 1 to MaxFACTYPE + apnd do
         	WriteLine(fp, blank[4][i])
 	end
-    
+
 
 	Writeline(fp, "")						//--- a blank line
 	Writeline(fp, "")						//--- a blank line
@@ -661,8 +661,8 @@ end
     for i = 1 to MaxFACTYPE + apnd do
         	WriteLine(fp, blank[5][i])
 	end
- 
-    
+
+
 	Writeline(fp, "")						//--- a blank line
 	Writeline(fp, "")						//--- a blank line
 	Writeline(fp, "Relative Error Between Estimated and Observed Flows")
@@ -670,7 +670,7 @@ end
     for i = 1 to MaxFACTYPE + apnd do
         	WriteLine(fp, blank[6][i])
 	end
- 
+
 	Writeline(fp, "")						//--- a blank line
 	Writeline(fp, "")						//--- a blank line
 	Writeline(fp, "RMSE Between Estimated and Observed Flows")
@@ -699,27 +699,12 @@ end
     for i = 1 to ArrayLength(Volume_Groups) + 2 do
         	WriteLine(fp, blank3[i])
 	end
-	
+
 	Return(1)
-	
+
     quit:
        Return( RunMacro("TCB Closing", ret_value, True ) )
 
-EndMacro
-
-//  CLoses all the maps and views opened
-Macro "Close All"
-    maps = GetMapNames()
-    for i = 1 to maps.length do
-	    CloseMap(maps[i])
-    end
-    
-    views = GetViewNames()
-    for i = 1 to views.length do
-	    CloseView(views[i])
-    end
-
-    return(RunMacro("G30 File Close All"))
 EndMacro
 
 Macro "AllDay" (scenarioDirectory)
@@ -730,7 +715,7 @@ CopyFile(scenarioDirectory+"\\outputs\\AM4HourFlow1.bin", scenarioDirectory+"\\o
     // First  open the AMPeaktable
     AMPeak4 = OpenTable("AMPeak4", "FFB", {scenarioDirectory+"\\outputs\\AM4HourFlow1.bin"}, {{"Shared", "True"}})
 
-dim abflow[3], baflow[3], totflow[3], abVMT[3], baVMT[3], totVMT[3] 
+dim abflow[3], baflow[3], totflow[3], abVMT[3], baVMT[3], totVMT[3]
 
     // get the vector for time and then flow in the ab direction
     abflow[1] = GetDataVector(AMPeak4 + "|", "AB_Flow",)

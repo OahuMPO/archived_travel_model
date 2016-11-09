@@ -1,31 +1,30 @@
 /*******************************************************************************
-* 		
-* Set Up for Transit Skim Process:	
+*
+* Set Up for Transit Skim Process:
 * 1. Mode Table and Mode Transfer Table are set up for the transit skim process;
-* 	
-* 2. Transit skims are only set up for local(incl. limited) bus and express bus 
+*
+* 2. Transit skims are only set up for local(incl. limited) bus and express bus
 *    by walk, PNR and KNR access; skims for rail mode haven't set up yet.
-* 
+*
 ********************************************************************************/
 
 Macro "Transit Network and Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, xferfile, nzones, iteration)
-    
+
     ret_value = RunMacro("Transit Time Update", scenarioDirectory, hwyfile, iteration)
     if !ret_value then goto quit
- 
+
     skim:
-    ret_value = RunMacro("Transit Skim", scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, xferfile, nzones)  
+    ret_value = RunMacro("Transit Skim", scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, xferfile, nzones)
     if !ret_value then goto quit
 
-    ret_value = RunMacro("Close All")
-    if !ret_value then goto quit
-    
+    RunMacro("Close All")
+
     Return(1)
     quit:
     	Return( RunMacro("TCB Closing", ret_value, True ) )
 endMacro
 
- 
+
 /**********************************************************************************************************************************
 *  Transit Time Update
 *  Function of this macro:
@@ -42,7 +41,7 @@ Macro "Transit Time Update" (scenarioDirectory, hwyfile, iteration)
 
     // if iteration 1, use first iteration times in line layer
     if(iteration <= 1) then do
-	       
+
         Opts = null
         Opts.Input.[Dataview Set] = {hwyfile+"|"+link_lyr,link_lyr}
         Opts.Global.Fields = {"AB_EATRNTIME","BA_EATRNTIME",
@@ -50,8 +49,8 @@ Macro "Transit Time Update" (scenarioDirectory, hwyfile, iteration)
         	                    "AB_MDTRNTIME","BA_MDTRNTIME",
         	                    "AB_PMTRNTIME","BA_PMTRNTIME",
         	                    "AB_EVTRNTIME","BA_EVTRNTIME"}
-        	                    
-        	                    
+
+
         Opts.Global.Method = "Formula"
         Opts.Global.Parameter = {"AB_EATIME * AB_OPTRNFAC", "BA_EATIME * BA_OPTRNFAC",
         	                       "AB_AMTIME * AB_PKTRNFAC", "BA_AMTIME * BA_PKTRNFAC",
@@ -60,18 +59,18 @@ Macro "Transit Time Update" (scenarioDirectory, hwyfile, iteration)
         	                       "AB_EVTIME * AB_OPTRNFAC", "BA_EVTIME * BA_OPTRNFAC"}
         ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
         if !ret_value then goto quit
-        
-          
+
+
         end
     // if not iteration 1, use msa times in flow table
     else do
-      
+
 	    eaflowtable = scenarioDirectory+"\\outputs\\iter"+String(iteration-1)+"\\EAFlow"+String(iteration-1)+".bin"
 	    amflowtable = scenarioDirectory+"\\outputs\\iter"+String(iteration-1)+"\\AMFlow"+String(iteration-1)+".bin"
 	    mdflowtable = scenarioDirectory+"\\outputs\\iter"+String(iteration-1)+"\\MDFlow"+String(iteration-1)+".bin"
 	    pmflowtable = scenarioDirectory+"\\outputs\\iter"+String(iteration-1)+"\\PMFlow"+String(iteration-1)+".bin"
       evflowtable = scenarioDirectory+"\\outputs\\iter"+String(iteration-1)+"\\EVFlow"+String(iteration-1)+".bin"
-  	    
+
 
       // Early AM (Use Midday for now)
       Opts = null
@@ -90,7 +89,7 @@ Macro "Transit Time Update" (scenarioDirectory, hwyfile, iteration)
       Opts.Global.Parameter = {"AB_MSA_TIME * AB_PKTRNFAC","BA_MSA_TIME * BA_PKTRNFAC"}
       ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
       if !ret_value then goto quit
-    
+
       // Midday
       Opts = null
       Opts.Input.[Dataview Set] = {{hwyfile+"|"+link_lyr,mdflowtable,  {"ID"}, {"ID1"}}, "joinedvw"}
@@ -99,7 +98,7 @@ Macro "Transit Time Update" (scenarioDirectory, hwyfile, iteration)
       Opts.Global.Parameter = {"AB_MSA_TIME * AB_OPTRNFAC","BA_MSA_TIME * BA_OPTRNFAC"}
       ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
       if !ret_value then goto quit
-      	
+
       // PM peak
       Opts = null
       Opts.Input.[Dataview Set] = {{hwyfile+"|"+link_lyr,pmflowtable,  {"ID"}, {"ID1"}}, "joinedvw"}
@@ -108,7 +107,7 @@ Macro "Transit Time Update" (scenarioDirectory, hwyfile, iteration)
       Opts.Global.Parameter = {"AB_MSA_TIME * AB_PKTRNFAC","BA_MSA_TIME * BA_PKTRNFAC"}
       ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
       if !ret_value then goto quit
-    
+
       // Evening
       Opts = null
       Opts.Input.[Dataview Set] = {{hwyfile+"|"+link_lyr,evflowtable,  {"ID"}, {"ID1"}}, "joinedvw"}
@@ -117,9 +116,9 @@ Macro "Transit Time Update" (scenarioDirectory, hwyfile, iteration)
       Opts.Global.Parameter = {"AB_MSA_TIME * AB_OPTRNFAC","BA_MSA_TIME * BA_OPTRNFAC"}
       ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
       if !ret_value then goto quit
-        
-    end 
-    
+
+    end
+
     //Code transit-only links (Facility-type = 14) with time based on Tran_Only_Spd field
     AB_FACTYPE = "[AB FACTYPE]"
     SetLayer(link_lyr) //Line Layer
@@ -138,25 +137,24 @@ Macro "Transit Time Update" (scenarioDirectory, hwyfile, iteration)
                                    "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
                                    "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
                                    "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60"}
-                                   
+
         ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
         if !ret_value then goto quit
     end
-    ret_value = RunMacro("Close All")
-    if !ret_value then goto quit
+    RunMacro("Close All")
 
 
     RunMacro("Recode Values", hwyfile, {"MODE_ID","WALKTIME","AB_EATRNTIME","BA_EATRNTIME","AB_AMTRNTIME","BA_AMTRNTIME"},
                                        {     null,      null,          null,          null,          null,          null},  //from
                                        {       99,         0,        0.0001,        0.0001,        0.0001,        0.0001},  //to
             {1,2,3,4,5,6,7,8,9,10,11,12,13,14,197})
-                
- 
+
+
     RunMacro("Recode Values", hwyfile, {"AB_MDTRNTIME","BA_MDTRNTIME","AB_PMTRNTIME","BA_PMTRNTIME","AB_EVTRNTIME","BA_EVTRNTIME"},
                                       {           null,          null,          null,          null,          null,          null},  //from
                                       {         0.0001,        0.0001,        0.0001,        0.0001,        0.0001,        0.0001},  //to
            {1,2,3,4,5,6,7,8,9,10,11,12,13,14,197})
-               
+
     RunMacro("Recode Values", hwyfile, {"MODE_ID"},
                                        {        0},  //from
                                        {       99},  //to
@@ -168,12 +166,12 @@ Macro "Transit Time Update" (scenarioDirectory, hwyfile, iteration)
 
 EndMacro
 
-Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, xferfile, nzones)  
-    
-    // hardcoded inputs 
+Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, xferfile, nzones)
+
+    // hardcoded inputs
     PNRAccfile=scenarioDirectory+"\\outputs\\pnracc.mtx"
     KNRAccfile=scenarioDirectory+"\\outputs\\knracc.mtx"
-    
+
     // Create transposed PNR matrix (for egress)
     parts = SplitPath(PNRAccfile)
     PNREgrfile = parts[1]+parts[2]+"pnregr.mtx"
@@ -181,7 +179,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
 		Opts.Input.[Input Matrix] = PNRAccfile
 		Opts.Output.[Transposed Matrix].Label = "PNR Egress"
 		Opts.Output.[Transposed Matrix].[File Name] = PNREgrfile
-		ret_value = RunMacro("TCB Run Operation", "Transpose Matrix", Opts) 
+		ret_value = RunMacro("TCB Run Operation", "Transpose Matrix", Opts)
 
     // Create transposed KNR matrix (for egress)
     parts = SplitPath(KNRAccfile)
@@ -190,16 +188,16 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
 		Opts.Input.[Input Matrix] = KNRAccfile
 		Opts.Output.[Transposed Matrix].Label = "KNR Egress"
 		Opts.Output.[Transposed Matrix].[File Name] = KNREgrfile
-		ret_value = RunMacro("TCB Run Operation", "Transpose Matrix", Opts) 
-    
+		ret_value = RunMacro("TCB Run Operation", "Transpose Matrix", Opts)
+
     periods = {"EA","AM","MD","PM","EV"}
- 
-  	{node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)  
-  	{rte_lyr,stp_lyr,} = RunMacro("TCB Add RS Layers", rtsfile, "ALL", )   
-    
+
+  	{node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)
+  	{rte_lyr,stp_lyr,} = RunMacro("TCB Add RS Layers", rtsfile, "ALL", )
+
     // Kyle: tag stops with node id
     n = TagRouteStopsWithNode(rte_lyr,,"NODENUMBER",.2)        // 50-foot search radius
-    
+
   	SetLayer(node_lyr)
    	n = SelectByQuery("centroid", "Several","Select * where ID <= "+String(nzones),)
 
@@ -210,11 +208,11 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
 
 
     for i = 1 to periods.length do
-    
+
     	// outputs
     	// transit networks
     	trn=scenarioDirectory+"\\outputs\\transit_"+periods[i]+".tnw"
-    	
+
     	trn_wloc=scenarioDirectory+"\\outputs\\trn_wloc_"+periods[i]+".tnw"
     	trn_wexp=scenarioDirectory+"\\outputs\\trn_wexp_"+periods[i]+".tnw"
     	trn_wfxg=scenarioDirectory+"\\outputs\\trn_wfxg_"+periods[i]+".tnw"
@@ -222,9 +220,9 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     	trn_ktw=scenarioDirectory+"\\outputs\\trn_ktw_"+periods[i]+".tnw"
     	trn_wtp=scenarioDirectory+"\\outputs\\trn_wtp_"+periods[i]+".tnw"
     	trn_wtk=scenarioDirectory+"\\outputs\\trn_wtk_"+periods[i]+".tnw"
-    	
-    	
-    	
+
+
+
     	//output skims
     	trnskm_wloc=scenarioDirectory+"\\outputs\\transit_wloc_"+periods[i]+".mtx"
     	trnskm_wexp=scenarioDirectory+"\\outputs\\transit_wexp_"+periods[i]+".mtx"
@@ -233,7 +231,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     	trnskm_ktw=scenarioDirectory+"\\outputs\\transit_ktw_"+periods[i]+".mtx"
     	trnskm_wtp=scenarioDirectory+"\\outputs\\transit_wtp_"+periods[i]+".mtx"
     	trnskm_wtk=scenarioDirectory+"\\outputs\\transit_wtk_"+periods[i]+".mtx"
-   	
+
     	transitSkims = {    trnskm_wloc,
     	                    trnskm_wexp,
     	                    trnskm_wfxg,
@@ -242,8 +240,8 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     	                    trnskm_wtp,
     	                    trnskm_wtk
     	                }
-    	
-    	
+
+
     	//4: Local Bus; 5: Express Bus; 6: Limited Bus; 7: Fixed-Guideway 8: Ferry 11: Transfer Walk; 12: Walk Access
     	// Build Network
     	Opts = null
@@ -256,34 +254,34 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     	Opts.Global.[Network Options].Walk = "Yes"
     	Opts.Global.[Network Options].[Mode Field] = rte_lyr+".Mode"
     	Opts.Global.[Network Options].[Walk Mode] = {link_lyr+".Mode_ID", link_lyr+".Mode_ID"}
-   
+
       ab_time = "AB_"+periods[i]+"TIME"
       ba_time = "BA_"+periods[i]+"TIME"
     	abba_time = "["+ab_time+" / "+ba_time+"]"
-    	
+
       ab_trntime = "AB_"+periods[i]+"TRNTIME"
       ba_trntime = "BA_"+periods[i]+"TRNTIME"
     	abba_trntime = "["+ab_trntime+" / "+ba_trntime+"]"
 
     	Opts.Global.[Network Options].[Link Attributes] = {
-        {"Length", {link_lyr+".Length", link_lyr+".Length"}, "SUMFRAC"}, 
-        {"Dir", {link_lyr+".Dir", link_lyr+".Dir"}, "SUMFRAC"}, 
+        {"Length", {link_lyr+".Length", link_lyr+".Length"}, "SUMFRAC"},
+        {"Dir", {link_lyr+".Dir", link_lyr+".Dir"}, "SUMFRAC"},
         {"WALKTIME", {link_lyr+".WALKTIME", link_lyr+".WALKTIME"}, "SUMFRAC"},
         {abba_time, {link_lyr+"."+ab_time, link_lyr+"."+ba_time}, "SUMFRAC"},
         {abba_trntime, {link_lyr+"."+ab_trntime, link_lyr+"."+ba_trntime}, "SUMFRAC"},
         {"MODE_ID", {link_lyr+".MODE_ID", link_lyr+".MODE_ID"}, "SUMFRAC"}
         }
-     
+
      //must have the same number of street and link attributes
      Opts.Global.[Network Options].[Street Attributes] = {
-        {"Length", {link_lyr+".Length", link_lyr+".Length"}}, 
-        {"Dir", {link_lyr+".Dir", link_lyr+".Dir"}}, 
+        {"Length", {link_lyr+".Length", link_lyr+".Length"}},
+        {"Dir", {link_lyr+".Dir", link_lyr+".Dir"}},
         {"WALKTIME", {link_lyr+".WALKTIME", link_lyr+".WALKTIME"}},
         {abba_time, {link_lyr+"."+ab_time, link_lyr+"."+ba_time}, "SUMFRAC"},
         {abba_trntime, {link_lyr+"."+ab_trntime, link_lyr+"."+ba_trntime}, "SUMFRAC"},
         {"MODE_ID", {link_lyr+".MODE_ID", link_lyr+".MODE_ID"}}
         }
-     	
+
     Opts.Global.[Network Options].[Route Attributes].Route_ID = {rte_lyr+".Route_ID"}
     Opts.Global.[Network Options].[Route Attributes].Mode = {rte_lyr+".Mode"}
     Opts.Global.[Network Options].[Route Attributes].Headway = {rte_lyr+"."+periods[i]+"_Headway"}
@@ -306,8 +304,8 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
 
     ret_value = RunMacro("TCB Run Operation", "Build Transit Network", Opts, &Ret)
     if !ret_value then goto quit
-    
-    
+
+
     //  PEAK Walk Access Transit Network Setting PF
     CopyFile(trn, trn_wloc)
     Opts = null
@@ -323,9 +321,9 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Field.[Mode Used] = "Walk_Local"
     Opts.Field.[Mode Access] = "Access"
     Opts.Field.[Mode Egress] = "Egress"
-    Opts.Field.[Mode Imp Weight]   = "Local_Weight" 
-    Opts.Field.[Mode IWait Weight] = "IWait_Weight" 
-    Opts.Field.[Mode XWait Weight] = "XWait_Weight" 
+    Opts.Field.[Mode Imp Weight]   = "Local_Weight"
+    Opts.Field.[Mode IWait Weight] = "IWait_Weight"
+    Opts.Field.[Mode XWait Weight] = "XWait_Weight"
     Opts.Field.[Inter-Mode Xfer From] = xfer_vw+".FROM"
     Opts.Field.[Inter-Mode Xfer To] = xfer_vw+".TO"
     Opts.Field.[Inter-Mode Xfer Stop] = xfer_vw+".STOP"
@@ -391,7 +389,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Field.[Mode Imp Weight] = modes_vw+".FixedGuideway_Weight"
     Opts.Field.[Mode Used] = modes_vw+".Walk_FixedGuideway"
     Opts.Field.[Mode IWait Weight] = null
-    Opts.Field.[Mode XWait Weight] = null 
+    Opts.Field.[Mode XWait Weight] = null
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
     if !ret_value then goto quit
 
@@ -405,8 +403,8 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Field.[Link Impedance] = abba_trntime
     Opts.Field.[Link Drive Time] = abba_time
     Opts.Field.[Route Headway] = "Headway"
-    Opts.Field.[Mode IWait Weight] = modes_vw + ".IWait_Weight" 
-    Opts.Field.[Mode XWait Weight] = modes_vw + ".XWait_Weight" 
+    Opts.Field.[Mode IWait Weight] = modes_vw + ".IWait_Weight"
+    Opts.Field.[Mode XWait Weight] = modes_vw + ".XWait_Weight"
     Opts.Field.[Inter-Mode Xfer From] = xfer_vw+".FROM"
     Opts.Field.[Inter-Mode Xfer To] = xfer_vw+".TO"
     Opts.Field.[Inter-Mode Xfer Stop] = xfer_vw+".STOP"
@@ -420,7 +418,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Flag.[Use Park and Ride] = "Yes"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
     if !ret_value then goto quit
-    	
+
     // Settings for KTW
     CopyFile(trn_ptw, trn_ktw)
     Opts.Input.[Transit Network] = trn_ktw
@@ -430,8 +428,8 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Field.[Link Impedance] = abba_trntime
     Opts.Field.[Link Drive Time] = abba_time
     Opts.Field.[Route Headway] = "Headway"
-    Opts.Field.[Mode IWait Weight] = modes_vw + ".IWait_Weight" 
-    Opts.Field.[Mode XWait Weight] = modes_vw + ".XWait_Weight" 
+    Opts.Field.[Mode IWait Weight] = modes_vw + ".IWait_Weight"
+    Opts.Field.[Mode XWait Weight] = modes_vw + ".XWait_Weight"
     Opts.Field.[Inter-Mode Xfer From] = xfer_vw+".FROM"
     Opts.Field.[Inter-Mode Xfer To] = xfer_vw+".TO"
     Opts.Field.[Inter-Mode Xfer Stop] = xfer_vw+".STOP"
@@ -460,7 +458,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Flag.[Use Parking Capacity] = "No"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
     if !ret_value then goto quit
-    	
+
     // Settings for WTK
     CopyFile(trn_ktw, trn_wtk)
     Opts.Input.[Transit Network] = trn_wtk
@@ -483,9 +481,9 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
 
     // an array of networks
     trnnet_scen={trn_wloc   ,    trn_wexp,    trn_wfxg,        trn_ptw,       trn_ktw,  trn_wtp,     trn_wtk}
-       
+
     out_pnr_skm={           ,            ,            , pnr_pnrAccNode,knr_knrAccNode,         ,            }
-    
+
     skim_var = {
     	        {"Fare", "In-Vehicle Time",  "Initial Wait Time", "Transfer Wait Time", "Transfer Walk Time", "Access Walk Time", "Egress Walk Time", "Dwelling Time","Number of Transfers"},			//walk local
 	            {"Fare", "In-Vehicle Time",  "Initial Wait Time", "Transfer Wait Time", "Transfer Walk Time", "Access Walk Time", "Egress Walk Time", "Dwelling Time","Number of Transfers",abba_trntime},	//walk express
@@ -494,11 +492,11 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
 	            {"Fare", "In-Vehicle Time",  "Initial Wait Time", "Transfer Wait Time", "Transfer Walk Time", "Egress Walk Time", "Access Drive Time","Dwelling Time","Number of Transfers",abba_trntime,"Access Drive Distance"}, //knr-trn-wlk
 	            {"Fare", "In-Vehicle Time",  "Initial Wait Time", "Transfer Wait Time", "Transfer Walk Time", "Access Walk Time", "Egress Drive Time","Dwelling Time","Number of Transfers",abba_trntime,"Egress Drive Distance"},	//wlk-trn-pnr
 	            {"Fare", "In-Vehicle Time",  "Initial Wait Time", "Transfer Wait Time", "Transfer Walk Time", "Access Walk Time", "Egress Drive Time","Dwelling Time","Number of Transfers",abba_trntime,"Egress Drive Distance"}	//wlk-trn-knr
-	          } 
+	          }
 	               skim_modes = {null,{4,5,6,8},{4,5,6,7,8},{4,5,6,7},{4,5,6,7},{4,5,6,7},{4,5,6,7}}
     label_scen = {periods[i]+" Walk Local",periods[i]+" Walk Express",periods[i]+" Walk Fixed Guideway",periods[i]+" PTW",periods[i]+" KTW",periods[i]+" WTP",periods[i]+" WTK"}
     trnskm_scen={trnskm_wloc, trnskm_wexp, trnskm_wfxg, trnskm_ptw, trnskm_ktw, trnskm_wtp, trnskm_wtk}
-    
+
     for j=1 to trnnet_scen.length do
    	    Opts = null
    	    Opts.Input.Database = hwyfile
@@ -511,42 +509,40 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
    	    Opts.Output.[Skim Matrix].Label = "Skim "+label_scen[j]
    	    Opts.Output.[Skim Matrix].Compression = 1
    	    Opts.Output.[Skim Matrix].[File Name] = trnskm_scen[j]
-   	    
+
    	    if(out_pnr_skm[j] != null) then do
    	      Opts.Output.[Parking Matrix].[File Name] = out_pnr_skm[j]
           Opts.Output.[Parking Matrix].Compression = 1
    	      Opts.Output.[Parking Matrix].Label = label_scen[j]+ " PNR node"
    	    end
-        
+
    	    ret_value = RunMacro("TCB Run Procedure", "Transit Skim PF", Opts, &Ret)
         if !ret_value then goto quit
-   	    
+
    	    // Add the parking node matrix to the drive transit skims
    	    if(out_pnr_skm[j] != null) then do
             parkingMatrix = OpenMatrix( out_pnr_skm[j],)
-            parkingMatrixName = GetMatrixCore(parkingMatrix) 
+            parkingMatrixName = GetMatrixCore(parkingMatrix)
             parkingCurrency = CreateMatrixCurrency(parkingMatrix, parkingMatrixName, , , )
             skimMatrix = OpenMatrix( trnskm_scen[j],)
    	        AddMatrixCore(skimMatrix, parkingMatrixName)
 		        parkingCopy = CreateMatrixCurrency(skimMatrix, parkingMatrixName, , , )
             parkingCopy := parkingCurrency
         end
-   	    
+
    	    if !ret_value then goto quit
    end
- 
+
  convert:
     ret_value = RunMacro("Convert Matrices To Binary", transitSkims)
     if !ret_value then goto quit
 
 	end
-    ret_value = RunMacro("Close All")
-    if !ret_value then goto quit
-    
-   
+    RunMacro("Close All")
+
+
 
     Return(1)
     quit:
         Return( RunMacro("TCB Closing", ret_value, True ) )
 endMacro
-
