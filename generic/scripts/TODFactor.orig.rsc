@@ -106,7 +106,7 @@ Macro "TOD Factor" (scenarioDirectory)
     outFile = scenarioDirectory+"\\outputs\\trck"
 
     ret_value = RunMacro("Factor OD",trckFiles,outFile,perFactors,apFactors,occFactors,modeIndex,periodNames)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 
 /****************************************************************************************************************************************
@@ -160,7 +160,7 @@ Macro "TOD Factor" (scenarioDirectory)
     outFile = scenarioDirectory+"\\outputs\\vist"
 
     ret_value = RunMacro("Factor OD",vistFiles,outFile,perFactors,apFactors,occFactors,modeIndex,periodNames)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 /****************************************************************************************************************************************
             FIXED VISITOR TRIPS - USE NHB FACTOR
@@ -187,7 +187,7 @@ Macro "TOD Factor" (scenarioDirectory)
     outFile = scenarioDirectory+"\\outputs\\visobs"
 
     ret_value = RunMacro("Factor OD",{scenarioDirectory+"\\inputs\\other\\visobs.mtx"},outFile,perFactors,apFactors,occFactors,modeIndex,periodNames)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 /****************************************************************************************************************************************
             AIRPORT TRIPS - USE NHB FACTORS
@@ -223,7 +223,7 @@ Macro "TOD Factor" (scenarioDirectory)
     outFile = scenarioDirectory+"\\outputs\\airp"
 
     ret_value = RunMacro("Factor OD",airpFiles,outFile,perFactors,apFactors,occFactors,modeIndex,periodNames)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 /****************************************************************************************************************************************
             PERSON TRIPS
@@ -318,7 +318,7 @@ Macro "TOD Factor" (scenarioDirectory)
     outFile = scenarioDirectory+"\\outputs\\pers"
 
     ret_value = RunMacro("Factor OD",persFiles,outFile,perFactors,apFactors,occFactors,modeIndex,periodNames)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
  collapse:
 /***************************************************************************************************************************
@@ -356,7 +356,7 @@ Macro "TOD Factor" (scenarioDirectory)
                  {      1,       1,       1,       1,       0,       0,       0,       0,       0,       0,       0,       0}}  //Airport trips
 
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // **********************************************************************************************************************
     //Now collapse AM shoulder tables
@@ -370,7 +370,7 @@ Macro "TOD Factor" (scenarioDirectory)
    description = "AMShld Hwy Tables"
 
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // **********************************************************************************************************************
     //Now collapse midday tables
@@ -384,7 +384,7 @@ Macro "TOD Factor" (scenarioDirectory)
    description = "Midday Hwy Tables"
 
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // **********************************************************************************************************************
     //Now collapse PM 2-Hour tables
@@ -398,7 +398,7 @@ Macro "TOD Factor" (scenarioDirectory)
    description = "PM Peak Hwy Tables"
 
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // **********************************************************************************************************************
     //Now collapse PM Shoulder tables
@@ -412,7 +412,7 @@ Macro "TOD Factor" (scenarioDirectory)
    description = "PM Shoulder Tables"
 
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // **********************************************************************************************************************
     //Now collapse night tables
@@ -426,7 +426,7 @@ Macro "TOD Factor" (scenarioDirectory)
     description = "Night Hwy Tables"
 
     ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // **********************************************************************************************************************
     //Now collapse midday and night tables into off-peak 16 hour table
@@ -441,7 +441,7 @@ Macro "TOD Factor" (scenarioDirectory)
                   {      1,       2,       3,       4,       5,       6,       7,       8}}  //Night
 
     ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // **********************************************************************************************************************
     //Now collapse AM Peak and AM Shoulder tables into AM Peak 4 hour table
@@ -456,7 +456,7 @@ Macro "TOD Factor" (scenarioDirectory)
                   {      1,       2,       3,       4,       5,       6,       7,       8}}  //AM Shoulder
 
     ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
    // **********************************************************************************************************************
     //Now collapse PM Peak and PM Shoulder tables into PM Peak 4 hour table
@@ -471,7 +471,7 @@ Macro "TOD Factor" (scenarioDirectory)
                   {      1,       2,       3,       4,       5,       6,       7,       8}}  //PM Shoulder
 
     ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 
     // **********************************************************************************************************************
@@ -499,7 +499,7 @@ Macro "TOD Factor" (scenarioDirectory)
                  {      1,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0}} //Observed visitor transit trips
 
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // **********************************************************************************************************************
     //Now collapse peak transit tables
@@ -524,7 +524,7 @@ Macro "TOD Factor" (scenarioDirectory)
                  {      0,       0,       0,       1,       2,       3,       0,       6,       0,       0,       4,       5}} //Home-Based College
 
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // **********************************************************************************************************************
     //Now collapse off-peak transit tables
@@ -561,7 +561,7 @@ Macro "TOD Factor" (scenarioDirectory)
                  {      1,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0}} //Observed visitor transit trips
 
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     Return(1)
 

@@ -84,17 +84,17 @@ Macro "Highway Skims" (scenarioDirectory, hwyfile, tpen, nzones, iftoll, iterati
     //scenarioDirectory="C:\\projects\\ompo\\conversion\\application\\2005_base"
     
     ret_value = RunMacro("Highway Skim",scenarioDirectory, hwyfile, tpen, nzones, iftoll, iteration)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     
     
     if(iteration = 1) then do
         nonmotorized:
         ret_value = RunMacro("Non-Motorized Matrix", scenarioDirectory, hwyfile, nzones)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
     
         ones:
         ret_value = RunMacro("Ones Matrix", scenarioDirectory, nzones)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
     end
     
     Return(1)
@@ -173,11 +173,11 @@ Macro "Highway Skim" (scenarioDirectory, hwyfile,  tpen, nzones, iftoll, iterati
                              "AB_FFTIME",                  "BA_FFTIME"                              
                              }
         ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
             
         //and re-create the highway network
         ret_value = RunMacro("Create Highway Network" ,hwyfile, hnetfile, iftoll) 
-        if !ret_value then goto quit
+        if !ret_value then Throw()
             
     end    
     
@@ -200,7 +200,7 @@ Macro "Highway Skim" (scenarioDirectory, hwyfile,  tpen, nzones, iftoll, iterati
     			Opts.Global.Parameter = {"AB_MSA_Cost + "+String(distfactor)+" * Length",
     	                             "BA_MSA_Cost + "+String(distfactor)+" * Length"}   
     			ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    			if !ret_value then goto quit
+    			if !ret_value then Throw()
     	
         end    
     
@@ -223,7 +223,7 @@ Macro "Highway Skim" (scenarioDirectory, hwyfile,  tpen, nzones, iftoll, iterati
         	                           "AB_MSA_Cost + ("+String(distfactor)+" * Length) + ((TOLL3/100 * 0.5)/"+String(vot)+"*60)",
         	                           "BA_MSA_Cost + ("+String(distfactor)+" * Length) + ((TOLL3/100 * 0.5)/"+String(vot)+"*60)" }   
         		ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-        		if !ret_value then goto quit
+        		if !ret_value then Throw()
         	
       		end            
         end
@@ -323,7 +323,7 @@ Macro "Highway Skim" (scenarioDirectory, hwyfile,  tpen, nzones, iftoll, iterati
         end
 
     		ret_value = RunMacro("TCB Run Operation", "Highway Network Setting", Opts, &Ret)
-    		if !ret_value then goto quit
+    		if !ret_value then Throw()
 
     		set = "exclusivelinks"
     	
@@ -342,7 +342,7 @@ Macro "Highway Skim" (scenarioDirectory, hwyfile,  tpen, nzones, iftoll, iterati
      	    Opts.Global.[Update Network Fields].[Link Type] = {"*_FACTYPE", link_lyr+".[AB FACTYPE]", link_lyr+".[BA FACTYPE]"}
      	    Opts.Global.[Update Network Fields].Formulas = {}
     	    ret_value = RunMacro("TCB Run Operation", "Highway Network Setting", Opts, &Ret)
-    	    if !ret_value then goto quit
+    	    if !ret_value then Throw()
     		end
         
         //*************************************************** Highway Skim ***************************************************
@@ -396,7 +396,7 @@ Macro "Highway Skim" (scenarioDirectory, hwyfile,  tpen, nzones, iftoll, iterati
         
         // perform the skimming
     		ret_value = RunMacro("TCB Run Procedure", "TCSPMAT", Opts, &Ret)
-    		if !ret_value then goto quit
+    		if !ret_value then Throw()
     	    
     		//copy skims before factoring
     		parts = SplitPath(hskimfile[i][j])
@@ -446,10 +446,10 @@ Macro "Highway Skim" (scenarioDirectory, hwyfile,  tpen, nzones, iftoll, iterati
       end
        
     	ret_value = RunMacro("Intrazonal Impedance", hskimfile[i]) 
-    	if !ret_value then goto quit
+    	if !ret_value then Throw()
     
     	ret_value = RunMacro("Convert Matrices To Binary", hskimfile[i])
-    	if !ret_value then goto quit
+    	if !ret_value then Throw()
     
     end
     
@@ -628,7 +628,7 @@ Macro "Intrazonal Impedance" (hskimfile)
     	    Opts.Global.Operation = 1
     	    Opts.Global.[Treat Missing] = 2
     	    ret_value = RunMacro("TCB Run Procedure", "Intrazonal", Opts, &Ret)
-    	    if !ret_value then goto quit
+    	    if !ret_value then Throw()
 	    end	
     end
 

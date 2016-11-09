@@ -30,7 +30,7 @@ Macro "Report Trip Distribution" (scenarioDirectory, tazFile )
                  
     //perform TLFDs   
     ret_value = RunMacro("Run TLFDs", scenarioDirectory, opTrips, opSkim, skimOptions)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     
     //perform district summaries
     trips = {
@@ -43,7 +43,7 @@ Macro "Report Trip Distribution" (scenarioDirectory, tazFile )
                 scenarioDirectory+"\\outputs\\DIST5PO.MTX" }
     
     ret_value = RunMacro("District Summaries", trips, tazFile, "TD")    
-    if !ret_value then goto quit
+    if !ret_value then Throw()
        
     Return(1)
     quit:
@@ -134,7 +134,7 @@ Macro "Run TLFDs" (scenarioDirectory, tripFiles, skimFile, skimOptions)
                 Opts.Output.[Output Matrix].[File Name] = outputFile  
                 
                 ret_value = RunMacro("TCB Run Procedure", "TLD", Opts) 
-                if !ret_value then goto quit
+                if !ret_value then Throw()
                 
                 //convert to text
                 m = OpenMatrix(outputFile,)

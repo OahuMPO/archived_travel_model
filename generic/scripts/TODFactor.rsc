@@ -105,7 +105,7 @@ Macro "TOD Factor" (scenarioDirectory, railPresent, iftoll)
     outFile = scenarioDirectory+"\\outputs\\trck"
 
     ret_value = RunMacro("Factor OD",trckFiles,outFile,perFactors,apFactors,occFactors,modeIndex,periodNames)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 
 /****************************************************************************************************************************************
@@ -144,7 +144,7 @@ Macro "TOD Factor" (scenarioDirectory, railPresent, iftoll)
     outFile = scenarioDirectory+"\\outputs\\airp"
 
     ret_value = RunMacro("Factor OD",airpFiles,outFile,perFactors,apFactors,occFactors,modeIndex,periodNames)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 
 
@@ -189,7 +189,7 @@ Macro "TOD Factor" (scenarioDirectory, railPresent, iftoll)
 
 
     ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // **********************************************************************************************************************
     //Now collapse AM Peak
@@ -203,7 +203,7 @@ Macro "TOD Factor" (scenarioDirectory, railPresent, iftoll)
    description = "AM Peak Hwy Tables"
 
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // **********************************************************************************************************************
     //Now collapse midday tables
@@ -217,7 +217,7 @@ Macro "TOD Factor" (scenarioDirectory, railPresent, iftoll)
    description = "Midday Hwy Tables"
 
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // **********************************************************************************************************************
     //Now collapse PM peak tables
@@ -231,7 +231,7 @@ Macro "TOD Factor" (scenarioDirectory, railPresent, iftoll)
    description = "PM Peak Hwy Tables"
 
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // **********************************************************************************************************************
     //Now collapse EV tables
@@ -245,7 +245,7 @@ Macro "TOD Factor" (scenarioDirectory, railPresent, iftoll)
    description = "Evening auto tables"
 
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
      // **********************************************************************************************************************
     //Now collapse early AM, midday and night tables into off-peak 17 hour table
@@ -262,7 +262,7 @@ Macro "TOD Factor" (scenarioDirectory, railPresent, iftoll)
                   {      1,       2,       3,       4,       5,       6,       7,       8}}  //Evening
 
     ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // **********************************************************************************************************************
     //Now collapse Early AM transit tables
@@ -291,7 +291,7 @@ Macro "TOD Factor" (scenarioDirectory, railPresent, iftoll)
 
 
     ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // **********************************************************************************************************************
     //Now collapse AM Peak transit tables
@@ -305,7 +305,7 @@ Macro "TOD Factor" (scenarioDirectory, railPresent, iftoll)
 
 
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // **********************************************************************************************************************
     //Now collapse Midday transit tables
@@ -319,7 +319,7 @@ Macro "TOD Factor" (scenarioDirectory, railPresent, iftoll)
 
 
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
    // **********************************************************************************************************************
     //Now collapse PM Peak transit tables
@@ -333,7 +333,7 @@ Macro "TOD Factor" (scenarioDirectory, railPresent, iftoll)
 
 
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 
    // **********************************************************************************************************************
@@ -348,7 +348,7 @@ Macro "TOD Factor" (scenarioDirectory, railPresent, iftoll)
 
 
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
   // **********************************************************************************************************************
 

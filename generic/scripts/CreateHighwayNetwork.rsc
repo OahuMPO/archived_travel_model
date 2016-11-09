@@ -42,7 +42,7 @@ Macro "Create Highway Network" (hwyfile, hnetfile, iftoll)
     
         // add the new fields to the link layer
         ret_value = RunMacro("TCB Add View Fields", {link_lyr, NewFlds})
-        if !ret_value then goto quit
+        if !ret_value then Throw()
     
         Opts = null
         Opts.Input.[Dataview Set] = {hwyfile+"|"+link_lyr, link_lyr}	
@@ -65,7 +65,7 @@ Macro "Create Highway Network" (hwyfile, hnetfile, iftoll)
                                  ba_evcost+ " + "+String(distfactor)+" * Length"                                
                                  }
         ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
             
         if(iftoll <> 0) then do
             
@@ -87,7 +87,7 @@ Macro "Create Highway Network" (hwyfile, hnetfile, iftoll)
            
             // add the new fields to the link layer
             ret_value = RunMacro("TCB Add View Fields", {link_lyr, NewFlds})
-            if !ret_value then goto quit
+            if !ret_value then Throw()
         
             Opts = null
             Opts.Input.[Dataview Set] = {hwyfile+"|"+link_lyr, link_lyr}	
@@ -138,7 +138,7 @@ Macro "Create Highway Network" (hwyfile, hnetfile, iftoll)
                                      ab_evcost+ " + ("+String(distfactor)+" * Length) + ((TOLL3/100 *0.5)/"+String(vot)+ " * 60)",
                                      ba_evcost+ " + ("+String(distfactor)+" * Length) + ((TOLL3/100 *0.5)/"+String(vot)+ " * 60)"}
             ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-            if !ret_value then goto quit
+            if !ret_value then Throw()
                 
         end
     end
@@ -224,7 +224,7 @@ Macro "Create Highway Network" (hwyfile, hnetfile, iftoll)
     Opts.Output.[Network File] = hnetfile
 
     ret_value = RunMacro("TCB Run Operation", "Build Highway Network", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     return(1)
     quit:

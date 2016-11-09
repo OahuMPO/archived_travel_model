@@ -153,7 +153,7 @@ Macro "TOD Factor Home Based Transit" (scenarioDirectory, railPresent, iftoll)
     outFile = scenarioDirectory+"\\outputs\\pers"
 
     ret_value = RunMacro("Factor OD",persFiles,outFile,perFactors,apFactors,occFactors,modeIndex,periodNames)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
   if ( iftoll <> 0) then do
 
@@ -176,7 +176,7 @@ Macro "TOD Factor Home Based Transit" (scenarioDirectory, railPresent, iftoll)
     outFile = scenarioDirectory+"\\outputs\\toll"
 
     ret_value = RunMacro("Factor OD",tollFiles,outFile,perFactors,apFactors,occFactors,modeIndex,periodNames)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
   end
 
@@ -223,7 +223,7 @@ Macro "TOD Factor Home Based Transit" (scenarioDirectory, railPresent, iftoll)
 
 
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // **********************************************************************************************************************
     //Now collapse off-peak transit tables
@@ -257,7 +257,7 @@ Macro "TOD Factor Home Based Transit" (scenarioDirectory, railPresent, iftoll)
      end
 
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     Return(1)
 

@@ -17,7 +17,7 @@ Macro "Add Highway Costs" (scenarioDirectory)
     
         // add the new fields to the link layer
          ret_value = RunMacro("TCB Add View Fields", {link_lyr, NewFlds})
-        if !ret_value then goto quit
+        if !ret_value then Throw()
 
         costpermile=0.12
         Opts = null
@@ -36,7 +36,7 @@ Macro "Add Highway Costs" (scenarioDirectory)
                                  "Length * "+String(costpermile),
                                  "Length * "+String(costpermile)}
         ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
     
 
     Return(1)    

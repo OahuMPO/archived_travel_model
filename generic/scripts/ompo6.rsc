@@ -80,17 +80,17 @@ Macro "OMPO6" (path, Options, jump)
     // Update the line layer with lookup table fields
     args = {hwyfile,tazfile,fspdfile,cspdfile,capfile,conicalsfile,trnpkfactfile,trnopfactfile,nzones}
     ret_value = RunMacro("Update Line Layer", args)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     TransitAccess:
     // Create the highway network
     ret_value = RunMacro("Create Highway Network" ,hwyfile, hnetfile, iftoll)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Create transit access links
     ret_value = RunMacro("Transit Access Links", scenarioDirectory, hwyfile, rtsfile, nzones,fixgdwy)
-    if !ret_value then goto quit
-    if stop_after_each_step then goto quit
+    if !ret_value then Throw()
+    if stop_after_each_step then Throw()
 
 
     Feedback:
@@ -125,29 +125,29 @@ Macro "OMPO6" (path, Options, jump)
 
         iftoll = Options[2]
         ret_value = RunMacro("Highway Skims", scenarioDirectory, hwyfile, tpen, nzones, iftoll, iteration)
-        if !ret_value then goto quit
-        if stop_after_each_step then goto quit
+        if !ret_value then Throw()
+        if stop_after_each_step then Throw()
 
         TransitSkim:
         ret_value = RunMacro("Transit Network and Skim", scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, xferfile, nzones, iteration)
-        if !ret_value then goto quit
-        if stop_after_each_step then goto quit
+        if !ret_value then Throw()
+        if stop_after_each_step then Throw()
 
         SpecialMarket:
         ret_value = RunMacro("Trip Generation", scenarioDirectory, iftoll, fixgdwy)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
 
         ret_value = RunMacro("Trip Distribution", scenarioDirectory, iftoll)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
         // ret_value = RunMacro("Trip Distribution")
-        // if !ret_value then goto quit
+        // if !ret_value then Throw()
 
         ret_value = RunMacro("Report Trip Distribution" , scenarioDirectory, tazfile )
-        if !ret_value then goto quit
+        if !ret_value then Throw()
 
         ret_value = RunMacro("Mode Choice", scenarioDirectory, Options)
-        if !ret_value then goto quit
-        if stop_after_each_step then goto quit
+        if !ret_value then Throw()
+        if stop_after_each_step then Throw()
 
         TourBasedModels:
         // Check for and delete any previous tbm log files
@@ -171,23 +171,23 @@ Macro "OMPO6" (path, Options, jump)
         // Run tour-based model, visitor model
         runString = scenarioDirectory+"\\programs\\runompotbm.cmd "+drive+" "+path_forward_slash +" "+r2s(sample_rate[iteration])+" "+i2s(iteration)
         ret_value = RunMacro("TCB Run Command", 1, "Run Tour-Based Model", runString)
-        if stop_after_each_step then goto quit
+        if stop_after_each_step then Throw()
 
         TimeOfDay:
         ret_value = RunMacro("TOD Factor", scenarioDirectory,fixgdwy, iftoll)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
 
         if(cordonPricing <> 0) then do
             ret_value = RunMacro("Modify Trips For Cordon Pricing" , scenarioDirectory)
-            if !ret_value then goto quit
+            if !ret_value then Throw()
         end
-        if stop_after_each_step then goto quit
+        if stop_after_each_step then Throw()
 
 
         HighwayAssign:
         ret_value = RunMacro("Highway Assignment", scenarioDirectory, nzones, iteration)
-        if !ret_value then goto quit
-        if stop_after_each_step then goto quit
+        if !ret_value then Throw()
+        if stop_after_each_step then Throw()
 
         CheckConvergence:
         /*
@@ -229,44 +229,44 @@ Macro "OMPO6" (path, Options, jump)
         /*	No final assignment needed fpr tour-based model
         FinalHighwayAssign:
         ret_value = RunMacro("Final Highway Assignment", scenarioDirectory, nzones)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
         */
         Append:                                                                     // Once the model converges and all the assignments are done
         ret_value = RunMacro("AppendAssign", scenarioDirectory, iteration)          // The AM peak, PM Peak, and Daily flows are appended to the scenario line layer
-        if !ret_value then goto quit
+        if !ret_value then Throw()
         ret_value = RunMacro("Highway Assignment Summary", scenarioDirectory)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
        // Append:                                                                     // Once the model converges and all the assignments are done
        // ret_value = RunMacro("AppendAssign", scenarioDirectory, iteration)          // The AM peak, PM Peak, and Daily flows are appended to the scenario line layer
-       // if !ret_value then goto quit
+       // if !ret_value then Throw()
 
-        if stop_after_each_step then goto quit
+        if stop_after_each_step then Throw()
      end
 
     TransitAssign:
     ret_value = RunMacro("Transit Assignment", scenarioDirectory, rtsfile)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     ret_value = RunMacro("Screenline Summary", scenarioDirectory, iteration)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     ret_value = RunMacro("Skim Summary", scenarioDirectory)
-    if !ret_value then goto quit
-    if stop_after_each_step then goto quit
+    if !ret_value then Throw()
+    if stop_after_each_step then Throw()
 
     Summaries:
    // New V6 summaries
    // Creates summaries of transit and highway
     ret_value = RunMacro("V6 Summaries", scenarioDirectory)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
    // ret_value = RunMacro("Calculate Environmental Justice", scenarioDirectory, nzones)
 
     //don't run dta as part of the regular model
-    goto quit
+    Throw()
 
     DTArun:
     ret_value = RunMacro("OahuMPO DTA", path,options)
-    if !ret_value then goto quit
-    if stop_after_each_step then goto quit
+    if !ret_value then Throw()
+    if stop_after_each_step then Throw()
 
     quit:
         DestroyProgressBar()

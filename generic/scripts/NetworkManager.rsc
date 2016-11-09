@@ -655,7 +655,7 @@ Macro "Fill Stop Attributes" (hwyfile, rtsfile, rstopfile)
 
 
     ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     Opts = null
 
@@ -665,7 +665,7 @@ Macro "Fill Stop Attributes" (hwyfile, rtsfile, rstopfile)
     Opts.Global.Parameter = {1}                                // the column in the fspdfile
 
     ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // close all maps
     maps = GetMapNames()
@@ -704,7 +704,7 @@ Macro "Assign PNR Lots" (tempFile,currentYear,extractPNRString)
             Opts.Global.Method = "Value"
             Opts.Global.Parameter = {"1"}
             ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-            if !ret_value then goto quit
+            if !ret_value then Throw()
 			end
     CloseView(linkLayer)
     CloseView(nodeLayer)

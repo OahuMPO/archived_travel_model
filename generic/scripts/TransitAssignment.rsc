@@ -58,17 +58,17 @@ Macro "Transit Assignment" (scenarioDirectory, rtsfile)
         	Opts.Output.[Aggre Table] = outputLinkFlow
 
        	 	ret_value = RunMacro("TCB Run Procedure", 1, "Transit Assignment PF", Opts)
-        	if !ret_value then goto quit
+        	if !ret_value then Throw()
     	end
     end
 
     RunMacro("Close All")
 
     ret_value = RunMacro("Collapse OnOffs By Route", onOffTables, hwyfile, rtsfile)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     ret_value = RunMacro("Produce MOA FG table", onOffTables, hwyfile, rtsfile)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 
     Return(1)

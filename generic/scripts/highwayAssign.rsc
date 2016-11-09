@@ -38,7 +38,7 @@ Macro "Highway Assignment" (scenarioDirectory, nzones, iteration)
     	  	period = periods[i]
     
     			ret_value = RunMacro("Perform Assignment",scenarioDirectory, ODMatrix, period, nzones, iteration)
-    			if !ret_value then goto quit
+    			if !ret_value then Throw()
 			end
 		
     Return(1)
@@ -64,14 +64,14 @@ Macro "Final Highway Assignment" (scenarioDirectory, nzones)
     period = "AM4Hour"
     
     ret_value = RunMacro("Perform Assignment",scenarioDirectory, ODMatrix, period, nzones, iteration)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     //assign 4-hour PM peak
     ODMatrix = scenarioDirectory+"\\outputs\\hwyPM4Hour.mtx"
     period = "PM4Hour"
 
     ret_value = RunMacro("Perform Assignment",scenarioDirectory, ODMatrix, period, nzones, iteration)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     Return(1)
 
@@ -136,7 +136,7 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
         end
     else do
         ShowMessage("Error in Highway Assignment: Period "+String(period)+" not recognized")
-        goto quit 
+        Throw() 
     end
 
 
@@ -172,7 +172,7 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
     
         // add the new fields to the link layer
          ret_value = RunMacro("TCB Add View Fields", {link_lyr, NewFlds})
-        if !ret_value then goto quit
+        if !ret_value then Throw()
 
         costpermile=0.12
         Opts = null
@@ -191,7 +191,7 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
                                  "Length * "+String(costpermile),
                                  "Length * "+String(costpermile)}
         ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
     
     end
 
@@ -246,7 +246,7 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
         Opts.Output.[Network File] = highway_net
 
         ret_value = RunMacro("TCB Run Operation", "Build Highway Network", Opts, &Ret)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
      end
     
     // Set turn penalties for the time period
@@ -279,7 +279,7 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
     if !ret_value then do
         ShowMessage("Highway network settings failed.")
         ShowMessage(1)    
-        goto quit
+        Throw()
     end
     // Link selection for assignment:
     //
@@ -363,7 +363,7 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
     if !ret_value then do
         ShowMessage("Highway assignment failed.")
         // ShowMessage(1)
-        goto quit
+        Throw()
     end
 
     RunMacro("Close All")

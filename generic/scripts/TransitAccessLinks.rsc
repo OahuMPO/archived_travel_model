@@ -72,17 +72,17 @@ endMacro
 Macro "Transit Access Links" (scenarioDirectory, hwyfile, rtsfile, nzones,fixgdwy)
 
     ret_value = RunMacro("Initial Setup",scenarioDirectory, hwyfile, rtsfile,fixgdwy)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Kyle - the following three skims from the original script will be used
     ret_value = RunMacro("Walk Time Matrix", scenarioDirectory, hwyfile, rtsfile, nzones)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     ret_value = RunMacro("PNR Time Matrix", scenarioDirectory, hwyfile, rtsfile, nzones)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     ret_value = RunMacro("KNR Time Matrix", scenarioDirectory, hwyfile, rtsfile, nzones)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 
     // Realized that the KNR and PNR processes are different.  Leaving them alone.
@@ -107,24 +107,24 @@ Macro "Transit Access Links" (scenarioDirectory, hwyfile, rtsfile, nzones,fixgdw
         ret_value = RunMacro("Walk Links",scenarioDirectory, hwyfile, rtsfile,fixgdwy,type,maxLinks,maxLength)
         if !ret_value then do
             ShowMessage("Error connecting " + type + " links.")
-            goto quit
+            Throw()
         end
     end
 
     //{maximum number of links, maximum number of KNR to rail links, maximum distance}
     ret_value = RunMacro("KNR Access Link Generation", {8,2,8}, scenarioDirectory, hwyfile, rtsfile, nzones)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     //{maximum number of links, maximum distance}
     ret_value = RunMacro("PNR Access Link Generation", {4,8}, scenarioDirectory, hwyfile, rtsfile, nzones)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     station:
     ret_value = RunMacro("Write Station File",  scenarioDirectory, hwyfile, rtsfile)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     ret_value = RunMacro("Close All")
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     return(1)
 
@@ -178,7 +178,7 @@ Macro "Initial Setup" (scenarioDirectory, hwyfile, rtsfile,fixgdwy)
 
    ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
 
-   if !ret_value then goto quit
+   if !ret_value then Throw()
     //********************* Set up a Node field that corresponds to transit stops and a link field for shortest path *********************
 
     // new link fields for transit in-vehicle times
@@ -201,7 +201,7 @@ Macro "Initial Setup" (scenarioDirectory, hwyfile, rtsfile,fixgdwy)
     Opts.Global.Method = "Formula"
     Opts.Global.Parameter = {"Length*60/3"}
     ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // code WALKTIME to 30 seconds for rail access links only if FG in scenario
      if fixgdwy<>0 then do
@@ -211,7 +211,7 @@ Macro "Initial Setup" (scenarioDirectory, hwyfile, rtsfile,fixgdwy)
    	 		Opts.Global.Method = "Value"
    	 		Opts.Global.Parameter = {0.50}
     		ret_value = RunMacro("TCB Run Operation", 2, "Fill Dataview", Opts)
-   	 	if !ret_value then goto quit
+   	 	if !ret_value then Throw()
    	 end
 
 
@@ -239,7 +239,7 @@ Macro "Initial Setup" (scenarioDirectory, hwyfile, rtsfile,fixgdwy)
     Opts.Global.Method = "Value"
     Opts.Global.Parameter = {11}
     ret_value = RunMacro("TCB Run Operation", 2, "Fill Dataview", Opts)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Add a new field AT_TRN to the node layer to indicate if it is a valid transit stop
     NewFlds = {{"AT_TRN","integer"}}
@@ -282,7 +282,7 @@ Macro "Initial Setup" (scenarioDirectory, hwyfile, rtsfile,fixgdwy)
     SetDataVector(node_lyr + "|tstops","AT_TRN",v_atTrn,)
 
     ret_value = RunMacro("Close All")
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     Return( 1 )
 
@@ -450,7 +450,7 @@ Macro "Walk Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     Opts.Output.[Network File] = hwynet_wlk
 
     ret_value = RunMacro("TCB Run Operation", "Build Highway Network", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     //************Create shortest path for walking distance between centroid and transit stops************
     StraightLine = 1
@@ -466,7 +466,7 @@ Macro "Walk Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
         Opts.Global.[Update Network Fields].[Link Type] = {"*_FACTYPE", link_lyr+".[AB FACTYPE]", link_lyr+".[BA FACTYPE]"}	// need to confirm which variable to use, factype or linktype in the highway file
         Opts.Global.[Update Network Fields].Formulas = {}
         ret_value = RunMacro("TCB Run Operation", "Highway Network Setting", Opts, &Ret)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
 
         // Create a skim of shortest path walk length from origin nodes to valid transit stop nodes; also skim the times on the link
         Opts = null
@@ -481,7 +481,7 @@ Macro "Walk Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
         Opts.Output.[Output Matrix].[File Name] = hskim_wlkdist
 
         ret_value = RunMacro("TCB Run Procedure", "TCSPMAT", Opts, &Ret)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
 
         // Save the skim as a table
         m = OpenMatrix(hskim_wlkdist, "True")
@@ -572,7 +572,7 @@ Macro "Walk Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
 
 
     ret_value = RunMacro("Close All")
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     return(1)
     quit:
@@ -634,7 +634,7 @@ Macro "KNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     Opts.Output.[Network File] = hwynet_knr
 
     ret_value = RunMacro("TCB Run Operation", "Build Highway Network", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     //************Create shortest path for driving distance between centroid and transit stops************
 
@@ -651,7 +651,7 @@ Macro "KNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     Opts.Output.[Output Matrix].[File Name] = hskim_knrdist
 
     ret_value = RunMacro("TCB Run Procedure", "TCSPMAT", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Save the skim as a table
     m = OpenMatrix(hskim_knrdist, "True")
@@ -668,7 +668,7 @@ Macro "KNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     CloseView(view_name)
 
     ret_value = RunMacro("Close All")
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     return(1)
     quit:
@@ -732,7 +732,7 @@ Macro "PNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     Opts.Output.[Network File] = hwynet_pnr
 
     ret_value = RunMacro("TCB Run Operation", "Build Highway Network", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     //************Create shortest path for driving distance between centroid and PNR lots (Using SOV Non-Toll Path) ************
     Opts = null
@@ -744,7 +744,7 @@ Macro "PNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     Opts.Global.[Update Network Fields].[Link Type] = {"*_FACTYPE", link_lyr+".[AB FACTYPE]", link_lyr+".[BA FACTYPE]"}
     Opts.Global.[Update Network Fields].Formulas = {}
     ret_value = RunMacro("TCB Run Operation", "Highway Network Setting", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     Opts = null
     Opts.Input.Network = hwynet_pnr
@@ -758,7 +758,7 @@ Macro "PNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     Opts.Output.[Output Matrix].[File Name] = hskim_pnrdist
 
     ret_value = RunMacro("TCB Run Procedure", "TCSPMAT", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // convert matrix to table
     m = OpenMatrix(hskim_pnrdist, "True")
@@ -775,7 +775,7 @@ Macro "PNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     CloseView(view_name)
 
     ret_value = RunMacro("Close All")
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     return(1)
     quit:
@@ -1045,7 +1045,7 @@ Macro "KNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
     m = CreateMatrixFromView("KNR Matrix", view_name+"|", "Orig", "Dest", {"Length", "EATime", "AMTime", "MDTime", "PMTime", "EVTime"}, {{ "File Name", KNRfile},{ "Sparse", "No"}})
 
     ret_value = RunMacro("Close All")
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     return(1)
     quit:
         Return( RunMacro("TCB Closing", ret_value, True ) )
@@ -1140,7 +1140,7 @@ Macro "PNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
     m = CreateMatrixFromView("PNR Matrix", view_name+"|", "Orig", "Dest", {"Length", "EATime","AMTime","MDTime","PMTime","EVTime"}, {{ "File Name", PNRfile},{ "Sparse", "No"}})
 
     ret_value = RunMacro("Close All")
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     return(1)
     quit:
@@ -1199,7 +1199,7 @@ Macro "Write Station File" (scenarioDirectory, hwyfile, rtsfile)
     CloseFile(ptr)
 
     ret_value = RunMacro("Close All")
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     return(1)
     quit:

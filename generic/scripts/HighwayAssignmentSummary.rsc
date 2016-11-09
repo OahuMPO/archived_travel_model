@@ -29,7 +29,7 @@ Macro "Highway Assignment Summary"
     	Opts.Global.Method = "Tag"                                      // fill by tagging
     	Opts.Global.Parameter = {"Value", TAZlayers[1], TAZlayers[1]+".TD"}  // the value to fill with is the taz layer District
     	ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-	    if !ret_value then goto quit
+	    if !ret_value then Throw()
 */
 
 	//Open the database containing the assignemnt results and combine that to the line layer

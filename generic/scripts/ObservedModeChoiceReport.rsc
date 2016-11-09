@@ -88,19 +88,19 @@ Macro "Report Observed Mode Choice" (scenarioDirectory, tazFile)
                         
     //Run HBW TLFD
     ret_value = RunMacro("Run Transit TLFDs", obsDirectory+"HBWTRN.MTX", pkSkims, skimOptions)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     //Run HBSchool TLFD
     ret_value = RunMacro("Run Transit TLFDs", obsDirectory+"HBCTRN.MTX", pkSkims, skimOptions)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     //Run HBO TLFD
     ret_value = RunMacro("Run Transit TLFDs", obsDirectory+"HBOTRN.MTX", opSkims, skimOptions)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     
     //Run NHB TLFD
     ret_value = RunMacro("Run Transit TLFDs", obsDirectory+"NHBTRN.MTX", nhbSkims, {wlocOptions,wexpOptions})
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     
     
 
@@ -193,7 +193,7 @@ Macro "Run Transit TLFDs" (tripFile, skimFiles, skimOptions)
             Opts.Output.[Output Matrix].[File Name] = outputFile  
             
             ret_value = RunMacro("TCB Run Procedure", "TLD", Opts) 
-            if !ret_value then goto quit
+            if !ret_value then Throw()
             
             //convert to text
             m = OpenMatrix(outputFile,)

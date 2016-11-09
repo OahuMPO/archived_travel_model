@@ -117,14 +117,14 @@ Macro "Observed Transit Assignment"
     Opts.Output.[Network File] = trn_pk
 
     ret_value = RunMacro("TCB Run Operation", "Build Transit Network", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Build OP Network
     Opts.Input.[RS Set] = {rtsfile+"|"+rte_lyr, rte_lyr, "OP Routes", "Select * where MD_Headway>0 & Mode<>null"}
     Opts.Output.[Network File] = trn_op
 
     ret_value = RunMacro("TCB Run Operation", "Build Transit Network", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     pth = SplitPath(modefile)
     modes_vw = pth[3]
@@ -193,7 +193,7 @@ Macro "Observed Transit Assignment"
     Opts.Flag.[Use P&R Walk Access] = "No"
 
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Settings for Peak Walk-Express
     CopyFile(trn_wloc_pk, trn_wexp_pk)
@@ -202,7 +202,7 @@ Macro "Observed Transit Assignment"
     Opts.Field.[Mode Imp Weight] = modes_vw+".Express_Weight"
     Opts.Field.[Mode Used] = modes_vw+".Walk_Express"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Settings for Off-Peak Walk-Local
     CopyFile(trn_op, trn_wloc_op)
@@ -214,7 +214,7 @@ Macro "Observed Transit Assignment"
     Opts.Field.[Mode Impedance] = "modes.Mode_OPTime"
     Opts.Field.[Mode Used] = modes_vw+".Walk_Local"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Settings for Off-Peak Walk-Express
     CopyFile(trn_wloc_op, trn_wexp_op)
@@ -223,7 +223,7 @@ Macro "Observed Transit Assignment"
     Opts.Field.[Mode Imp Weight] = modes_vw+".Express_Weight"
     Opts.Field.[Mode Used] = modes_vw+".Walk_Express"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Settings for Peak PNR
     CopyFile(trn_wloc_pk, trn_pnr_pk)
@@ -243,7 +243,7 @@ Macro "Observed Transit Assignment"
     Opts.Global.[Max Drive Time] = 30
     Opts.Flag.[Use Park and Ride] = "Yes"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Settings for Peak KNR
     CopyFile(trn_pnr_pk, trn_knr_pk)
@@ -253,7 +253,7 @@ Macro "Observed Transit Assignment"
     Opts.Input.[Centroid Set] = {hwyfile+"|"+node_lyr, node_lyr, "centroid"}
     Opts.Field.[Mode Used] = modes_vw+".KNR"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Settings for Off-Peak PNR
     CopyFile(trn_wloc_op, trn_pnr_op)
@@ -268,7 +268,7 @@ Macro "Observed Transit Assignment"
     Opts.Field.[Mode Impedance] = modes_vw+".Mode_OPTime"
     Opts.Field.[Mode Used] = modes_vw+".PNR"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Settings for Off-Peak KNR-Local
     CopyFile(trn_pnr_op, trn_knr_op)
@@ -278,7 +278,7 @@ Macro "Observed Transit Assignment"
     Opts.Input.[Centroid Set] = {hwyfile+"|"+node_lyr, node_lyr, "centroid"}
     Opts.Field.[Mode Used] = modes_vw+".KNR"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     dim onOffTables[trnnet.length]
 
@@ -306,14 +306,14 @@ Macro "Observed Transit Assignment"
         Opts.Output.[OnOff Table] = outputOnOffTable
 
         ret_value = RunMacro("TCB Run Procedure", 1, "Transit Assignment PF", Opts)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
 
     end
 
     RunMacro("Close All")
 
     ret_value = RunMacro("Collapse OnOffs By Route", onOffTables, hwyfile, rtsfile)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     quit:
         Return( RunMacro("TCB Closing", ret_value, True ) )

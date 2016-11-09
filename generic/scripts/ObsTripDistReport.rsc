@@ -52,10 +52,10 @@ Macro "Report Obs Trip Distribution"
                  
     //perform TLFDs
     ret_value = RunMacro("Run TLFDs", tripDirectory, pkTrips, pkSkim, skimOptions)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
    
     ret_value = RunMacro("Run TLFDs", tripDirectory, opTrips, opSkim, skimOptions)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     
     //perform district summaries
     trips = {
@@ -84,7 +84,7 @@ Macro "Report Obs Trip Distribution"
                 "obstrpnsa.mtx"
     }
     ret_value = RunMacro("District Summaries", tripDirectory, trips, tazFile, "TD")    
-    if !ret_value then goto quit
+    if !ret_value then Throw()
        
     Return(1)
     quit:
@@ -175,7 +175,7 @@ Macro "Run TLFDs" (scenarioDirectory, tripFiles, skimFile, skimOptions)
                 Opts.Output.[Output Matrix].[File Name] = outputFile  
                 
                 ret_value = RunMacro("TCB Run Procedure", "TLD", Opts) 
-                if !ret_value then goto quit
+                if !ret_value then Throw()
                 
                 //convert to text
                 m = OpenMatrix(outputFile,)
@@ -251,7 +251,7 @@ Macro "District Summaries" (scenarioDirectory, tripFiles, tazFile, districtField
             Opts.Output.[Aggregated Matrix].[File Name] = outputFile
             
             ret_value = RunMacro("TCB Run Operation", "Aggregate Matrix", Opts) 
-            if !ret_value then goto quit
+            if !ret_value then Throw()
             
             //convert to text
             m = OpenMatrix(outputFile,)

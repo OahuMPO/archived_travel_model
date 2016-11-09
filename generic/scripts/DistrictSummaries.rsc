@@ -47,7 +47,7 @@ Macro "District Summaries" (tripFiles, tazFile, districtField)
             Opts.Output.[Aggregated Matrix].[File Name] = outputFile
             
             ret_value = RunMacro("TCB Run Operation", "Aggregate Matrix", Opts) 
-            if !ret_value then goto quit
+            if !ret_value then Throw()
 
             //convert to text
             m = OpenMatrix(outputFile,)

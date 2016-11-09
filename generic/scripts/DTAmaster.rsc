@@ -34,13 +34,13 @@ Macro "OahuMPO DTA"(path, options)
 	 CopyDatabase(highway_db, DTA_DBD)
 
 		ret_value = RunMacro("Prepare DTA Trip Table", scenarioDirectory, odMatrix)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
   	ret_value = RunMacro("Process HighwayFile", scenarioDirectory,DTA_DBD,odMatrix)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     ret_value = RunMacro("Set 4Hr AM Peak Network",scenarioDirectory, period, highway_net, DTA_DBD)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
      // STEP 1: Highway Network Setting
      Opts = null
@@ -51,7 +51,7 @@ Macro "OahuMPO DTA"(path, options)
      Opts.Flag.[Centroids in Network] = 1
 
      ret_value = RunMacro("TCB Run Operation", "Highway Network Setting", Opts, &Ret)
-     if !ret_value then goto quit    // DTA Settings
+     if !ret_value then Throw()    // DTA Settings
 
 
      Opts = null
@@ -85,12 +85,12 @@ Macro "OahuMPO DTA"(path, options)
 
 
      ret_value = RunMacro("TCB Run Procedure", "Dynamic Assignment", Opts, &Ret)
-     if !ret_value then goto quit
+     if !ret_value then Throw()
 
      SkimSummary:
 
      ret_value = RunMacro("DTA Skim Summary",scenarioDirectory,DTA_DBD)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
      	  Return(1)
 
@@ -152,28 +152,28 @@ Macro "Prepare DTA Trip Table"(scenarioDirectory,odMatrix)
      Opts.Global.[Matrix List] = {"\"3:00\" -- \"3:15 AM\"", "\"3:15\" -- \"3:30 AM\"", "\"3:30\" -- \"3:45 AM\"", "\"3:45\" -- \"4:00 AM\"", "\"4:00\" -- \"4:15 AM\"", "\"4:15\" -- \"4:30 AM\"", "\"4:30\" -- \"4:45 AM\"", "\"4:45\" -- \"5:00 AM\"", "\"5:00\" -- \"5:15 AM\"", "\"5:15\" -- \"5:30 AM\"", "\"5:30\" -- \"5:45 AM\"", "\"5:45\" -- \"6:00 AM\"", "\"6:00\" -- \"6:15 AM\"", "\"6:15\" -- \"6:30 AM\"", "\"6:30\" -- \"6:45 AM\"", "\"6:45\" -- \"7:00 AM\"", "\"7:00\" -- \"7:15 AM\"", "\"7:15\" -- \"7:30 AM\"", "\"7:30\" -- \"7:45 AM\"", "\"7:45\" -- \"8:00 AM\"", "\"8:00\" -- \"8:15 AM\"", "\"8:15\" -- \"8:30 AM\"", "\"8:30\" -- \"8:45 AM\"", "\"8:45\" -- \"9:00 AM\"", "\"9:00\" -- \"9:15 AM\"", "\"9:15\" -- \"9:30 AM\"", "\"9:30\" -- \"9:45 AM\"", "\"9:45\" -- \"10:00 AM\"", "\"10:00\" -- \"10:15 AM\"", "\"10:15\" -- \"10:30 AM\"", "\"10:30\" -- \"10:45 AM\"", "\"10:45\" -- \"11:00 AM\"", "diff730rhett_ram", "AMPEAK", "ampeakDiff"}
 
      ret_value = RunMacro("TCB Run Operation", "Fill Matrices", Opts, &Ret)
-		 if !ret_value then goto quit
+		 if !ret_value then Throw()
 
 
 			Opts = null
 			Opts.Input.[Input Currency] =    {DTA_AM_TT, , , }
 			ret_value = RunMacro("TCB Run Operation", "Matrix QuickSum", Opts)
-			if !ret_value then goto quit
+			if !ret_value then Throw()
 
 			Opts = null
 			Opts.Input.[Input Currency] =    {DTA_MD_TT, , , }
 			ret_value = RunMacro("TCB Run Operation", "Matrix QuickSum", Opts)
-			if !ret_value then goto quit
+			if !ret_value then Throw()
 
 			Opts = null
 			Opts.Input.[Input Currency] =    {DTA_PM_TT, , , }
 			ret_value = RunMacro("TCB Run Operation", "Matrix QuickSum", Opts)
-			if !ret_value then goto quit
+			if !ret_value then Throw()
 
 			Opts = null
 			Opts.Input.[Input Currency] =    {DTA_Night_TT, , , }
 			ret_value = RunMacro("TCB Run Operation", "Matrix QuickSum", Opts)
-      if !ret_value then goto quit
+      if !ret_value then Throw()
 
       m = OpenMatrix(DTA_AM_TT, )
 			matrix_cores = GetMatrixCoreNames(m)
@@ -246,7 +246,7 @@ Macro "Prepare DTA Trip Table"(scenarioDirectory,odMatrix)
 			     Opts.Global.[Fill Option].[Missing is Zero] = "Yes"
 
 			     ret_value = RunMacro("TCB Run Operation", "Fill Matrices", Opts, &Ret)
-			 		 if !ret_value then goto quit
+			 		 if !ret_value then Throw()
 
 			end
 
@@ -269,7 +269,7 @@ Macro "Process HighwayFile"(scenarioDirectory,DTA_DBD,odMatrix)
 			StorageCapacity = 210
 			//DTA_DBD= scenarioDirectory + "\\DTA\\Outputs\\DTAhighway.dbd"
 			{node_lyr,link_lyr} = RunMacro("TCB Add DB Layers", DTA_DBD,,)
-	    if link_lyr = null then goto quit
+	    if link_lyr = null then Throw()
 
 	    {_Flds,} = GetFields(link_lyr, "All")
 	    if !ArrayPosition(_Flds, {"AB_CAP_AM15Min"},) then do                // if group field not exists yet
@@ -283,7 +283,7 @@ Macro "Process HighwayFile"(scenarioDirectory,DTA_DBD,odMatrix)
     Opts.Global.Method = "Formula"
     Opts.Global.Parameter = {"AB_CAP_AM2HR*"+I2S(TimePeriod)+"/120", "Max(1,"+I2S(StorageCapacity)+"*Length*[AB_LANE])"}
     ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-		if !ret_value then goto quit
+		if !ret_value then Throw()
 
     Opts = null
     Opts.Input.[Dataview Set] = {DTA_DBD + "|" + link_lyr, link_lyr,"BA Links","Select * where Dir<>1"}
@@ -291,7 +291,7 @@ Macro "Process HighwayFile"(scenarioDirectory,DTA_DBD,odMatrix)
     Opts.Global.Method = "Formula"
     Opts.Global.Parameter = {"BA_CAP_AM2HR*"+I2S(TimePeriod)+"/120", "Max(1,"+I2S(StorageCapacity)+"*Length*[BA_LANE])"}
     ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     Opts = null
     Opts.Input.[Dataview Set] = {DTA_DBD + "|" + link_lyr, link_lyr,"BA Links","Select * where [AB FACTYPE]=13"}
@@ -299,7 +299,7 @@ Macro "Process HighwayFile"(scenarioDirectory,DTA_DBD,odMatrix)
     Opts.Global.Method = "Formula"
     Opts.Global.Parameter = {"AB_CAP_AM15Min*2/3", "AB_2hr_AM_SC*2/3"}
     ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     Opts = null
     Opts.Input.[Dataview Set] = {DTA_DBD + "|" + link_lyr, link_lyr,"BA Links","Select * where [BA FACTYPE]=13"}
@@ -307,7 +307,7 @@ Macro "Process HighwayFile"(scenarioDirectory,DTA_DBD,odMatrix)
     Opts.Global.Method = "Formula"
     Opts.Global.Parameter = {"BA_CAP_AM15Min*2/3", "BA_2hr_AM_SC*2/3"}
     ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 	  Return(1)
 
@@ -407,7 +407,7 @@ Macro "Set 4Hr AM Peak Network"(scenarioDirectory, period, highway_net, DTA_DBD)
         Opts.Output.[Network File] = highway_net
 
         ret_value = RunMacro("TCB Run Operation", "Build Highway Network", Opts, &Ret)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
 
 	  Return(1)
 
@@ -482,7 +482,7 @@ Macro "Recode Values" (hwyfile, fields, fromValues, toValues, facilityTypes)
     	        Opts.Global.Method = "Value"                               // fill with a single value
     	        Opts.Global.Parameter = {toValues[i]}                        // fill with value from array
     	        ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    	        if !ret_value then goto quit
+    	        if !ret_value then Throw()
             end
 
             next:
@@ -562,7 +562,7 @@ Macro "DTA Skim Summary"(scenarioDirectory,DTA_DBD)
     end
 
     ret_value = RunMacro("DTA Summaries",scenarioDirectory,DTA_DBD)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     RunMacro("Close All")
     Return(1)
@@ -600,7 +600,7 @@ Macro "DTA Summaries"(scenarioDirectory, DTA_DBD)
 
 			//add in the count,corridor,segment,To_DT and count fields
 			{node_lyr,link_lyr} = RunMacro("TCB Add DB Layers", highwayDatabase,,)
-	    if link_lyr = null then goto quit
+	    if link_lyr = null then Throw()
 
 		{_Flds,} = GetFields(link_lyr, "All")
 	  if !ArrayPosition(_Flds, {"15Min_Count"},) then do                // if group field not exists yet
@@ -616,7 +616,7 @@ Macro "DTA Summaries"(scenarioDirectory, DTA_DBD)
      Opts.Global.Parameter = "countmerge_toScenario.Corridor"
 
      ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-     if !ret_value then goto quit
+     if !ret_value then Throw()
 
 		 Opts = null
      Opts.Input.[Dataview Set] = {{highwayDatabase + "|" + link_lyr, scenarioDirectory + "\\DTA\\countmerge_toScenario.bin", {"ID"}, {"ID"}}, "Oahu Links+countmerge_toScenari"}
@@ -626,7 +626,7 @@ Macro "DTA Summaries"(scenarioDirectory, DTA_DBD)
 
      ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
 
-     if !ret_value then goto quit
+     if !ret_value then Throw()
 
 
      Opts = null
@@ -637,7 +637,7 @@ Macro "DTA Summaries"(scenarioDirectory, DTA_DBD)
 
      ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
 
-     if !ret_value then goto quit
+     if !ret_value then Throw()
 
      Opts = null
      Opts.Input.[Dataview Set] = {{highwayDatabase + "|" + link_lyr, scenarioDirectory + "\\DTA\\countmerge_toScenario.bin", {"ID"}, {"ID"}}, "Oahu Links+countmerge_toScenari"}
@@ -647,7 +647,7 @@ Macro "DTA Summaries"(scenarioDirectory, DTA_DBD)
 
      ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
 
-     if !ret_value then goto quit
+     if !ret_value then Throw()
 
      Opts = null
      Opts.Input.[Dataview Set] = {{highwayDatabase + "|" + link_lyr, scenarioDirectory + "\\DTA\\countmerge_toScenario.bin", {"ID"}, {"ID"}}, "Oahu Links+countmerge_toScenari"}
@@ -657,7 +657,7 @@ Macro "DTA Summaries"(scenarioDirectory, DTA_DBD)
 
      ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
 
-     if !ret_value then goto quit
+     if !ret_value then Throw()
 
 			// Join the flow table and network data base and export the file
 				llayers = GetDBLayers(highwayDatabase)
@@ -693,7 +693,7 @@ Macro "Flow Summaries" (scenarioDirectory, outJoinFile)
 
       // add the new fields
       ret_value = RunMacro("TCB Add View Fields", {DTA_Flows, NewFlds})
-      if !ret_value then goto quit
+      if !ret_value then Throw()
 
       Setview(DTA_Flows)
       Opts = null
@@ -702,7 +702,7 @@ Macro "Flow Summaries" (scenarioDirectory, outJoinFile)
       Opts.Global.Method = "Formula"
       Opts.Global.Parameter = {"[BA FACTYPE]","BA_ATYPE","[BA_FFTIME]"}
       ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-  	  if !ret_value then goto quit
+  	  if !ret_value then Throw()
 
 			RunMacro("Close All")
 			DTA_Flows = OpenTable("DTA_Flows", "FFB", {outJoinFile})
@@ -714,7 +714,7 @@ Macro "Flow Summaries" (scenarioDirectory, outJoinFile)
       Opts.Global.Method = "Formula"
       Opts.Global.Parameter = {"[AB FACTYPE]", "AB_ATYPE","[AB_FFTIME]"}
       ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-  	  if !ret_value then goto quit
+  	  if !ret_value then Throw()
 
 			RunMacro("Close All")
 				DTA_Flows = OpenTable("DTA_Flows", "FFB", {outJoinFile})
@@ -730,7 +730,7 @@ Macro "Flow Summaries" (scenarioDirectory, outJoinFile)
         				// Add the bi-directional flow field
         				NewFlds = {{"Flow" + SubString(Flds[i],pos+7,StringLength(Flds[i])-7), "real"}}
 				        ret_value = RunMacro("TCB Add View Fields", {DTA_Flows, NewFlds})
-				        if !ret_value then goto quit
+				        if !ret_value then Throw()
 				        //i = i + 80
         		end
 
@@ -753,7 +753,7 @@ Macro "Flow Summaries" (scenarioDirectory, outJoinFile)
               	Opts.Global.Method = "Formula"                                                  // fill by formula
               	Opts.Global.Parameter = {Flds[i]}                                               // the value to fill with is the taz layer District
               	ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-          	    if !ret_value then goto quit
+          	    if !ret_value then Throw()
 
         				//Fill the BA-directional flow field
               	Opts = null
@@ -762,7 +762,7 @@ Macro "Flow Summaries" (scenarioDirectory, outJoinFile)
               	Opts.Global.Method = "Formula"                                                  // fill by formula
               	Opts.Global.Parameter = {Flds[i+1]}                                             // the value to fill with is the taz layer District
               	ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-          	    if !ret_value then goto quit
+          	    if !ret_value then Throw()
 
         				//Fill the bi-directional flow field
               	Opts = null
@@ -771,7 +771,7 @@ Macro "Flow Summaries" (scenarioDirectory, outJoinFile)
               	Opts.Global.Method = "Formula"                                                  // fill by formula
               	Opts.Global.Parameter = {Flds[i]+ " + " + Flds[i+1]}                            // the value to fill with is the taz layer District
               	ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-          	    if !ret_value then goto quit
+          	    if !ret_value then Throw()
 
           	    exportFields = InsertArrayElements(exportFields,exportFields.length,{"Flow" + SubString(Flds[i],pos+7,StringLength(Flds[i])-7)})
           	    //i = i + 80
@@ -834,7 +834,7 @@ Macro "TT Summaries" (scenarioDirectory, outJoinFile)
         				// Add the bi-directional flow field
         				NewFlds = {{"Wgt_Time" + SubString(Flds[i],pos+7,StringLength(Flds[i])-7), "real"},{"Wgt_FFTIME" + SubString(Flds[i],pos+7,StringLength(Flds[i])-7), "real"}}
 				        ret_value = RunMacro("TCB Add View Fields", {DTA_Flows, NewFlds})
-				        if !ret_value then goto quit
+				        if !ret_value then Throw()
 				        //i = i + 63
         		end
 
@@ -857,7 +857,7 @@ Macro "TT Summaries" (scenarioDirectory, outJoinFile)
               	Opts.Global.Method = "Formula"                                                                                                       // fill by formula
               	Opts.Global.Parameter = {Flds[i] + " \* " + "AB_Flow" + SubString(Flds[i],pos+7,StringLength(Flds[i])-7)}                            // the value to fill with is the taz layer District
               	ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-          	    if !ret_value then goto quit
+          	    if !ret_value then Throw()
 
         				//Fill the BA-directional weighted TT field
               	Opts = null
@@ -866,7 +866,7 @@ Macro "TT Summaries" (scenarioDirectory, outJoinFile)
               	Opts.Global.Method = "Formula"                                                                                                        // fill by formula
               	Opts.Global.Parameter = {Flds[i+1] + " \* " + "BA_Flow" + SubString(Flds[i],pos+7,StringLength(Flds[i])-7)}                           // the value to fill with is the taz layer District
               	ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-          	    if !ret_value then goto quit
+          	    if !ret_value then Throw()
 
         				//Fill the bi-directional weighted TT field
               	Opts = null
@@ -875,7 +875,7 @@ Macro "TT Summaries" (scenarioDirectory, outJoinFile)
               	Opts.Global.Method = "Formula"                                                                                                       // fill by formula
               	Opts.Global.Parameter = {Flds[i] + " \* " + "AB_Flow" + SubString(Flds[i],pos+7,StringLength(Flds[i])-7) + "\+" + Flds[i+1] + " \* " + "BA_Flow" + SubString(Flds[i],pos+7,StringLength(Flds[i])-7)}                            // the value to fill with is the taz layer District
               	ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-          	    if !ret_value then goto quit
+          	    if !ret_value then Throw()
 
         				//Fill the bi-directional weighted FFTT field
               	Opts = null
@@ -884,7 +884,7 @@ Macro "TT Summaries" (scenarioDirectory, outJoinFile)
               	Opts.Global.Method = "Formula"                                                                                                       // fill by formula
               	Opts.Global.Parameter = {"FFTIME" + " \* " + "Flow" + SubString(Flds[i],pos+7,StringLength(Flds[i])-7)}                            // the value to fill with is the taz layer District
               	ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-          	    if !ret_value then goto quit
+          	    if !ret_value then Throw()
 
 
           	    exportFields = InsertArrayElements(exportFields,exportFields.length,{"Flow" + SubString(Flds[i],pos+7,StringLength(Flds[i])-7)})
@@ -950,7 +950,7 @@ Macro "Collapse TT" (scenarioDirectory)
         // add the new facility type field which will combine the 15 facility types into 5 categories
 				NewFlds = {{"New_FACTYPE", "integer"}}
 	      ret_value = RunMacro("TCB Add View Fields", {DTA_Collapsed_TT, NewFlds})
-	      if !ret_value then goto quit
+	      if !ret_value then Throw()
 
 				//Fill the Freeways with 1
       	Opts = null
@@ -959,7 +959,7 @@ Macro "Collapse TT" (scenarioDirectory)
       	Opts.Global.Method = "Value"                                                                                                       // fill by formula
       	Opts.Global.Parameter = {1}                                                                                                        // the value to fill with is the taz layer District
       	ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-  	    if !ret_value then goto quit
+  	    if !ret_value then Throw()
 
 				//Fill the Expressways with 2
       	Opts = null
@@ -968,7 +968,7 @@ Macro "Collapse TT" (scenarioDirectory)
       	Opts.Global.Method = "Value"                                                                                                       // fill by formula
       	Opts.Global.Parameter = {2}                                                                                                        // the value to fill with is the taz layer District
       	ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-  	    if !ret_value then goto quit
+  	    if !ret_value then Throw()
 
 				//Fill the Arterials with 3
       	Opts = null
@@ -977,7 +977,7 @@ Macro "Collapse TT" (scenarioDirectory)
       	Opts.Global.Method = "Value"                                                                                                       // fill by formula
       	Opts.Global.Parameter = {3}                                                                                                        // the value to fill with is the taz layer District
       	ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-  	    if !ret_value then goto quit
+  	    if !ret_value then Throw()
 
 				//Fill the Collectors with 4
       	Opts = null
@@ -986,7 +986,7 @@ Macro "Collapse TT" (scenarioDirectory)
       	Opts.Global.Method = "Value"                                                                                                       // fill by formula
       	Opts.Global.Parameter = {4}                                                                                                        // the value to fill with is the taz layer District
       	ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-  	    if !ret_value then goto quit
+  	    if !ret_value then Throw()
 
 				//Fill the Local Streets with 5
       	Opts = null
@@ -995,7 +995,7 @@ Macro "Collapse TT" (scenarioDirectory)
       	Opts.Global.Method = "Value"                                                                                                       // fill by formula
       	Opts.Global.Parameter = {5}                                                                                                        // the value to fill with is the taz layer District
       	ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-  	    if !ret_value then goto quit
+  	    if !ret_value then Throw()
 
 				compressedTT = scenarioDirectory + "\\DTA\\outputs\\DTA_Compressed_TT.bin"
 				rslt = AggregateTable("DTA_Compressed_TT",DTA_Collapsed_TT+ "|", "FFB", compressedTT, "New_FACTYPE", collapseFields, null)
@@ -1015,7 +1015,7 @@ Macro "Collapse TT" (scenarioDirectory)
         				// Add the bi-directional flow field
         				NewFlds = {{"C_Fact" + SubString(Flds[i],pos+4,StringLength(Flds[i])-4), "real"}}
 				        ret_value = RunMacro("TCB Add View Fields", {DTA_Compressed_TT, NewFlds})
-				        if !ret_value then goto quit
+				        if !ret_value then Throw()
 
 				        //i = i + 63
         		end
@@ -1040,7 +1040,7 @@ Macro "Collapse TT" (scenarioDirectory)
 				      	Opts.Global.Method = "Formula"                                                           // fill by formula
 				      	Opts.Global.Parameter = {"Wgt_Time"+SubString(Flds[i],pos+4,StringLength(Flds[i])-4)+"\/"+"Wgt_FFTIME"+SubString(Flds[i],pos+4,StringLength(Flds[i])-4)}                                                              // the value to fill with is the taz layer District
 				      	ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-				  	    if !ret_value then goto quit
+				  	    if !ret_value then Throw()
 
 				        //i = i + 63
         		end
@@ -1095,7 +1095,7 @@ Macro "Corridor TT" (scenarioDirectory,DTA_DBD)
         				// Add the bi-directional flow field
         				NewFlds = {{"Corridor_Time" + SubString(Flds[i],pos+7,StringLength(Flds[i])-7), "real"}}
 				        ret_value = RunMacro("TCB Add View Fields", {CorridorTT, NewFlds})
-				        if !ret_value then goto quit
+				        if !ret_value then Throw()
 				        //i = i + 63
         		end
 
@@ -1119,7 +1119,7 @@ Macro "Corridor TT" (scenarioDirectory,DTA_DBD)
 				      	Opts.Global.Method = "Formula"                                                                                                // fill by formula
 				      	Opts.Global.Parameter = {"AB_Time"+SubString(Flds[i],pos+13,StringLength(Flds[i])-13)}                                        // the value to fill with is the taz layer District
 				      	ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-				  	    if !ret_value then goto quit
+				  	    if !ret_value then Throw()
 
 								//Fill the Local Streets with 5
 				      	Opts = null
@@ -1128,7 +1128,7 @@ Macro "Corridor TT" (scenarioDirectory,DTA_DBD)
 				      	Opts.Global.Method = "Formula"                                                                                                // fill by formula
 				      	Opts.Global.Parameter = {"BA_Time"+SubString(Flds[i],pos+13,StringLength(Flds[i])-13)}                                        // the value to fill with is the taz layer District
 				      	ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-				  	    if !ret_value then goto quit
+				  	    if !ret_value then Throw()
 
 				        //i = i + 63
         		end

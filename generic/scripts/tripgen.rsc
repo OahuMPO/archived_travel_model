@@ -76,14 +76,14 @@ Macro "Trip Generation" (scenarioDirectory, iftoll, fixgdwy)
     controlString =    ".\\controls\\TRKGEN5.ctl"
    
    	ret_value = RunMacro("Run Program",scenarioDirectory,executableString,controlString)
-    if(!ret_value) then goto quit   
+    if(!ret_value) then Throw()   
     
       //airport trips
     executableString = ".\\programs\\HNL5SPGN.exe"
     controlString =    ".\\controls\\AIRGEN5.ctl"
 
    	ret_value = RunMacro("Run Program",scenarioDirectory,executableString,controlString)
-    if(!ret_value) then goto quit   
+    if(!ret_value) then Throw()   
    	
     Return(1)    
     
@@ -138,7 +138,7 @@ Macro "Run Program" (scenarioDirectory, executableString, controlString)
         info = GetFileInfo(scenarioDirectory+"\\failed.txt")
         if(info != null) then do
             ret_value=0
-            goto quit
+            Throw()
         end
 
     Return(1)
