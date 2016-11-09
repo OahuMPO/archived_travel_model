@@ -23,7 +23,7 @@
 *       [AB_LANEA],[BA_LANEA]           AM Number of lanes (input)
 *       [AB_LANEM],[BA_LANEM]           Midday number of lanes (input)
 *       [AB_LANEP],[BA_LANEP]	        PM Number of lanes (input)
-*       [AB ATYPE],[BA ATYPE]           Link area type 1-8 (calculated based on zone that link is in)
+*       AB_ATYPE,BA_ATYPE           Link area type 1-8 (calculated based on zone that link is in)
 * 	    [AB Speed],[BA Speed]           Free-flow speed (calculated based on fspd file)
 *       AB_FFTIME,BA_FFTIME             Free-flow time (calculated) 
 *		[AB CSPDC],[BA CSPDC]	        Initial congested speed (calculated based on cspd file)

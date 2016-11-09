@@ -56,8 +56,8 @@ Macro "Highway Assignment Summary"
     CountID[1] = VectorToArray(GetDataVector(VIEW2 + "|", "[CountID]",))            // ID of count station on each Link
     ABFACTYPE[1] = VectorToArray(GetDataVector(VIEW2 + "|", "[AB FACTYPE]",))       // Facility Type for AB direction
     BAFACTYPE[1] = GetDataVector(VIEW2 + "|", "[BA FACTYPE]",)                      // Facility Type for BA direction
-    ABATYPE[1] = VectorToArray(GetDataVector(VIEW2 + "|", "[AB ATYPE]",))           // Area Type for AB direction
-    BAATYPE[1] = GetDataVector(VIEW2 + "|", "[BA ATYPE]",)                          // Area Type for BA direction
+    ABATYPE[1] = VectorToArray(GetDataVector(VIEW2 + "|", "AB_ATYPE",))           // Area Type for AB direction
+    BAATYPE[1] = GetDataVector(VIEW2 + "|", "BA_ATYPE",)                          // Area Type for BA direction
     abflow[1] = GetDataVector(VIEW2 + "|", "AB_Flow",)                          // TOtal daily assigned flow for AB direction
     abVMT[1] = GetDataVector(VIEW2 + "|", "AB_VMT",)                                // TOtal daily assigned flow for BA direction
     baflow[1] = GetDataVector(VIEW2 + "|", "BA_Flow",)                          // TOtal daily assigned flow for AB direction

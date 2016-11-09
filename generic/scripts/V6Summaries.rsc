@@ -5,12 +5,13 @@ Macro "V6 Summaries" (scenarioDirectory)
   // scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\LRTP2040"
 
   RunMacro("Close All")
-  RunMacro("Summarize by FT and AT",scenarioDirectory)
-  RunMacro("Emission Estimation",scenarioDirectory)
-  RunMacro("V/C Map",scenarioDirectory)
-  RunMacro("Trav Time Map",scenarioDirectory)
-  RunMacro("Trav Time Map - Zonal",scenarioDirectory)
-  RunMacro("Transit Boardings",scenarioDirectory)
+  RunMacro("Summarize by FT and AT", scenarioDirectory)
+  RunMacro("Emission Estimation", scenarioDirectory)
+  RunMacro("V/C Map", scenarioDirectory)
+  RunMacro("Trav Time Map", scenarioDirectory)
+  RunMacro("Trav Time Map - Zonal", scenarioDirectory)
+  RunMacro("Transit Boardings", scenarioDirectory)
+  RunMacro("Lane Miles by LOS", scenarioDirectory)
 
   Return(1)
 
@@ -738,4 +739,12 @@ Macro "Transit Boardings" (scenarioDirectory)
   end
 
   RunMacro("Close All")
+EndMacro
+
+/*
+
+*/
+
+Macro "Lane Miles by LOS" (scenarioDirectory)
+
 EndMacro

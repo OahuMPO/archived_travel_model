@@ -22,7 +22,7 @@ Macro "Update Line Layer"
     POP_fld="POP"
     EMP_fld="TOTALEMP"
     taz_at="ATYPE"
-    link_at={"[AB ATYPE]","[BA ATYPE]"}
+    link_at={"AB_ATYPE","BA_ATYPE"}
     ab_lanea="[AB_LANEA]"
     ab_lanem="[AB_LANEM]"
     ab_lanep="[AB_LANEP]"
@@ -158,7 +158,7 @@ Macro "Update Line Layer"
 //******************************* Assign the missing area types as "area type 6" *******************************
     // Create selection set to identify the the links with missing area types:
     SetLayer(link_lyr) //Line Layer
-	link_at={"[AB ATYPE]","[BA ATYPE]"}
+	link_at={"AB_ATYPE","BA_ATYPE"}
 	
 	SetLayer(link_lyr) //Line Layer
 	dir1 = ".Dir"
@@ -170,7 +170,7 @@ Macro "Update Line Layer"
         if link_lyr+"|"+Dir1 <> I2S(-1) then do    
             Opts = null
             Opts.Input.[Dataview Set] = {hwyfile+"|"+link_lyr, link_lyr, "NoATab"}	
-            Opts.Global.Fields = {"[AB ATYPE]"}
+            Opts.Global.Fields = {"AB_ATYPE"}
             Opts.Global.Method = "Value"
             Opts.Global.Parameter = {"6"}
             ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
@@ -182,7 +182,7 @@ Macro "Update Line Layer"
         if  link_lyr+"|"+Dir1 <> I2S(1) then do    
             Opts = null
             Opts.Input.[Dataview Set] = {hwyfile+"|"+link_lyr, link_lyr, "NoATba"}	
-            Opts.Global.Fields = {"[BA ATYPE]"}
+            Opts.Global.Fields = {"BA_ATYPE"}
             Opts.Global.Method = "Value"
             Opts.Global.Parameter = {"6"}
             ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
