@@ -273,7 +273,7 @@ Macro "OMPO6" (path, Options, jump)
         // Do not show a complete message if the model is being
         // run repeatedly by a wrapper function.
         if wrapper = null
-          then 
+          then Return( RunMacro("TCB Closing", ret_value, True ) )
 
 EndMacro
 
