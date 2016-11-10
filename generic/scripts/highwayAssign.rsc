@@ -38,7 +38,7 @@ Macro "Highway Assignment" (scenarioDirectory, nzones, iteration)
     	  	period = periods[i]
     
     			ret_value = RunMacro("Perform Assignment",scenarioDirectory, ODMatrix, period, nzones, iteration)
-    			if !ret_value then goto quit
+    			if !ret_value then Throw()
 			end
 		
     Return(1)
@@ -64,14 +64,14 @@ Macro "Final Highway Assignment" (scenarioDirectory, nzones)
     period = "AM4Hour"
     
     ret_value = RunMacro("Perform Assignment",scenarioDirectory, ODMatrix, period, nzones, iteration)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     //assign 4-hour PM peak
     ODMatrix = scenarioDirectory+"\\outputs\\hwyPM4Hour.mtx"
     period = "PM4Hour"
 
     ret_value = RunMacro("Perform Assignment",scenarioDirectory, ODMatrix, period, nzones, iteration)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     Return(1)
 
@@ -97,46 +97,46 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
     outtable = scenarioDirectory+"\\outputs\\"+period+"Flow"+String(iteration)+".bin"
     if (period = "EA") then do
         turns = tpen[1]
-        ab_limit = "[AB LIMITM]"
-        ba_limit = "[BA LIMITM]"
+        ab_limit = "[AB_LIMITM]"
+        ba_limit = "[BA_LIMITM]"
         ab_capacity = "AB_CAP_EA3HR"
         ba_capacity = "BA_CAP_EA3HR"
         end
     else if (period = "AM") then do
         
         turns = tpen[1]
-        ab_limit = "[AB LIMITA]"
-        ba_limit = "[BA LIMITA]"
+        ab_limit = "[AB_LIMITA]"
+        ba_limit = "[BA_LIMITA]"
         ab_capacity = "AB_CAP_AM3HR"
         ba_capacity = "BA_CAP_AM3HR"
         end
     else if (period = "MD") then do
 
         turns = tpen[2]
-        ab_limit = "[AB LIMITM]"
-        ba_limit = "[BA LIMITM]"
+        ab_limit = "[AB_LIMITM]"
+        ba_limit = "[BA_LIMITM]"
         ab_capacity = "AB_CAP_MD6HR"
         ba_capacity = "BA_CAP_MD6HR"
         end
     else if (period = "PM") then do
 
         turns = tpen[3]
-        ab_limit = "[AB LIMITP]"
-        ba_limit = "[BA LIMITP]"
+        ab_limit = "[AB_LIMITP]"
+        ba_limit = "[BA_LIMITP]"
         ab_capacity = "AB_CAP_PM4HR"
         ba_capacity = "BA_CAP_PM4HR"
         end
     else if (period = "EV") then do
 
         turns = tpen[3]
-        ab_limit = "[AB LIMITM]"
-        ba_limit = "[BA LIMITM]"
+        ab_limit = "[AB_LIMITM]"
+        ba_limit = "[BA_LIMITM]"
         ab_capacity = "AB_CAP_EV8HR"
         ba_capacity = "BA_CAP_EV8HR"
         end
     else do
         ShowMessage("Error in Highway Assignment: Period "+String(period)+" not recognized")
-        goto quit 
+        Throw() 
     end
 
 
@@ -172,7 +172,7 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
     
         // add the new fields to the link layer
          ret_value = RunMacro("TCB Add View Fields", {link_lyr, NewFlds})
-        if !ret_value then goto quit
+        if !ret_value then Throw()
 
         costpermile=0.12
         Opts = null
@@ -191,7 +191,7 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
                                  "Length * "+String(costpermile),
                                  "Length * "+String(costpermile)}
         ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
     
     end
 
@@ -219,9 +219,9 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
         Opts.Global.[Link Options] = {{"Length", {link_lyr+".Length", link_lyr+".Length", , , "False"}}, 
                       {"*_Speed", {link_lyr+".[AB Speed]", link_lyr+".[BA Speed]", , , "False"}}, 
      				  {"*_FACTYPE", {link_lyr+".[AB FACTYPE]", link_lyr+".[BA FACTYPE]", , , "False"}}, 
-     				  {"*_LIMITA", {link_lyr+".[AB LIMITA]", link_lyr+".[BA LIMITA]", , , "False"}}, 
-     				  {"*_LIMITM", {link_lyr+".[AB LIMITM]", link_lyr+".[BA LIMITM]", , , "False"}}, 
-     				  {"*_LIMITP", {link_lyr+".[AB LIMITP]", link_lyr+".[BA LIMITP]", , , "False"}}, 
+     				  {"*_LIMITA", {link_lyr+".[AB_LIMITA]", link_lyr+".[BA_LIMITA]", , , "False"}}, 
+     				  {"*_LIMITM", {link_lyr+".[AB_LIMITM]", link_lyr+".[BA_LIMITM]", , , "False"}}, 
+     				  {"*_LIMITP", {link_lyr+".[AB_LIMITP]", link_lyr+".[BA_LIMITP]", , , "False"}}, 
      				  {"*_FFTIME", {link_lyr+".AB_FFTIME", link_lyr+".BA_FFTIME", , , "False"}}, 
      				  {"*_CAPACITY", {link_lyr+"."+ab_capacity, link_lyr+"."+ba_capacity, , , "False"}},
      				  {"*_ALPHA", {link_lyr+".[AB_ALPHA]", link_lyr+".[BA_ALPHA]", , , "False"}},
@@ -246,7 +246,7 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
         Opts.Output.[Network File] = highway_net
 
         ret_value = RunMacro("TCB Run Operation", "Build Highway Network", Opts, &Ret)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
      end
     
     // Set turn penalties for the time period
@@ -279,7 +279,7 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
     if !ret_value then do
         ShowMessage("Highway network settings failed.")
         ShowMessage(1)    
-        goto quit
+        Throw()
     end
     // Link selection for assignment:
     //
@@ -363,7 +363,7 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
     if !ret_value then do
         ShowMessage("Highway assignment failed.")
         // ShowMessage(1)
-        goto quit
+        Throw()
     end
 
     RunMacro("Close All")

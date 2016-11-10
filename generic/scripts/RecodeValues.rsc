@@ -64,7 +64,7 @@ Macro "Recode Values" (hwyfile, fields, fromValues, toValues, facilityTypes)
     	        Opts.Global.Method = "Value"                               // fill with a single value
     	        Opts.Global.Parameter = {toValues[i]}                        // fill with value from array
     	        ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    	        if !ret_value then goto quit
+    	        if !ret_value then Throw()
             end
             
             next:    

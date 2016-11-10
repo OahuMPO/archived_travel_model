@@ -157,10 +157,10 @@ Macro "Report Mode Choice"
                  {      5,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0}} //Observed visitor       5      
 
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)    
-   if !ret_value then goto quit
+   if !ret_value then Throw()
 
     ret_value = RunMacro("District Summaries", {outFile}, tazFile, "TD")    
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     //Collapse the mode choice trip tables into just transit trips, by the 5 trip categories that the OD survey uses, then
     //run TFLDS
@@ -177,11 +177,11 @@ Macro "Report Mode Choice"
     tableArray = {{      0,       0,       0,       2,       1,       3,       0,       6,       0,       0,       4,       5}}  
    
     ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, modes, description)    
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     //Run HBW TLFD
     ret_value = RunMacro("Run Transit TLFDs", scenarioDirectory, outFile, pkSkims, skimOptions)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     
     // **********************************************************************************************************************
     //Next collapse Home-Other
@@ -201,11 +201,11 @@ Macro "Report Mode Choice"
                  {      0,       0,       0,       2,       1,       3,       0,       6,       0,       0,       4,       5}}  //NO Person trips
    
     ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, modes, description)    
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     //Run HBO TLFD
     ret_value = RunMacro("Run Transit TLFDs", scenarioDirectory, outFile, opSkims, skimOptions)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // **********************************************************************************************************************
     //Next collapse Non-Home-Based
@@ -228,11 +228,11 @@ Macro "Report Mode Choice"
                   {      0,       0,       0,       2,       1,       3,       0,       6,       0,       0,       4,       5}}  //NN Person trips
    
     ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, modes, description)    
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     //Run NHB TLFD
     ret_value = RunMacro("Run Transit TLFDs", scenarioDirectory, outFile, opSkims, skimOptions)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // **********************************************************************************************************************
     //Next collapse School/College
@@ -249,11 +249,11 @@ Macro "Report Mode Choice"
                   {      0,       0,       0,       2,       1,       3,       0,       6,       0,       0,       4,       5}}  //NK Person trips
    
     ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, modes, description)    
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     
     //Run HBSchool TLFD
     ret_value = RunMacro("Run Transit TLFDs", scenarioDirectory, outFile, opSkims, skimOptions)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     Return(1)
     quit:
@@ -344,7 +344,7 @@ Macro "Run Transit TLFDs" (scenarioDirectory, tripFile, skimFiles, skimOptions)
             Opts.Output.[Output Matrix].[File Name] = outputFile  
             
             ret_value = RunMacro("TCB Run Procedure", "TLD", Opts) 
-            if !ret_value then goto quit
+            if !ret_value then Throw()
             
             //convert to text
             m = OpenMatrix(outputFile,)

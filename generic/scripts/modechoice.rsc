@@ -9,7 +9,7 @@ Macro "Mode Choice" (scenarioDirectory, Options)
     // apply the airport model
     airport:
     ret_value = RunMacro("Airport Model", scenarioDirectory, Options)
-    if (!ret_value) then goto quit
+    if (!ret_value) then Throw()
 
    Return(1)
     
@@ -77,10 +77,10 @@ Macro "Airport Model" (scenarioDirectory, Options)
         if(optionString != null) then controlString = controls[i] + " " + optionString
 
         ret_value = RunMacro("Run Program",scenarioDirectory,executableString, controlString)
-        if(!ret_value) then goto quit
+        if(!ret_value) then Throw()
     
         ret_value = RunMacro("Convert Binary to Mtx",{scenarioDirectory+"\\outputs\\"+tripTable[i]}) 
-        if(!ret_value) then goto quit
+        if(!ret_value) then Throw()
         
     end
     

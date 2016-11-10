@@ -36,7 +36,7 @@ Macro "Factor Visitor Observed" (ScenarioDirectory)
     Opts.Global.[Expression Text] = "if([OPTime]=0) then null else [OPTime]"
     Opts.Global.[Force Missing] = "Yes"
     ret_value = RunMacro("TCB Run Operation", "Fill Matrices", Opts) 
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 
 

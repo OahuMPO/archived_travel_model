@@ -2,7 +2,7 @@ Macro "Convert Percent Rail Walk to Binary" (scenarioDirectory)
     RunMacro("TCB Init")
         scenarioDirectory="F:\\projects\\OMPO\\ORTP2009\\C_Model\\2030MOSJ_setdist_110503"
         ret_value = RunMacro("Convert Matrices To Binary",{scenarioDirectory+"\\SUMMIT\\perwalkrailtcadmat.mtx"}) 
-        if(!ret_value) then goto quit
+        if(!ret_value) then Throw()
         
     Return(1)
     quit:

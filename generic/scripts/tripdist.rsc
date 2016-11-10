@@ -21,7 +21,7 @@ Macro "Trip Distribution" (scenarioDirectory, iftoll)
     
     
     ret_value = RunMacro("Run Distrib",scenarioDirectory,executableString,controls, iftoll)
-    if(!ret_value) then goto quit
+    if(!ret_value) then Throw()
 
  
     // convert truck trips to mtx format 
@@ -36,7 +36,7 @@ Macro "Trip Distribution" (scenarioDirectory, iftoll)
              scenarioDirectory+"\\outputs\\DIST5PO.bin"}
              
    ret_value = RunMacro("Convert Binary to Mtx", files)
-   if (!ret_value) then goto quit
+   if (!ret_value) then Throw()
    
       
     Return(1)
@@ -84,7 +84,7 @@ Macro "Run Distrib" (scenarioDirectory, executableString, controls, iftoll)
         info = GetFileInfo(scenarioDirectory+"\\failed.txt")
         if(info != null) then do
             ret_value=0
-            goto quit
+            Throw()
         end
     end
 

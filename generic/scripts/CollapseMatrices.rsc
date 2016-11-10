@@ -10,7 +10,7 @@
 *                       The entry in the table corresponds to the number of the core in the output file that the core in the input
 *                       file should be added to.
 *   outFile             Path/name of output file.
-*   coreNames           Array of core names for output file; should be dimensioned accordingly. 
+*   coreNames           Array of core names for output file; should be dimensioned accordingly.
 *   description         Description for output file.
 *
 ***********************************************************************************************************************************/
@@ -21,7 +21,7 @@ Macro "Collapse Matrices" (inFiles, tableArray, outFile, coreNames, description)
     	MessageBox("Error in Collapse Matrix, inFiles not equal to tableArray for "+description, )
     	Return(0)
     end
-        
+
     //open the input matrices and matrix currencies
     dim inMat[inFiles.length]
     dim inCur[inFiles.length]
@@ -31,22 +31,22 @@ Macro "Collapse Matrices" (inFiles, tableArray, outFile, coreNames, description)
         inCur[i]  = CreateMatrixCurrencies(inMat[i], , ,)
         cNames[i]= GetMatrixCoreNames(inMat[i])
     end
-    
+
     maxTable = 0
 
     //determine number of tables in outFile
     for i= 1 to tableArray.length do
         for j = 1 to tableArray[i].length do
-            maxTable = Max(tableArray[i][j], maxTable) 
+            maxTable = Max(tableArray[i][j], maxTable)
         end
     end
-    
+
     // if coreNames isn't dimensioned by maxTable, error
     if (coreNames.length < maxTable) then do
     	MessageBox("Error in Collapse Matrix, file names not given for all cores specified in tableArray for "+description, )
     	Return(0)
     end
-    
+
     // create the output table
     Opts = null
     Opts.[File Name] = outFile
@@ -56,24 +56,24 @@ Macro "Collapse Matrices" (inFiles, tableArray, outFile, coreNames, description)
     Opts.[Column Major] = "No"
     Opts.[File Based] = "Yes"
     Opts.Compression = True
-    
+
     rowLabels = GetMatrixRowLabels(inCur[1].(cNames[1][1]))
     zones = rowLabels.length
     outMat = CreateMatrixFromScratch(description, zones, zones, Opts)
     outCur = CreateMatrixCurrencies(outMat, , ,)
-    
+
     //initialize all matrices to 0
     for i = 1 to outCur.length do
         outCore = outCur.(coreNames[i])
         outCore := 0
     end
-    
+
     // iterate through the tableArray and collapse
     for i= 1 to tableArray.length do
         for j = 1 to tableArray[i].length do
-        
+
             outTable = tableArray[i][j]
-            
+
             //if the outTable isn't 0, add the input table to the output table
             if(outTable !=0) then do
                 inCore = inCur[i].(cNames[i][j])
@@ -82,7 +82,7 @@ Macro "Collapse Matrices" (inFiles, tableArray, outFile, coreNames, description)
             end
         end
     end
-   
+
     // Sum the output tables in the output file and report
     dim outTotals[coreNames.length]
     stat_array = MatrixStatistics(outMat,)
@@ -100,14 +100,13 @@ Macro "Collapse Matrices" (inFiles, tableArray, outFile, coreNames, description)
     AppendTableToReportFile( columns, {{"Title", "Collapse Matrix Table Totals for "+path[3]}})
 
     for j = 1 to coreNames.length do
-        outRow = { coreNames[j] } + { outTotals[j]}  
+        outRow = { coreNames[j] } + { outTotals[j]}
         AppendRowToReportFile(outRow,)
     end
     CloseReportFileSection()
-     
-    ret_value = RunMacro("Close All")
-    if !ret_value then goto quit
-    
+
+    RunMacro("Close All")
+
     Return(1)
      quit:
     	Return( RunMacro("TCB Closing", ret_value, True ) )

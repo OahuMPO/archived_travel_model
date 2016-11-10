@@ -36,7 +36,7 @@ Macro "AppendAssign" (scenarioDirectory, iteration)
             {"BA_VOC_"+periods[period], "real"}}
         // add the new fields to the link layer
         ret_value = RunMacro("TCB Add View Fields", {link_lyr, NewFlds})
-        if !ret_value then goto quit
+        if !ret_value then Throw()
  
         flowTable = scenarioDirectory+"\\outputs\\"+periods[period]+"Flow"+iteration+".bin"
     
@@ -54,7 +54,7 @@ Macro "AppendAssign" (scenarioDirectory, iteration)
     	Opts.Global.Method = "Formula"                                         // the fill method          
     	Opts.Global.Parameter = {"AB_Flow","BA_Flow","TOT_Flow","AB_Speed","BA_Speed","AB_Time", "BA_Time", "AB_VOC", "BA_VOC"}                               
     	ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    	if !ret_value then goto quit
+    	if !ret_value then Throw()
 	end
 
     //add the fields
@@ -64,7 +64,7 @@ Macro "AppendAssign" (scenarioDirectory, iteration)
             {"TOT_FLOW_DAILY", "real"}}
         // add the new fields to the link layer
         ret_value = RunMacro("TCB Add View Fields", {link_lyr, NewFlds})
-        if !ret_value then goto quit
+        if !ret_value then Throw()
    
 //fill fields with total Assignment Results
  Opts.Input.[Dataview Set] = {hwyfile+"|"+link_lyr, link_lyr}	
@@ -72,7 +72,7 @@ Macro "AppendAssign" (scenarioDirectory, iteration)
     Opts.Global.Method = "Formula"                                         // the fill method          
     Opts.Global.Parameter = {"AB_FLOW_EA + AB_FLOW_AM + AB_FLOW_MD + AB_FLOW_PM + AB_FLOW_EV","BA_FLOW_EA + BA_FLOW_AM + BA_FLOW_MD + BA_FLOW_PM + BA_FLOW_EV"}                         // the column in the conicalsfile file
     ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     	
 // change null to zero 
     Opts.Input.[Dataview Set] = {hwyfile+"|"+link_lyr, link_lyr}
@@ -81,7 +81,7 @@ Macro "AppendAssign" (scenarioDirectory, iteration)
      Opts.Global.Parameter = "If (AB_FLOW_DAILY>0) then AB_FLOW_DAILY else 0"
 
      ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-     if !ret_value then goto quit
+     if !ret_value then Throw()
 
      Opts.Input.[Dataview Set] = {hwyfile+"|"+link_lyr, link_lyr}
      Opts.Global.Fields = {"BA_FLOW_DAILY"}
@@ -89,7 +89,7 @@ Macro "AppendAssign" (scenarioDirectory, iteration)
      Opts.Global.Parameter = "If (BA_FLOW_DAILY>0) then BA_FLOW_DAILY else 0"
 
      ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-     if !ret_value then goto quit
+     if !ret_value then Throw()
 
    
     //fill fields with total Assignment Results
@@ -101,7 +101,7 @@ Macro "AppendAssign" (scenarioDirectory, iteration)
     Opts.Global.Parameter = {"AB_FLOW_DAILY + BA_FLOW_DAILY"}
                                                            // the column in the conicalsfile file
     ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     return(1)
     quit:

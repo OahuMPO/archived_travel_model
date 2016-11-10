@@ -21,15 +21,15 @@ Macro "Transit Network and Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile
     iteration=3
     
     ret_value = RunMacro("Transit Time Update", scenarioDirectory, hwyfile, iteration)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
  
     skim:
     ret_value = RunMacro("Transit Skim", scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, xferfile, nzones)  
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 
     ret_value = RunMacro("Close All")
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     
     Return(1)
     quit:
@@ -65,7 +65,7 @@ Macro "Transit Time Update" (scenarioDirectory, hwyfile, iteration)
         Opts.Global.Method = "Formula"
         Opts.Global.Parameter = {AB_Pk_Time+" * AB_PKTRNFAC",BA_Pk_Time+" * BA_PKTRNFAC",AB_OP_Time+" * AB_OPTRNFAC",BA_OP_Time+" * BA_OPTRNFAC"}
         ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
         
           
         end
@@ -87,7 +87,7 @@ Macro "Transit Time Update" (scenarioDirectory, hwyfile, iteration)
         Opts.Global.Method = "Formula"
         Opts.Global.Parameter = {AB_Pk_Time+" * AB_PKTRNFAC",BA_Pk_Time+" * BA_PKTRNFAC"}
         ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
     
 
         Opts = null
@@ -96,7 +96,7 @@ Macro "Transit Time Update" (scenarioDirectory, hwyfile, iteration)
         Opts.Global.Method = "Formula"
         Opts.Global.Parameter = {AB_OP_Time+" * AB_OPTRNFAC",BA_OP_Time+" * BA_OPTRNFAC"}
         ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
         
     end 
     
@@ -111,10 +111,10 @@ Macro "Transit Time Update" (scenarioDirectory, hwyfile, iteration)
     Opts.Global.Method = "Formula"
     Opts.Global.Parameter = {"(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",}
     ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     
     ret_value = RunMacro("Close All")
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 
         RunMacro("Recode Values", hwyfile, {"MODE_ID","WALKTIME","AB_PKTRNTIME","BA_PKTRNTIME","AB_OPTRNTIME","BA_OPTRNTIME"},
@@ -147,7 +147,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Global.[Expression Text] = "if([PKTime]=0) then null else [PKTime]"
     Opts.Global.[Force Missing] = "Yes"
     ret_value = RunMacro("TCB Run Operation", "Fill Matrices", Opts) 
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     Opts = null
     Opts.Input.[Matrix Currency] = { PNRfile, "OPTime", "Orig", "Dest"}
@@ -156,7 +156,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Global.[Expression Text] = "if([OPTime]=0) then null else [OPTime]"
     Opts.Global.[Force Missing] = "Yes"
     ret_value = RunMacro("TCB Run Operation", "Fill Matrices", Opts) 
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     
     Opts = null
     Opts.Input.[Matrix Currency] = { KNRfile, "PKTime", "Orig", "Dest"}
@@ -165,7 +165,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Global.[Expression Text] = "if([PKTime]=0) then null else [PKTime]"
     Opts.Global.[Force Missing] = "Yes"
     ret_value = RunMacro("TCB Run Operation", "Fill Matrices", Opts) 
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     Opts = null
     Opts.Input.[Matrix Currency] = { KNRfile, "OPTime", "Orig", "Dest"}
@@ -174,7 +174,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Global.[Expression Text] = "if([OPTime]=0) then null else [OPTime]"
     Opts.Global.[Force Missing] = "Yes"
     ret_value = RunMacro("TCB Run Operation", "Fill Matrices", Opts) 
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 */
     // outputs
     // transit networks
@@ -282,14 +282,14 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Output.[Network File] = trn_pk
 
     ret_value = RunMacro("TCB Run Operation", "Build Transit Network", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     
     // Build OP Network
     Opts.Input.[RS Set] = {rtsfile+"|"+rte_lyr, rte_lyr, "OP Routes", "Select * where MD_Headway>0 & Mode<>null"}
     Opts.Output.[Network File] = trn_op
 
     ret_value = RunMacro("TCB Run Operation", "Build Transit Network", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     pth = SplitPath(modefile)
     modes_vw = pth[3]
@@ -358,7 +358,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Flag.[Use P&R Walk Access] = "No"
 
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Settings for Peak Walk-Express
     CopyFile(trn_wloc_pk, trn_wexp_pk)
@@ -367,7 +367,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Field.[Mode Imp Weight] = modes_vw+".Express_Weight"
     Opts.Field.[Mode Used] = modes_vw+".Walk_Express"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Settings for Peak Walk-Fixed Guideway
     CopyFile(trn_wloc_pk, trn_wfxg_pk)
@@ -376,7 +376,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Field.[Mode Imp Weight] = modes_vw+".FixedGuideway_Weight"
     Opts.Field.[Mode Used] = modes_vw+".Walk_FixedGuideway"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Settings for Off-Peak Walk-Local
     CopyFile(trn_op, trn_wloc_op)
@@ -388,7 +388,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Field.[Mode Impedance] = "modes.Mode_OPTime"
     Opts.Field.[Mode Used] = modes_vw+".Walk_Local"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Settings for Off-Peak Walk-Express
     CopyFile(trn_wloc_op, trn_wexp_op)
@@ -397,7 +397,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Field.[Mode Imp Weight] = modes_vw+".Express_Weight"
     Opts.Field.[Mode Used] = modes_vw+".Walk_Express"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Settings for Off-Peak Walk-Fixed Guideway
     CopyFile(trn_wloc_op, trn_wfxg_op)
@@ -406,7 +406,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Field.[Mode Imp Weight] = modes_vw+".FixedGuideway_Weight"
     Opts.Field.[Mode Used] = modes_vw+".Walk_FixedGuideway"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Settings for Peak PNR
     CopyFile(trn_wloc_pk, trn_pnr_pk)
@@ -432,7 +432,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
 //    Opts.Global.[Max Drive Time] = 30
     Opts.Flag.[Use Park and Ride] = "Yes"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Settings for Peak KNR
     CopyFile(trn_pnr_pk, trn_knr_pk)
@@ -457,7 +457,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
 //    Opts.Global.[Max Drive Time] = 30
     Opts.Flag.[Use Park and Ride] = "Yes"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Settings for Off-Peak PNR
     CopyFile(trn_wloc_op, trn_pnr_op)
@@ -472,7 +472,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Field.[Mode Impedance] = modes_vw+".Mode_OPTime"
     Opts.Field.[Mode Used] = modes_vw+".PNR"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // Settings for Off-Peak KNR
     CopyFile(trn_pnr_op, trn_knr_op)
@@ -493,7 +493,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Field.[Mode Impedance] = modes_vw+".Mode_OPTime"
     Opts.Field.[Mode Used] = modes_vw+".KNR"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     // the output pnr node tables
     pnr_pk_pnrNode = scenarioDirectory+"\\outputs\\pnr_pk_pnrNode.mtx"
@@ -540,7 +540,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
    	    end
         
    	    ret_value = RunMacro("TCB Run Procedure", "Transit Skim PF", Opts, &Ret)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
    	    
    	    // Add the parking node matrix to the drive transit skims
    	    if(out_pnr_skm[i] != null) then do
@@ -553,15 +553,15 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
             parkingCopy := parkingCurrency
         end
    	    
-   	    if !ret_value then goto quit
+   	    if !ret_value then Throw()
    end
 
     ret_value = RunMacro("Close All")
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     
     convert:
     ret_value = RunMacro("Convert Matrices To Binary", transitSkims)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 
     Return(1)

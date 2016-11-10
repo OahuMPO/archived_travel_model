@@ -2,7 +2,7 @@ Macro "Convert Mode Choice to Binary" (scenarioDirectory)
     RunMacro("TCB Init")
         scenarioDirectory="F:\\projects\\OMPO\\ORTP2009\\C_Model\\2030tsm_setdist_110427"
         ret_value = RunMacro("Convert Binary to Mtx",{scenarioDirectory+"\\outputs\\mode5nn.bin"}) 
-        if(!ret_value) then goto quit
+        if(!ret_value) then Throw()
         
     Return(1)
     quit:

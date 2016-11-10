@@ -22,13 +22,13 @@ Macro "Update Line Layer"
     POP_fld="POP"
     EMP_fld="TOTALEMP"
     taz_at="ATYPE"
-    link_at={"[AB ATYPE]","[BA ATYPE]"}
-    ab_lanea="[AB LaneA]"
-    ab_lanem="[AB LaneM]"
-    ab_lanep="[AB LaneP]"
-    ba_lanea="[BA LaneA]"
-    ba_lanem="[BA LaneM]"
-    ba_lanep="[BA LaneP]"
+    link_at={"AB_ATYPE","BA_ATYPE"}
+    ab_lanea="[AB_LANEA]"
+    ab_lanem="[AB_LANEM]"
+    ab_lanep="[AB_LANEP]"
+    ba_lanea="[BA_LANEA]"
+    ba_lanem="[BA_LANEM]"
+    ba_lanep="[BA_LANEP]"
     
     aa = GetDBInfo(hwyfile)
     cc = CreateMap("bb",{{"Scope",aa[1]}})
@@ -110,7 +110,7 @@ Macro "Update Line Layer"
     Opts.Global.Method = "Formula"
     Opts.Global.Parameter = {POP_fld+"/Area",EMP_fld+"/Area"}
     ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 */
     SetLayer(taz_lyr) //TAZ Layer
     
@@ -137,7 +137,7 @@ Macro "Update Line Layer"
     	    Opts.Global.Method = "Value"                                // fill with a single value
     	    Opts.Global.Parameter = {i}                                 // equal to the area type
     	    ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    	    if !ret_value then goto quit
+    	    if !ret_value then Throw()
     	end
     end
     
@@ -150,7 +150,7 @@ Macro "Update Line Layer"
     	Opts.Global.Method = "Tag"                                      // fill by tagging
     	Opts.Global.Parameter = {"Value", taz_lyr, taz_lyr+"."+taz_at}  // the value to fill with is the taz layer area type
     	ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    	if !ret_value then goto quit
+    	if !ret_value then Throw()
     end
     
     DropLayer(cc, taz_lyr)
@@ -158,7 +158,7 @@ Macro "Update Line Layer"
 //******************************* Assign the missing area types as "area type 6" *******************************
     // Create selection set to identify the the links with missing area types:
     SetLayer(link_lyr) //Line Layer
-	link_at={"[AB ATYPE]","[BA ATYPE]"}
+	link_at={"AB_ATYPE","BA_ATYPE"}
 	
 	SetLayer(link_lyr) //Line Layer
 	dir1 = ".Dir"
@@ -170,11 +170,11 @@ Macro "Update Line Layer"
         if link_lyr+"|"+Dir1 <> I2S(-1) then do    
             Opts = null
             Opts.Input.[Dataview Set] = {hwyfile+"|"+link_lyr, link_lyr, "NoATab"}	
-            Opts.Global.Fields = {"[AB ATYPE]"}
+            Opts.Global.Fields = {"AB_ATYPE"}
             Opts.Global.Method = "Value"
             Opts.Global.Parameter = {"6"}
             ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-            if !ret_value then goto quit
+            if !ret_value then Throw()
         end 
     end           
         m2 = SelectByQuery("NoATba", "Several", "Select * where " + link_at[2] + "=null",)   
@@ -182,11 +182,11 @@ Macro "Update Line Layer"
         if  link_lyr+"|"+Dir1 <> I2S(1) then do    
             Opts = null
             Opts.Input.[Dataview Set] = {hwyfile+"|"+link_lyr, link_lyr, "NoATba"}	
-            Opts.Global.Fields = {"[BA ATYPE]"}
+            Opts.Global.Fields = {"BA_ATYPE"}
             Opts.Global.Method = "Value"
             Opts.Global.Parameter = {"6"}
             ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-            if !ret_value then goto quit
+            if !ret_value then Throw()
         end 
     end   
 
@@ -228,7 +228,7 @@ Macro "Update Line Layer"
     	    Opts.Global.Method = "Formula"                                          // the fill method
     	    Opts.Global.Parameter = {"AT"+string(i)}                                // the column in the fspdfile
     	    ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    	    if !ret_value then goto quit
+    	    if !ret_value then Throw()
     	end
     	// Calculate AB Congested Speed [AB Peak Speed]
     	if n[i]>0 then do
@@ -239,7 +239,7 @@ Macro "Update Line Layer"
     	    Opts.Global.Method = "Formula"                                          // the fill method            
     	    Opts.Global.Parameter = {"AT"+string(i)}                                // the column in the cspdfile 
     	    ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    	    if !ret_value then goto quit
+    	    if !ret_value then Throw()
     	end
     	// Calculate AB Capacity [AB Capacity]
     	if n[i]>0 then do
@@ -250,7 +250,7 @@ Macro "Update Line Layer"
     	    Opts.Global.Method = "Formula"                                          // the fill method            
     	    Opts.Global.Parameter = {"AT"+string(i)}                                // the column in the capfile 
     	    ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    	    if !ret_value then goto quit
+    	    if !ret_value then Throw()
     	end
     	// Calculate BA Speed [BA Speed]
     	if n[i+10]>0 then do
@@ -261,7 +261,7 @@ Macro "Update Line Layer"
     	    Opts.Global.Method = "Formula"                                          // the fill method          
     	    Opts.Global.Parameter = {"AT"+string(i)}                                // the column in the fspdfile
     	    ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    	    if !ret_value then goto quit
+    	    if !ret_value then Throw()
     	end
     	// Calculate BA Congested Speed [BA Peak Speed]
     	if n[i+10]>0 then do
@@ -272,7 +272,7 @@ Macro "Update Line Layer"
     	    Opts.Global.Method = "Formula"                                          // the fill method          
     	    Opts.Global.Parameter = {"AT"+string(i)}                                // the column in the cspdfile
     	    ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    	    if !ret_value then goto quit
+    	    if !ret_value then Throw()
     	end
     	// Calculate BA Capacity [BA Capacity]
     	if n[i+10]>0 then do
@@ -283,7 +283,7 @@ Macro "Update Line Layer"
     	    Opts.Global.Method = "Formula"                                         // the fill method          
     	    Opts.Global.Parameter = {"AT"+string(i)}                               // the column in the capfile
     	    ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    	    if !ret_value then goto quit
+    	    if !ret_value then Throw()
     	end
     end
     
@@ -315,7 +315,7 @@ Macro "Update Line Layer"
                              "[AB Capacity]* "+ab_lanem+" * 8",
                              "[BA Capacity]* "+ba_lanem+" * 8"}
     ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     //******************************************** Update OP Times ********************************************
     Opts = null
@@ -324,7 +324,7 @@ Macro "Update Line Layer"
     Opts.Global.Method = "Formula"
     Opts.Global.Parameter = {"AB_FFTIME","BA_FFTIME"}
     ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
      Opts = null
     Opts.Input.[Dataview Set] = {hwyfile+"|"+link_lyr, link_lyr}	
@@ -332,7 +332,7 @@ Macro "Update Line Layer"
     Opts.Global.Method = "Formula"
     Opts.Global.Parameter = {"AB_FFTIME","BA_FFTIME"}
     ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     Opts = null
     Opts.Input.[Dataview Set] = {hwyfile+"|"+link_lyr, link_lyr}	
@@ -340,7 +340,7 @@ Macro "Update Line Layer"
     Opts.Global.Method = "Formula"
     Opts.Global.Parameter = {"AB_FFTIME","BA_FFTIME"}
     ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
    //******************************************** Update Alpha Parameter ********************************************
     Opts = null
@@ -350,7 +350,7 @@ Macro "Update Line Layer"
     Opts.Global.Method = "Formula"                                         // the fill method          
     Opts.Global.Parameter = {"Alpha"}                               // the column in the conicalsfile file
     ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     
     Opts = null
     // The Dataview Set is a joined view of the link layer and the conical file, based on facility type
@@ -359,7 +359,7 @@ Macro "Update Line Layer"
     Opts.Global.Method = "Formula"                                         // the fill method          
     Opts.Global.Parameter = {"Alpha"}                               // the column in the conicals file
     ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 
     //******************************************** Join Transit Factor ********************************************
@@ -383,7 +383,7 @@ Macro "Update Line Layer"
     
     // add the new fields to the link layer
     ret_value = RunMacro("TCB Add View Fields", {link_lyr, NewFlds})
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     Opts = null
     // The Dataview Set is a joined view of the link layer and the transit peak time factor file, based on facility type
@@ -392,7 +392,7 @@ Macro "Update Line Layer"
     Opts.Global.Method = "Formula"                                          // the fill method
     Opts.Global.Parameter = {"Factor"}                                // the column in the TranPkFact
     ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     
     Opts = null
     // The Dataview Set is a joined view of the link layer and the transit peak time factor file, based on facility type
@@ -401,7 +401,7 @@ Macro "Update Line Layer"
     Opts.Global.Method = "Formula"                                          // the fill method
     Opts.Global.Parameter = {"Factor"}                                // the column in the TranPkFact
     ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     
     Opts = null
     // The Dataview Set is a joined view of the link layer and the transit off-peak time factor file, based on facility type
@@ -410,7 +410,7 @@ Macro "Update Line Layer"
     Opts.Global.Method = "Formula"                                          // the fill method
     Opts.Global.Parameter = {"Factor"}                                // the column in the TranOpFact
     ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     
     Opts = null
     // The Dataview Set is a joined view of the link layer and the transit off-peak time factor file, based on facility type
@@ -419,7 +419,7 @@ Macro "Update Line Layer"
     Opts.Global.Method = "Formula"                                          // the fill method
     Opts.Global.Parameter = {"Factor"}                                // the column in the TranOpFact
     ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 
 

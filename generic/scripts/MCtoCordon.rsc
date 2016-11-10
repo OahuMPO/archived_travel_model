@@ -31,7 +31,7 @@ Macro "Toll Summaries" (scenarioDirectory)
         
    
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)    
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
    outFile = scenarioDirectory+"\\outputs\\peakPAHOV2TollTrips.mtx"
       
@@ -52,7 +52,7 @@ Macro "Toll Summaries" (scenarioDirectory)
         
    
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)    
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 
    outFile = scenarioDirectory+"\\outputs\\peakPAHOV3TollTrips.mtx"
@@ -74,7 +74,7 @@ Macro "Toll Summaries" (scenarioDirectory)
         
    
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)    
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 // NOW ADD THE OFFPEAK MATRICES
    //First collapse tables for Peak Purposes (AW,AN,NS,NO,NN)
@@ -102,7 +102,7 @@ Macro "Toll Summaries" (scenarioDirectory)
         
    
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)    
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
    outFile = scenarioDirectory+"\\outputs\\offpeakPAHOV2TollTrips.mtx"
       
@@ -122,7 +122,7 @@ Macro "Toll Summaries" (scenarioDirectory)
         
    
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)    
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
    outFile = scenarioDirectory+"\\outputs\\offpeakPAHOV3TollTrips.mtx"
       
@@ -142,7 +142,7 @@ Macro "Toll Summaries" (scenarioDirectory)
         
    
    ret_value = RunMacro("Collapse Matrices",inFiles, tableArray, outFile, coreNames, description)    
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 
 /////// CREATE TOLL DUMMY MATRIX SO CAN ADD UP TOLL ELIGIBLE TRIPS
@@ -233,10 +233,10 @@ Macro "Toll Summaries" (scenarioDirectory)
                  
     //perform TLFDs
     ret_value = RunMacro("Run TLFD", scenarioDirectory, pkTrips, pkSkim, skimOptions)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
    
     ret_value = RunMacro("Run TLFD", scenarioDirectory, opTrips, opSkim, skimOptions)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 //***NOW RUN THE TLFDS FOR ALL THE MATRICES IN THE TRIP FILE (HOV2)
     pkTrips = {
@@ -257,10 +257,10 @@ Macro "Toll Summaries" (scenarioDirectory)
                  
     //perform TLFDs
     ret_value = RunMacro("Run TLFD", scenarioDirectory, pkTrips, pkSkim, skimOptions)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
    
     ret_value = RunMacro("Run TLFD", scenarioDirectory, opTrips, opSkim, skimOptions)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 //***NOW RUN THE TLFDS FOR ALL THE MATRICES IN THE TRIP FILE (HOV3)
     pkTrips = {
@@ -281,10 +281,10 @@ Macro "Toll Summaries" (scenarioDirectory)
                  
     //perform TLFDs
     ret_value = RunMacro("Run TLFD", scenarioDirectory, pkTrips, pkSkim, skimOptions)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
    
     ret_value = RunMacro("Run TLFD", scenarioDirectory, opTrips, opSkim, skimOptions)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
 
 
@@ -378,7 +378,7 @@ Macro "Run TLFD" (scenarioDirectory, tripFiles, skimFile, skimOptions)
                 Opts.Output.[Output Matrix].[File Name] = outputFile  
                 
                 ret_value = RunMacro("TCB Run Procedure", "TLD", Opts) 
-                if !ret_value then goto quit
+                if !ret_value then Throw()
                 
                 //convert to text
                 m = OpenMatrix(outputFile,)

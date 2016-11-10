@@ -2,7 +2,7 @@
 *
 * Transit Assignment
 *
-* This macro assigns transit trip tables to transit networks.  The transit networks and trip tables must exist in the 
+* This macro assigns transit trip tables to transit networks.  The transit networks and trip tables must exist in the
 * scenarioDirectory\outputs folder.  Transit network settings assumed set already (for skim-building).
 *
 * 4/08 - jef - pb
@@ -14,8 +14,8 @@
 **********************************************************************************************************************/
 Macro "Transit Assignment Home Based Trips" (scenarioDirectory, rtsfile)
 
-    RunMacro("TCB Init")                                                                                                                                                                                                                                                                                                                                                                                                                                                              
-     
+    RunMacro("TCB Init")
+
     scenarioDirectory = "F:\\projects\\OMPO\\ORTP2009\\C_Model\\2030MOSJ_setdist_110503"
     rtsfile = scenarioDirectory + "\\inputs\\network\\Scenario Route System.rts"
 
@@ -25,7 +25,7 @@ Macro "Transit Assignment Home Based Trips" (scenarioDirectory, rtsfile)
     trn_wfxg_pk=scenarioDirectory+"\\outputs\\trn_wfxg_pk.tnw"
     trn_pnr_pk=scenarioDirectory+"\\outputs\\trn_pnr_pk.tnw"
     trn_knr_pk=scenarioDirectory+"\\outputs\\trn_knr_pk.tnw"
- 
+
     trn_wloc_op=scenarioDirectory+"\\outputs\\trn_wloc_op.tnw"
     trn_wexp_op=scenarioDirectory+"\\outputs\\trn_wexp_op.tnw"
     trn_wfxg_op=scenarioDirectory+"\\outputs\\trn_wfxg_op.tnw"
@@ -42,20 +42,20 @@ Macro "Transit Assignment Home Based Trips" (scenarioDirectory, rtsfile)
 
     // an array of trip tables
     trntrip={trn_pktrips, trn_pktrips, trn_pktrips, trn_pktrips, trn_pktrips, trn_pktrips, trn_optrips, trn_optrips, trn_optrips, trn_optrips,trn_optrips, trn_optrips}
-    
+
     // an array of core names
     trnname={"WLK-LOC", "WLK-EXP", "WLK-GDWY", "PNR-FRM", "PNR-INF", "KNR" ,"WLK-LOC", "WLK-EXP", "WLK-GDWY", "PNR-FRM", "PNR-INF", "KNR" }
-    
+
      dim onOffTables[trnnet.length]
 
    // for every network
     for i = 1 to trnnet.length do
-    
+
         path = SplitPath(trntrip[i])
         tripFileName = path[3]
         path = SplitPath(trnname[i])
         tripCoreName = path[3]
-        
+
         //output file path/names
         outputFlowTable = scenarioDirectory+"\\outputs\\transitassn\\"+tripFileName+"_"+tripCoreName+"_FLOW.bin"
         outputWalkFlowTable = scenarioDirectory+"\\outputs\\transitassn\\"+tripFileName+"_"+tripCoreName+"_WLKFLOW.bin"
@@ -74,19 +74,18 @@ Macro "Transit Assignment Home Based Trips" (scenarioDirectory, rtsfile)
         Opts.Output.[Aggre Table] = outputLinkFlow
 
         ret_value = RunMacro("TCB Run Procedure", 1, "Transit Assignment PF", Opts)
-        if !ret_value then goto quit
+        if !ret_value then Throw()
     end
-    
-    ret_value = RunMacro("Close All")
-    if !ret_value then goto quit
-    
+
+    RunMacro("Close All")
+
     ret_value = RunMacro("Collapse OnOffs By Route", onOffTables, hwyfile, rtsfile)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
     ret_value = RunMacro("Produce MOA FG table", onOffTables, hwyfile, rtsfile)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
 
-    
+
     Return(1)
     quit:
         Return( RunMacro("TCB Closing", ret_value, True ) )
@@ -96,7 +95,7 @@ EndMacro
 *
 * A macro that will collapse transit on-offs by route and append
 * route name.
-* 
+*
 * Arguments
 *   onOffTables     An array of on-off tables
 *   hwyfile         A highway line layer
@@ -104,9 +103,9 @@ EndMacro
 *
 *************************************************************/
 Macro "Collapse OnOffs By Route" (onOffTables, hwyfile, rtsfile)
-    
-    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)  
-    {rte_lyr,stp_lyr,} = RunMacro("TCB Add RS Layers", rtsfile, "ALL", )   
+
+    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)
+    {rte_lyr,stp_lyr,} = RunMacro("TCB Add RS Layers", rtsfile, "ALL", )
 
     fields = {
         {"On","Sum",},
@@ -119,32 +118,32 @@ Macro "Collapse OnOffs By Route" (onOffTables, hwyfile, rtsfile)
         {"WalkTransferOff","Sum",},
         {"EgressOff","Sum",}
     }
-    
+
     // for all on off tables
     for i = 1 to onOffTables.length do
 
         onOffView = OpenTable("OnOffTable", "FFB", {onOffTables[i], null})
         path = SplitPath(onOffTables[i])
         outFile = path[1]+path[2]+path[3]+"_COLL.bin"
-        
+
         fields = GetFields(onOffView, "All")
-        
+
         //include all fields in each table except for STOP and ROUTE
         collFields = null
-        for j = 1 to fields[1].length do 
-            
+        for j = 1 to fields[1].length do
+
             if(fields[1][j] !="STOP" and fields[1][j]!= "ROUTE") then do
-            
+
                 collFields = collFields + {{fields[1][j],"Sum",}}
-            
+
             end
-       end 
-        
+       end
+
         // Collapse stops out of the table by collapsing on ROUTE
         rslt = AggregateTable("CollapsedView", onOffView+"|", "FFB", outFile, "ROUTE", collFields, )
 
         CloseView(onOffView)
-        
+
         // Join the route layer for route name and other potentially useful data
         onOffCollView = OpenTable("OnOffTableColl", "FFB", {outFile})
         joinedView = JoinViews("OnOffJoin", onOffCollView+".Route", rte_lyr+".Route_ID",)
@@ -164,7 +163,7 @@ EndMacro
 *
 * A macro that will output file necessary to produce MOA report.
 * First need to merge node file information to on/off table.
-* 
+*
 * Arguments
 *   onOffTables     An array of on-off tables
 *   hwyfile         A highway line layer
@@ -172,9 +171,9 @@ EndMacro
 *
 *************************************************************/
 Macro "Produce MOA FG table" (onOffTables, hwyfile, rtsfile)
-    
-    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)  
-    {rte_lyr,stp_lyr,} = RunMacro("TCB Add RS Layers", rtsfile, "ALL", )   
+
+    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", hwyfile,,)
+    {rte_lyr,stp_lyr,} = RunMacro("TCB Add RS Layers", rtsfile, "ALL", )
     highway_db=scenarioDirectory+"\\inputs\\network\\Scenario Line Layer.dbd"
     LayerInfo = {highway_db + "|" + link_lyr, link_lyr}
 
@@ -183,7 +182,7 @@ Macro "Produce MOA FG table" (onOffTables, hwyfile, rtsfile)
         onOffView = OpenTable("OnOffTable", "FFB", {onOffTables[i], null})
         path = SplitPath(onOffTables[i])
         outFile = path[1]+path[2]+path[3]+"_MOA.bin"
-               
+
         // Join the route layer for route name and other potentially useful data
         joinedView = JoinViews("OnOffMOAJoin", onOffView+".Route", rte_lyr+".Route_ID",)
         // Write the joined data to a binary file

@@ -11,7 +11,7 @@ Macro "Hwy District Summary" (scenarioDirectory, tazFile )
             }
     
     ret_value = RunMacro("District Summaries", trips, tazFile, "TD")    
-    if !ret_value then goto quit
+    if !ret_value then Throw()
        
     Return(1)
     quit:

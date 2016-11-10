@@ -2,7 +2,7 @@ Macro "do my test" (scenarioDirectory)
     RunMacro("TCB Init")
         scenarioDirectory="F:\\projects\\OMPO\\ORTP2009\\C_Model\\2030TSM_setdist_110420"
         ret_value = RunMacro("Convert Binary to Mtx",{scenarioDirectory+"\\outputs\\vist5trp.bin"}) 
-        if(!ret_value) then goto quit
+        if(!ret_value) then Throw()
         
     Return(1)
     quit:

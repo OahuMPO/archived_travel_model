@@ -314,20 +314,3 @@ Macro "Distribute Households"(baseYearHHFile, scenarioDirectory)
     RunMacro("Close All-1")
 
 EndMacro
-/***********************************************************************************************************************************
-*
-* Close All
-* Macro to close all open maps and views
-*
-***********************************************************************************************************************************/
-Macro "Close All-1"
-    maps = GetMapNames()
-    for i = 1 to maps.length do
-	CloseMap(maps[i])
-    end
-
-    views = GetViewNames()
-    for i = 1 to views.length do
-	CloseView(views[i])
-    end
-EndMacro

@@ -55,7 +55,7 @@ Macro "Modify Skims For Cordon Pricing" (scenarioDirectory)
     end
     
     ret_value = RunMacro("Convert Matrices To Binary", hskimfile)
-    if !ret_value then goto quit
+    if !ret_value then Throw()
     
     
     Return(1)
