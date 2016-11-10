@@ -123,13 +123,12 @@ Macro "Transit Access Links" (scenarioDirectory, hwyfile, rtsfile, nzones,fixgdw
     ret_value = RunMacro("Write Station File",  scenarioDirectory, hwyfile, rtsfile)
     if !ret_value then Throw()
 
-    ret_value = RunMacro("Close All")
-    if !ret_value then Throw()
+    RunMacro("Close All")
 
     return(1)
 
-    
-    	
+
+
 endMacro
 
 /***********************************************************************************************************************************
@@ -281,13 +280,12 @@ Macro "Initial Setup" (scenarioDirectory, hwyfile, rtsfile,fixgdwy)
     v_atTrn = Vector(v_uniqNodeIDs.length,"Long",opts)
     SetDataVector(node_lyr + "|tstops","AT_TRN",v_atTrn,)
 
-    ret_value = RunMacro("Close All")
-    if !ret_value then Throw()
+    RunMacro("Close All")
 
     Return( 1 )
 
-    
-         
+
+
 endMacro
 
 
@@ -571,12 +569,11 @@ Macro "Walk Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     end
 
 
-    ret_value = RunMacro("Close All")
-    if !ret_value then Throw()
+    RunMacro("Close All")
 
     return(1)
-    
-        
+
+
 endMacro
 /************************************************************************************************************************************************
     KNR Time Matrix
@@ -667,12 +664,11 @@ Macro "KNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     ModifyTable(view_name, vw_flds)
     CloseView(view_name)
 
-    ret_value = RunMacro("Close All")
-    if !ret_value then Throw()
+    RunMacro("Close All")
 
     return(1)
-    
-        
+
+
 endMacro
 
 /************************************************************************************************************************************************
@@ -774,12 +770,11 @@ Macro "PNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     ModifyTable(view_name, vw_flds)
     CloseView(view_name)
 
-    ret_value = RunMacro("Close All")
-    if !ret_value then Throw()
+    RunMacro("Close All")
 
     return(1)
-    
-        
+
+
 endMacro
 
 
@@ -1044,11 +1039,10 @@ Macro "KNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
     SetView(view_name)
     m = CreateMatrixFromView("KNR Matrix", view_name+"|", "Orig", "Dest", {"Length", "EATime", "AMTime", "MDTime", "PMTime", "EVTime"}, {{ "File Name", KNRfile},{ "Sparse", "No"}})
 
-    ret_value = RunMacro("Close All")
-    if !ret_value then Throw()
+    RunMacro("Close All")
     return(1)
-    
-        
+
+
 EndMacro
 
 /****************************************************************************************************************
@@ -1139,12 +1133,11 @@ Macro "PNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
     SetView(view_name)
     m = CreateMatrixFromView("PNR Matrix", view_name+"|", "Orig", "Dest", {"Length", "EATime","AMTime","MDTime","PMTime","EVTime"}, {{ "File Name", PNRfile},{ "Sparse", "No"}})
 
-    ret_value = RunMacro("Close All")
-    if !ret_value then Throw()
+    RunMacro("Close All")
 
     return(1)
-    
-        
+
+
 endMacro
 
 /***************************************************************
@@ -1198,11 +1191,10 @@ Macro "Write Station File" (scenarioDirectory, hwyfile, rtsfile)
 
     CloseFile(ptr)
 
-    ret_value = RunMacro("Close All")
-    if !ret_value then Throw()
+    RunMacro("Close All")
 
     return(1)
-    
-        
+
+
 
 EndMacro
