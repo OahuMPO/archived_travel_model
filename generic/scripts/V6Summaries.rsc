@@ -11,7 +11,7 @@ Macro "V6 Summaries" (scenarioDirectory)
   RunMacro("Trav Time Map", scenarioDirectory)
   RunMacro("Trav Time Map - Zonal", scenarioDirectory)
   RunMacro("Transit Boardings", scenarioDirectory)
-  RunMacro("Lane Miles by LOS", scenarioDirectory)
+  /*RunMacro("Lane Miles by LOS", scenarioDirectory)*/
 
   Return(1)
 
@@ -69,7 +69,7 @@ Macro "Summarize by FT and AT" (scenarioDirectory)
 
         // Create a selection set of links in the current AT and FT
         SetLayer(llyr)
-        qry = "Select * where [" + dir + " ATYPE] = " + String(at) + " and [" + dir + " FNCLASS] = " + String(ft)
+        qry = "Select * where " + dir + "_ATYPE = " + String(at) + " and " + dir + "_FNCLASS = " + String(ft)
         n = SelectByQuery("selection","Several",qry)
 
         // perform calculation if some links are selected
@@ -742,9 +742,42 @@ Macro "Transit Boardings" (scenarioDirectory)
 EndMacro
 
 /*
+Summarizes assignment output by level of service by period, facility type,
+and level of service.
 
+Depends
+  gplyr
 */
 
 Macro "Lane Miles by LOS" (scenarioDirectory)
+
+  // Add link layer to workspace
+  hwyDBD = scenarioDirectory + "/inputs/network/Scenario Line Layer.dbd"
+  {nlyr, llyr} = GetDBLayers(hwyDBD)
+  llyr = AddLayerToWorkspace(llyr, hwyDBD, llyr)
+
+  // looping arrays
+  /*a_ft = {1, 2, 3, 4, 5, 6, 7, 8, 9}    //Field: AB/BA_FNCLASS
+  a_ftname = {"Freeway","Expressway","Principal Arterial","Minor Arterial","Major Collector","Minor Collector","Local","Ramp","CC"}*/
+  a_tod = {"EA","AM","MD","PM","EV"}
+  a_dir = {"AB", "BA"}
+
+  // Create array of v/c fields to gather
+  for t = 1 to a_tod.length do
+    tod = a_tod[t]
+
+    for d = 1 to a_dir.length do
+      dir = a_dir[d]
+
+      gather_cols = gather_cols + {dir + "_VOC_" + tod}
+    end
+  end
+
+  // Read layer into data frame (gplyr)
+  df = CreateObject("df")
+  df.select(
+    {"Length", "Dir", "AB_Lanes", "BA_Lanes", "AB_FNCLASS", "BA_FNCLASS"} +
+    gather_cols
+  )
 
 EndMacro
