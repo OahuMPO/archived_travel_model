@@ -171,6 +171,19 @@ Macro "OMPO6" (path, Options, jump)
         // Run tour-based model, visitor model
         runString = scenarioDirectory+"\\programs\\runompotbm.cmd "+drive+" "+path_forward_slash +" "+r2s(sample_rate[iteration])+" "+i2s(iteration)
         ret_value = RunMacro("TCB Run Command", 1, "Run Tour-Based Model", runString)
+
+        // Check that output was created.  If not, re-run command so that the
+        // window stays open afterwards.
+        a_files = GetDirectoryInfo(outputDir + "\\resident*.mtx", "File")
+        if a_files = null then tour_failed = "true"
+        a_files = GetDirectoryInfo(outputDir + "\\visitor*.mtx", "File")
+        if a_files = null then tour_failed = "true"
+        if tour_failed then do
+          runString = "cmd /k " + runString
+          RunProgram(runString, )
+          Throw("Tour models did not generate any output")
+        end
+
         if stop_after_each_step then Throw()
 
         TimeOfDay:
@@ -268,7 +281,7 @@ Macro "OMPO6" (path, Options, jump)
     if !ret_value then Throw()
     if stop_after_each_step then Throw()
 
-    
+
         DestroyProgressBar()
         // Do not show a complete message if the model is being
         // run repeatedly by a wrapper function.
