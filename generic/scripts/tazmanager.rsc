@@ -201,7 +201,7 @@ Macro "Export TAZ Data" (masterTAZFile,TAZDataFile,scenarioDirectory)
     // Modify the table
     ModifyTable(tazdata, strct)
 
-    RunMacro("Close All-1")
+    RunMacro("Close All")
 
 EndMacro
 
@@ -311,6 +311,6 @@ Macro "Distribute Households"(baseYearHHFile, scenarioDirectory)
         {"Force Numeric Type","Float"}}
 
         )
-    RunMacro("Close All-1")
+    RunMacro("Close All")
 
 EndMacro
