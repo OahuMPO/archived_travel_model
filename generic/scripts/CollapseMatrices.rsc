@@ -108,7 +108,7 @@ Macro "Collapse Matrices" (inFiles, tableArray, outFile, coreNames, description)
     RunMacro("Close All")
 
     Return(1)
-     quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+     
+    	
 
 EndMacro

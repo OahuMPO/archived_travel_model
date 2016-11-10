@@ -94,8 +94,8 @@ Macro "OahuMPO DTA"(path, options)
 
      	  Return(1)
 
-	   quit:
-         Return( RunMacro("TCB Closing", ret_value, True ) )
+	   
+         
 EndMacro
 
 
@@ -255,8 +255,8 @@ Macro "Prepare DTA Trip Table"(scenarioDirectory,odMatrix)
 
 	  Return(1)
 
-	  quit:
-    Return( RunMacro("TCB Closing", ret_value, True ) )
+	  
+    
 
 
 EndMacro
@@ -311,8 +311,8 @@ Macro "Process HighwayFile"(scenarioDirectory,DTA_DBD,odMatrix)
 
 	  Return(1)
 
-	  quit:
-    Return( RunMacro("TCB Closing", ret_value, True ) )
+	  
+    
 
 EndMacro
 
@@ -411,8 +411,8 @@ Macro "Set 4Hr AM Peak Network"(scenarioDirectory, period, highway_net, DTA_DBD)
 
 	  Return(1)
 
-	  quit:
-    Return( RunMacro("TCB Closing", ret_value, True ) )
+	  
+    
 
 EndMacro
 
@@ -494,7 +494,7 @@ Macro "Recode Values" (hwyfile, fields, fromValues, toValues, facilityTypes)
 
     Return(1)
 
-    quit:
+    
         Return( RunMacro("TCB Closing", 0, True ) )
 
 EndMacro
@@ -569,8 +569,8 @@ Macro "DTA Skim Summary"(scenarioDirectory,DTA_DBD)
 
 
 
-    quit:
-    Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    
 
 
 EndMacro
@@ -679,8 +679,8 @@ Macro "DTA Summaries"(scenarioDirectory, DTA_DBD)
 
 				RunMacro("Close All")
 
-			quit:
-    Return( RunMacro("TCB Closing", ret_value, True ) )
+			
+    
 EndMacro
 
 
@@ -809,8 +809,8 @@ Macro "Flow Summaries" (scenarioDirectory, outJoinFile)
 
 			  Return(1)
 
-			  quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+			  
+        
 
 
 EndMacro
@@ -905,8 +905,8 @@ Macro "TT Summaries" (scenarioDirectory, outJoinFile)
         RunMacro("Collapse TT", scenarioDirectory)
 			  Return(1)
 
-			  quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+			  
+        
 
 
 
@@ -1050,8 +1050,8 @@ Macro "Collapse TT" (scenarioDirectory)
 
 			  Return(1)
 
-			  quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+			  
+        
 
 
 
@@ -1138,7 +1138,7 @@ Macro "Corridor TT" (scenarioDirectory,DTA_DBD)
 
 			  Return(1)
 
-			  quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+			  
+        
 
 EndMacro

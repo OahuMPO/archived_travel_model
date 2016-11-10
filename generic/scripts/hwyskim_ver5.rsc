@@ -113,8 +113,8 @@ Macro "Highway Skims" (scenarioDirectory, hwyfile, tpen, nzones, iftoll)
     if !ret_value then Throw()
 
     Return(1)
-    quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    	
 EndMacro
 /**********************************************************************************************************************
 *
@@ -343,8 +343,8 @@ Macro "Highway Skim" (hwyfile, hnetfile, hskimfile, tpen, nzones, iftoll)
     RunMacro("Close All")
 
     return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 EndMacro
 /**********************************************************************************************************************
 *
@@ -442,8 +442,8 @@ Macro "Non-Motorized Matrix" (scenarioDirectory, hwyfile, nzones)
     RunMacro("Close All")
 
     return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 EndMacro
 /*********************************************************************************************************************
 *
@@ -476,8 +476,8 @@ Macro "Ones Matrix" (scenarioDirectory, nzones)
     RunMacro("Close All")
 
     return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 EndMacro
 
 /*****************************************************************************************************************************
@@ -511,6 +511,6 @@ Macro "Intrazonal Impedance" (hskimfile)
     end
 
     return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 EndMacro

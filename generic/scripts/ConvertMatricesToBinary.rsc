@@ -21,7 +21,7 @@ Macro "Convert Matrices To Binary" (matrices)
 		end
 
     return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 
 EndMacro

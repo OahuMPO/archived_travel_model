@@ -256,8 +256,8 @@ Macro "Report Mode Choice"
     if !ret_value then Throw()
 
     Return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 
 EndMacro
 
@@ -364,8 +364,8 @@ Macro "Run Transit TLFDs" (scenarioDirectory, tripFile, skimFiles, skimOptions)
     RunMacro("Close All")
     
     Return(1)
-    quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    	
 
 
 EndMacro

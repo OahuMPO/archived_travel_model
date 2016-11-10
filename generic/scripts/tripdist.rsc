@@ -40,8 +40,8 @@ Macro "Trip Distribution" (scenarioDirectory, iftoll)
    
       
     Return(1)
-    quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    	
 
 EndMacro
 /***********************************************************************************************************************************
@@ -89,6 +89,6 @@ Macro "Run Distrib" (scenarioDirectory, executableString, controls, iftoll)
     end
 
     Return(1)
-    quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    	
 EndMacro

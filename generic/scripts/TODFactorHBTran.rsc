@@ -261,8 +261,8 @@ Macro "TOD Factor Home Based Transit" (scenarioDirectory, railPresent, iftoll)
 
     Return(1)
 
-    quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    	
 
 EndMacro
 /***********************************************************************************************************************************
@@ -422,7 +422,7 @@ Macro "Factor OD" (inFiles, outFile,perFactors, apFactors, occFactors, modeIndex
     RunMacro("Close All")
 
     Return(1)
-     quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+     
+    	
 
 EndMacro

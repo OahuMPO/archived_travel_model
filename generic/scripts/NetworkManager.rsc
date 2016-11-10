@@ -675,8 +675,8 @@ Macro "Fill Stop Attributes" (hwyfile, rtsfile, rstopfile)
 
     Return(1)
 
-    quit:
-    Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    
 EndMacro
 
 Macro "Assign PNR Lots" (tempFile,currentYear,extractPNRString)
@@ -710,8 +710,8 @@ Macro "Assign PNR Lots" (tempFile,currentYear,extractPNRString)
     CloseView(nodeLayer)
     Return(tempFile)
 
-    quit:
-    Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    
 
 EndMacro
 

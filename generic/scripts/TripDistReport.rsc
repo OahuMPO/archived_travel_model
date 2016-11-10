@@ -46,8 +46,8 @@ Macro "Report Trip Distribution" (scenarioDirectory, tazFile )
     if !ret_value then Throw()
        
     Return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
               
 EndMacro
 
@@ -186,8 +186,8 @@ Macro "Run TLFDs" (scenarioDirectory, tripFiles, skimFile, skimOptions)
     RunMacro("Close All")
     
     Return(1)
-    quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    	
 
 
 EndMacro

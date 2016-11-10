@@ -76,7 +76,7 @@ Macro "Recode Values" (hwyfile, fields, fromValues, toValues, facilityTypes)
     
     Return(1)
     
-    quit:
+    
         Return( RunMacro("TCB Closing", 0, True ) )
 
 EndMacro

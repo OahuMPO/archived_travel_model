@@ -43,9 +43,9 @@ Macro "Highway Assignment" (scenarioDirectory, nzones, iteration)
 		
     Return(1)
 
-    quit:
+    
     ShowMessage("Error running assignment for period "+period+" iteration "+String(iteration))
-    Return( RunMacro("TCB Closing", ret_value, True ) )
+    
 
 EndMacro 
 /*****************************************************************************************************************************************
@@ -75,9 +75,9 @@ Macro "Final Highway Assignment" (scenarioDirectory, nzones)
 
     Return(1)
 
-    quit:
+    
     ShowMessage("Error running assignment for period "+period+" iteration "+String(iteration))
-    Return( RunMacro("TCB Closing", ret_value, True ) )
+    
 
 EndMacro 
  
@@ -370,6 +370,6 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
     
     Return(1)
 	
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 EndMacro

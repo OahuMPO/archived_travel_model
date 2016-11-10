@@ -44,8 +44,8 @@ Macro "Factor Visitor Observed" (ScenarioDirectory)
 
 
     
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 
     
 EndMacro

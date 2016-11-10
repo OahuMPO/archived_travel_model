@@ -126,8 +126,8 @@ Macro "Skim Summary" (scenarioDirectory)
     end
     Return(1)           
     
-    quit:
-    Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    
 
 EndMacro
 

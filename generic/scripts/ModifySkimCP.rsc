@@ -59,8 +59,8 @@ Macro "Modify Skims For Cordon Pricing" (scenarioDirectory)
     
     
     Return(1)
-    quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    	
 EndMacro    
 /**********************************************************************************************************************
 *
@@ -163,6 +163,6 @@ Macro "Modify Trips For Cordon Pricing" (scenarioDirectory)
     end
   
     Return(1)
-    quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    	
 EndMacro    

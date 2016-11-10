@@ -87,8 +87,8 @@ Macro "Trip Generation" (scenarioDirectory, iftoll, fixgdwy)
    	
     Return(1)    
     
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 
     
 EndMacro
@@ -142,7 +142,7 @@ Macro "Run Program" (scenarioDirectory, executableString, controlString)
         end
 
     Return(1)
-    quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    	
 EndMacro
 

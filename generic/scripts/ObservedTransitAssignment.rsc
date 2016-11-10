@@ -315,8 +315,8 @@ Macro "Observed Transit Assignment"
     ret_value = RunMacro("Collapse OnOffs By Route", onOffTables, hwyfile, rtsfile)
     if !ret_value then Throw()
 
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 
 EndMacro
 /*************************************************************
@@ -384,6 +384,6 @@ Macro "Collapse OnOffs By Route" (onOffTables, hwyfile, rtsfile)
     end
 
     Return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 EndMacro

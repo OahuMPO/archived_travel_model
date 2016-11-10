@@ -32,8 +32,8 @@ Macro "Transit Network and Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile
     if !ret_value then Throw()
     
     Return(1)
-    quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    	
 endMacro
 
  
@@ -128,8 +128,8 @@ Macro "Transit Time Update" (scenarioDirectory, hwyfile, iteration)
                 {1,2,3,4,5,6,7,8,9,10,11,12,13,14,197})
 
     Return(1)
-	quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+	
+        
 
 EndMacro
 
@@ -565,7 +565,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
 
 
     Return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 endMacro
 

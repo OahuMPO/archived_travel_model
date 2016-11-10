@@ -135,7 +135,7 @@ Macro "Calculate Auto Importance" (scenarioDirectory, tazfile, hwyskim, trnskim,
     RunMacro("Close All")
 
     return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 
 EndMacro

@@ -227,6 +227,6 @@ Macro "Create Highway Network" (hwyfile, hnetfile, iftoll)
     if !ret_value then Throw()
 
     return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 endMacro

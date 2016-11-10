@@ -694,7 +694,7 @@ end
     for i = 1 to ArrayLength(Volume_Groups) + 2 do
         	WriteLine(fp, blank3[i])
 	end
-    quit:
+    
     Return(1)
 EndMacro
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       

@@ -565,8 +565,8 @@ Macro "TOD Factor" (scenarioDirectory)
 
     Return(1)
 
-    quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    	
 
 EndMacro
 /***********************************************************************************************************************************
@@ -726,8 +726,8 @@ Macro "Factor OD" (inFiles, outFile,perFactors, apFactors, occFactors, modeIndex
     RunMacro("Close All")
 
     Return(1)
-     quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+     
+    	
 
 EndMacro
 /***********************************************************************************************************************************
@@ -840,7 +840,7 @@ Macro "Collapse Matrices" (inFiles, tableArray, outFile, coreNames, description)
     RunMacro("Close All")
 
     Return(1)
-     quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+     
+    	
 
 EndMacro

@@ -105,8 +105,8 @@ Macro "Report Observed Mode Choice" (scenarioDirectory, tazFile)
     
 
     Return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 
 EndMacro
 
@@ -211,8 +211,8 @@ Macro "Run Transit TLFDs" (tripFile, skimFiles, skimOptions)
     end
                 
     Return(1)
-    quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    	
 
 
 EndMacro

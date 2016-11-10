@@ -429,7 +429,7 @@ Macro "Update Line Layer"
     end
 
     return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 EndMacro
   

@@ -5,8 +5,8 @@ Macro "Convert Mode Choice to Binary" (scenarioDirectory)
         if(!ret_value) then Throw()
         
     Return(1)
-    quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    	
 EndMacro  
 
 /***********************************************************************************************************************************

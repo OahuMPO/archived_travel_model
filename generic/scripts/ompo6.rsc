@@ -268,12 +268,12 @@ Macro "OMPO6" (path, Options, jump)
     if !ret_value then Throw()
     if stop_after_each_step then Throw()
 
-    quit:
+    
         DestroyProgressBar()
         // Do not show a complete message if the model is being
         // run repeatedly by a wrapper function.
         if wrapper = null
-          then Return( RunMacro("TCB Closing", ret_value, True ) )
+          then 
 
 EndMacro
 

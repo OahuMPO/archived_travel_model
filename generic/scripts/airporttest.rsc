@@ -189,8 +189,8 @@ Macro "Mode Choice" (scenarioDirectory, Options)
 
     Return(1)
 
-    quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+
+
 
 EndMacro
 /***********************************************************************************************************************************
@@ -265,6 +265,6 @@ Macro "Airport Model" (scenarioDirectory, Options)
 
 
     Return(1)
-    quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+
+
 EndMacro

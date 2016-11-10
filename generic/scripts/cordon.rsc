@@ -211,6 +211,6 @@ Macro "MC Cordon Summaries" (scenarioDirectory)
 
    
     Return(1)
-    quit:
+    
 
 EndMacro

@@ -77,8 +77,8 @@ Macro "My TLFD" (scenarioDirectory)
 
     Return(1)
 
-    quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    	
 
 EndMacro
 ///
@@ -216,8 +216,8 @@ Macro "Run TLFD" (scenarioDirectory, tripFiles, skimFile, skimOptions)
     RunMacro("Close All")
 
     Return(1)
-    quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    	
 
 
 EndMacro

@@ -58,8 +58,8 @@ Macro "DTA to TAZ"(scenarioDirectory,DTA_DBD)
    
     
     
-    quit:
-    Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    
 
 
 EndMacro

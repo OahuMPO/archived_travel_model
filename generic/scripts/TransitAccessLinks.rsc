@@ -128,8 +128,8 @@ Macro "Transit Access Links" (scenarioDirectory, hwyfile, rtsfile, nzones,fixgdw
 
     return(1)
 
-    quit:
-    	Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+    	
 endMacro
 
 /***********************************************************************************************************************************
@@ -286,8 +286,8 @@ Macro "Initial Setup" (scenarioDirectory, hwyfile, rtsfile,fixgdwy)
 
     Return( 1 )
 
-    quit:
-         Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+         
 endMacro
 
 
@@ -575,8 +575,8 @@ Macro "Walk Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     if !ret_value then Throw()
 
     return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 endMacro
 /************************************************************************************************************************************************
     KNR Time Matrix
@@ -671,8 +671,8 @@ Macro "KNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     if !ret_value then Throw()
 
     return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 endMacro
 
 /************************************************************************************************************************************************
@@ -778,8 +778,8 @@ Macro "PNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     if !ret_value then Throw()
 
     return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 endMacro
 
 
@@ -1047,8 +1047,8 @@ Macro "KNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
     ret_value = RunMacro("Close All")
     if !ret_value then Throw()
     return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 EndMacro
 
 /****************************************************************************************************************
@@ -1143,8 +1143,8 @@ Macro "PNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
     if !ret_value then Throw()
 
     return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 endMacro
 
 /***************************************************************
@@ -1202,7 +1202,7 @@ Macro "Write Station File" (scenarioDirectory, hwyfile, rtsfile)
     if !ret_value then Throw()
 
     return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 
 EndMacro

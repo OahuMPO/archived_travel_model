@@ -72,8 +72,8 @@ Macro "Transit Assignment" (scenarioDirectory, rtsfile)
 
 
     Return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 
 EndMacro
 /*************************************************************
@@ -141,8 +141,8 @@ Macro "Collapse OnOffs By Route" (onOffTables, hwyfile, rtsfile)
     end
 
     Return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 EndMacro
 /*************************************************************
 *
@@ -178,6 +178,6 @@ Macro "Produce MOA FG table" (onOffTables, hwyfile, rtsfile)
     end
 
     Return(1)
-    quit:
-        Return( RunMacro("TCB Closing", ret_value, True ) )
+    
+        
 EndMacro
