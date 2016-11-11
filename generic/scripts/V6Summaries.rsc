@@ -744,17 +744,13 @@ Macro "Transit Boardings" (scenarioDirectory)
 EndMacro
 
 /*
-Summarizes assignment output by level of service by period, facility type,
-and level of service.
+Summarizes lane miles by period, facility type, and level of service.
 
 Depends
   gplyr
 */
 
 Macro "Lane Miles by LOS" (scenarioDirectory)
-
-  // Defines congestion by v/c level
-  voc_cutoff = .9
 
   // Add link layer to workspace
   hwyDBD = scenarioDirectory + "/inputs/network/Scenario Line Layer.dbd"
