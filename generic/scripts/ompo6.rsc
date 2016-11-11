@@ -90,9 +90,10 @@ Macro "OMPO6" (path, Options, jump)
     // Create transit access links
     ret_value = RunMacro("Transit Access Links", scenarioDirectory, hwyfile, rtsfile, nzones,fixgdwy)
     if !ret_value then Throw()
-    if stop_after_each_step
-      then Return(ShowMessage("Done with 'Prepare Network'"))
-
+    if stop_after_each_step then do
+      DestroyProgressBar()
+      Return(ShowMessage("Done with 'Prepare Network'"))
+    end
 
     Feedback:
     //Enter a feedback loop
@@ -127,15 +128,17 @@ Macro "OMPO6" (path, Options, jump)
         iftoll = Options[2]
         ret_value = RunMacro("Highway Skims", scenarioDirectory, hwyfile, tpen, nzones, iftoll, iteration)
         if !ret_value then Throw()
-        if stop_after_each_step
-          then Return(ShowMessage("Done with 'Create Highway Skims'"))
-
+        if stop_after_each_step then do
+          DestroyProgressBar()
+          Return(ShowMessage("Done with 'Create Highway Skims'"))
+        end
         TransitSkim:
         ret_value = RunMacro("Transit Network and Skim", scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, xferfile, nzones, iteration)
         if !ret_value then Throw()
-        if stop_after_each_step
-          then Return(ShowMessage("Done with 'Create Transit Skims'"))
-
+        if stop_after_each_step then do
+          DestroyProgressBar()
+          Return(ShowMessage("Done with 'Create Transit Skims'"))
+        end
         SpecialMarket:
         ret_value = RunMacro("Trip Generation", scenarioDirectory, iftoll, fixgdwy)
         if !ret_value then Throw()
@@ -150,8 +153,10 @@ Macro "OMPO6" (path, Options, jump)
 
         ret_value = RunMacro("Mode Choice", scenarioDirectory, Options)
         if !ret_value then Throw()
-        if stop_after_each_step
-          then Return(ShowMessage("Done with 'Special Market Models'"))
+        if stop_after_each_step then do
+          DestroyProgressBar()
+          Return(ShowMessage("Done with 'Special Market Models'"))
+        end
 
         TourBasedModels:
         // Check for and delete any previous tbm log files
@@ -190,8 +195,10 @@ Macro "OMPO6" (path, Options, jump)
           Throw("Tour models did not generate any output")
         end
 
-        if stop_after_each_step
-          then Return(ShowMessage("Done with 'Tour-Based Models'"))
+        if stop_after_each_step then do
+          DestroyProgressBar()
+          Return(ShowMessage("Done with 'Tour-Based Models'"))
+        end
 
         TimeOfDay:
         ret_value = RunMacro("TOD Factor", scenarioDirectory,fixgdwy, iftoll)
@@ -201,15 +208,18 @@ Macro "OMPO6" (path, Options, jump)
             ret_value = RunMacro("Modify Trips For Cordon Pricing" , scenarioDirectory)
             if !ret_value then Throw()
         end
-        if stop_after_each_step
-          then Return(ShowMessage("Done with 'Time of Day'"))
-
+        if stop_after_each_step then do
+          DestroyProgressBar()
+          Return(ShowMessage("Done with 'Time of Day'"))
+        end
 
         HighwayAssign:
         ret_value = RunMacro("Highway Assignment", scenarioDirectory, nzones, iteration)
         if !ret_value then Throw()
-        if stop_after_each_step
-          then Return(ShowMessage("Done with 'Highway Assignment'"))
+        if stop_after_each_step then do
+          DestroyProgressBar()
+          Return(ShowMessage("Done with 'Highway Assignment'"))
+        end
 
         CheckConvergence:
         /*
@@ -262,7 +272,10 @@ Macro "OMPO6" (path, Options, jump)
        // ret_value = RunMacro("AppendAssign", scenarioDirectory, iteration)          // The AM peak, PM Peak, and Daily flows are appended to the scenario line layer
        // if !ret_value then Throw()
 
-        if stop_after_each_step then Return(ShowMessage("Done"))
+        if stop_after_each_step then do
+          DestroyProgressBar()
+          Return(ShowMessage("Done"))
+        end
      end
 
     TransitAssign:
@@ -272,28 +285,32 @@ Macro "OMPO6" (path, Options, jump)
     if !ret_value then Throw()
     ret_value = RunMacro("Skim Summary", scenarioDirectory)
     if !ret_value then Throw()
-    if stop_after_each_step
-      then Return(ShowMessage("Done with 'Transit Assignment'"))
+    if stop_after_each_step then do
+      DestroyProgressBar()
+      Return(ShowMessage("Done with 'Transit Assignment'"))
+    end
 
     Summaries:
    // New V6 summaries
    // Creates summaries of transit and highway
     ret_value = RunMacro("V6 Summaries", scenarioDirectory)
     if !ret_value then Throw()
-    if stop_after_each_step
-      then Return(ShowMessage("Done with 'Summaries'"))
+    if stop_after_each_step then do
+      DestroyProgressBar()
+      Return(ShowMessage("Done with 'Summaries'"))
+    end
 
    // ret_value = RunMacro("Calculate Environmental Justice", scenarioDirectory, nzones)
 
-    //don't run dta as part of the regular model
     DestroyProgressBar()
     // Do not show a complete message if the model is being
     // run repeatedly by a wrapper function.
     if wrapper = null
       then Return(ShowMessage("Model Run Complete"))
 
-    /*DTArun:
-    ret_value = RunMacro("OahuMPO DTA", path,options)
+    //don't run dta as part of the regular model
+    DTArun:
+    /*ret_value = RunMacro("OahuMPO DTA", path,options)
     if !ret_value then Throw()
     if stop_after_each_step then Return(ShowMessage("Done"))*/
 EndMacro

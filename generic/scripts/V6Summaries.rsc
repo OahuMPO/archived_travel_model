@@ -11,7 +11,7 @@ Macro "V6 Summaries" (scenarioDirectory)
   RunMacro("Trav Time Map", scenarioDirectory)
   RunMacro("Trav Time Map - Zonal", scenarioDirectory)
   RunMacro("Transit Boardings", scenarioDirectory)
-  /*RunMacro("Lane Miles by LOS", scenarioDirectory)*/
+  RunMacro("Lane Miles by LOS", scenarioDirectory)
 
   Return(1)
 
@@ -753,33 +753,101 @@ Depends
 
 Macro "Lane Miles by LOS" (scenarioDirectory)
 
+  // Defines congestion by v/c level
+  voc_cutoff = .9
+
   // Add link layer to workspace
   hwyDBD = scenarioDirectory + "/inputs/network/Scenario Line Layer.dbd"
-  {nlyr, llyr} = GetDBLayers(hwyDBD)
-  llyr = AddLayerToWorkspace(llyr, hwyDBD, llyr)
+  {nlyr, lLyr} = GetDBLayers(hwyDBD)
+  lLyr = AddLayerToWorkspace(lLyr, hwyDBD, lLyr)
 
   // looping arrays
-  /*a_ft = {1, 2, 3, 4, 5, 6, 7, 8, 9}    //Field: AB/BA_FNCLASS
-  a_ftname = {"Freeway","Expressway","Principal Arterial","Minor Arterial","Major Collector","Minor Collector","Local","Ramp","CC"}*/
+  a_ft = {1, 2, 3, 4, 5, 6, 7, 8, 9}    //Field: AB/BA_FNCLASS
+  a_ftname = {"Freeway","Expressway","Principal Arterial","Minor Arterial","Major Collector","Minor Collector","Local","Ramp","CC"}
   a_tod = {"EA","AM","MD","PM","EV"}
+  a_lf = {"M", "A", "M", "P", "M"} // which lane field is used for each period
   a_dir = {"AB", "BA"}
 
-  // Create array of v/c fields to gather
-  for t = 1 to a_tod.length do
-    tod = a_tod[t]
 
-    for d = 1 to a_dir.length do
-      dir = a_dir[d]
+  for d = 1 to a_dir.length do
+    dir = a_dir[d]
 
-      gather_cols = gather_cols + {dir + "_VOC_" + tod}
+    for t = 1 to a_tod.length do
+      tod = a_tod[t]
+      lane_suffix = a_lf[t]
+
+      // create list of fields
+      lane = dir + "_LANE" + lane_suffix
+      voc = dir + "_VOC_" + tod
+      fnclass = dir + "_FNCLASS"
+      a_fields = {
+        "ID",
+        "Length",
+        fnclass,
+        lane,
+        voc
+      }
+
+      // Read view into a data frame
+      df = CreateObject("df")
+      opts = null
+      opts.view = lLyr
+      opts.fields = a_fields
+      df.read_view(opts)
+
+      // set standard names
+      df.colnames(
+        {"ID", "length", "fnclass", "lanes", "voc"}
+      )
+
+      // Add a tod column
+      opts = null
+      opts.Constant = tod
+      v_tod = Vector(df.nrow(), "string", opts)
+      df.mutate("tod", v_tod)
+
+      // Add to final data frame
+      if t = 1
+        then final = df.copy()
+        else final.bind_rows(df)
     end
   end
 
-  // Read layer into data frame (gplyr)
-  df = CreateObject("df")
-  df.select(
-    {"Length", "Dir", "AB_Lanes", "BA_Lanes", "AB_FNCLASS", "BA_FNCLASS"} +
-    gather_cols
-  )
+  // convert facility type numbers to names
+  FT = null
+  FT.fnumber = a_ft
+  FT.fname = a_ftname
+  FT = CreateObject("df", FT)
+  final.left_join(FT, "fnclass", "fnumber")
 
+  // Determine level of service
+  v_los = Vector(final.nrow(), "string", )
+  a_los = {"A", "B", "C", "D", "E", "F"}
+  a_vcfrom = {0, .6, .7, .8, .9, 1}
+  a_vcto = {.6, .7, .8, .9, 1, 10}
+  for l = 1 to a_los.length do
+    los = a_los[l]
+    from = a_vcfrom[l]
+    to = a_vcto[l]
+
+    v_los = if (final.tbl.voc >= from and final.tbl.voc < to)
+      then los else v_los
+  end
+  final.mutate("los", v_los)
+
+  // Remove rows with null lanes
+  final.filter("lanes <> null and voc <> null and fname <> null")
+
+  // Calculate lane miles
+  final.mutate("lane_miles", final.tbl.lanes * final.tbl.length)
+
+  // Group/summarize by functional class and time of day
+  final.group_by({"fname", "tod", "los"})
+  agg = null
+  agg.lane_miles = {"sum"}
+  final.summarize(agg)
+
+  // output report
+  file = scenarioDirectory + "/reports/lane miles by los.csv"
+  final.write_csv(file)
 EndMacro
