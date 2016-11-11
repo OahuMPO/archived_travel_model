@@ -179,8 +179,10 @@ Macro "OMPO6" (path, Options, jump)
         a_files = GetDirectoryInfo(outputDir + "\\visitor*.mtx", "File")
         if a_files = null then tour_failed = "true"
         if tour_failed then do
-          runString = "cmd /k " + runString
+          /*runString = "cmd /k " + runString*/
+          runString = runString + " & pause"
           RunProgram(runString, )
+          DestroyProgressBar()
           Throw("Tour models did not generate any output")
         end
 

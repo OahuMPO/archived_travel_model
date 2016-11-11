@@ -4,8 +4,8 @@ set SAMPLERATE=%3
 set ITERATION=%4
 
 %PROJECT_DRIVE%
-cd %PROJECT_DIRECTORY%\programs
-call %PROJECT_DIRECTORY%\programs\CTRampEnv.bat
+cd "%PROJECT_DIRECTORY%\programs"
+call "%PROJECT_DIRECTORY%\programs\CTRampEnv.bat"
 
 
 rem ### First save the JAVA_PATH environment variable so it s value can be restored at the end.
@@ -62,18 +62,18 @@ rem %JAVA_64_PATH%\bin\java -server -Xms10000m -Xmx10000m -cp "%CLASSPATH%" -Dlo
 REM **************************************************************************************************************************************************
 
 rem Run resident tour-based models
-%JAVA_64_PATH%\bin\java -server -Xms10000m -Xmx10000m -cp "%CLASSPATH%" -Dlog4j.configuration=log4j.xml -Dproject.folder=%PROJECT_DIRECTORY% com.pb.ompo.residentmodel.ResidentModelRunner %PROPERTIES_NAME% -iteration %ITERATION%  -sampleRate %SAMPLERATE% 2>&1 | %GNUWIN32_PATH%\tee.exe ..\reports\ResidentModelRunnerScreen_%ITERATION%.log
+"%JAVA_64_PATH%\bin\java" -server -Xms10000m -Xmx10000m -cp "%CLASSPATH%" -Dlog4j.configuration=log4j.xml -Dproject.folder="%PROJECT_DIRECTORY%" com.pb.ompo.residentmodel.ResidentModelRunner %PROPERTIES_NAME% -iteration %ITERATION%  -sampleRate %SAMPLERATE% 2>&1 | "%GNUWIN32_PATH%\tee.exe" ..\reports\ResidentModelRunnerScreen_%ITERATION%.log
 
 rem Build resident tour-based model trip tables
-%JAVA_64_PATH%\bin\java -server -Xms10000m -Xmx10000m -cp "%CLASSPATH%" -Dlog4j.configuration=log4j.xml -Dproject.folder=%PROJECT_DIRECTORY% com.pb.ompo.residentmodel.ResidentTripTables %PROPERTIES_NAME% -iteration %ITERATION%  2>&1 | %GNUWIN32_PATH%\tee.exe ..\reports\ResidentTripTablesScreen_%ITERATION%.log
+"%JAVA_64_PATH%\bin\java" -server -Xms10000m -Xmx10000m -cp "%CLASSPATH%" -Dlog4j.configuration=log4j.xml -Dproject.folder="%PROJECT_DIRECTORY%" com.pb.ompo.residentmodel.ResidentTripTables %PROPERTIES_NAME% -iteration %ITERATION%  2>&1 | "%GNUWIN32_PATH%\tee.exe" ..\reports\ResidentTripTablesScreen_%ITERATION%.log
 
 
 
 rem Run visitor tour-based models
-%JAVA_64_PATH%\bin\java -server -Xms10000m -Xmx10000m -cp "%CLASSPATH%" -Dlog4j.configuration=log4j.xml -Dproject.folder=%PROJECT_DIRECTORY% com.pb.ompo.visitormodel.VisitorModelRunner %PROPERTIES_NAME% -iteration %ITERATION%  -sampleRate %SAMPLERATE%  2>&1 | %GNUWIN32_PATH%\tee.exe ..\reports\VisitorModelRunnerScreen_%ITERATION%.log
+"%JAVA_64_PATH%\bin\java" -server -Xms10000m -Xmx10000m -cp "%CLASSPATH%" -Dlog4j.configuration=log4j.xml -Dproject.folder="%PROJECT_DIRECTORY%" com.pb.ompo.visitormodel.VisitorModelRunner %PROPERTIES_NAME% -iteration %ITERATION%  -sampleRate %SAMPLERATE%  2>&1 | "%GNUWIN32_PATH%\tee.exe" ..\reports\VisitorModelRunnerScreen_%ITERATION%.log
 
 rem Build visitor tour-based model trip tables
-%JAVA_64_PATH%\bin\java -server -Xms10000m -Xmx10000m -cp "%CLASSPATH%" -Dlog4j.configuration=log4j.xml -Dproject.folder=%PROJECT_DIRECTORY% com.pb.ompo.visitormodel.VisitorTripTables %PROPERTIES_NAME% -iteration %ITERATION%  2>&1 | %GNUWIN32_PATH%\tee.exe ..\reports\VisitorTripTables_%ITERATION%.log
+"%JAVA_64_PATH%\bin\java" -server -Xms10000m -Xmx10000m -cp "%CLASSPATH%" -Dlog4j.configuration=log4j.xml -Dproject.folder="%PROJECT_DIRECTORY%" com.pb.ompo.visitormodel.VisitorTripTables %PROPERTIES_NAME% -iteration %ITERATION%  2>&1 | "%GNUWIN32_PATH%\tee.exe" ..\reports\VisitorTripTables_%ITERATION%.log
 
 
 rem ### restore saved environment variable values, and change back to original current directory
