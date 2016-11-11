@@ -218,8 +218,10 @@ Macro "Emission Estimation" (scenarioDirectory)
             // Create a selection set of AB or BA links in the current
             // AT, FT, TOD, and speed range
             SetLayer(llyr)
-            qry = "Select * where [" + dir + " ATYPE] = " + String(at) + " and [" + dir + " FNCLASS] = " + String(ft)
-            qry = qry + " and " + dir + "_SPD_" + tod + " > " + String(slower) + " and " + dir + "_SPD_" + tod + " <= " + String(supper)
+            qry = "Select * where " + dir + "_ATYPE = " + String(at) +
+              " and " + dir + "_FNCLASS = " + String(ft) +
+              " and " + dir + "_SPD_" + tod + " > " + String(slower) +
+              " and " + dir + "_SPD_" + tod + " <= " + String(supper)
             n = SelectByQuery("selection","Several",qry)
 
             // perform calculation if some links are selected
