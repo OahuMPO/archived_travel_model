@@ -816,23 +816,15 @@ Macro "Lane Miles by LOS" (scenarioDirectory)
   FT = CreateObject("df", FT)
   final.left_join(FT, "fnclass", "fnumber")
 
-  // Determine level of service
-  v_los = Vector(final.nrow(), "string", )
-  a_los = {"A", "B", "C", "D", "E", "F"}
-  a_vcfrom = {0, .6, .7, .8, .9, 1}
-  a_vcto = {.6, .7, .8, .9, 1, 10}
-  for l = 1 to a_los.length do
-    los = a_los[l]
-    from = a_vcfrom[l]
-    to = a_vcto[l]
+  opts = null
+  opts.in_field = "voc"
+  opts.bins = {0, .6, .7, .8, .9, 1}
+  opts.labels = {"A", "B", "C", "D", "E", "F"}
+  final.bin_field(opts)
+  final.rename("bin", "los")
 
-    v_los = if (final.tbl.voc >= from and final.tbl.voc < to)
-      then los else v_los
-  end
-  final.mutate("los", v_los)
-
-  // Remove rows with null lanes
-  final.filter("lanes <> null and voc <> null and fname <> null")
+  // Remove rows with null/0 lanes or null v/c
+  final.filter("nz(lanes) > 0 and voc <> null and fname <> null")
 
   // Calculate lane miles
   final.mutate("lane_miles", final.tbl.lanes * final.tbl.length)
@@ -842,6 +834,9 @@ Macro "Lane Miles by LOS" (scenarioDirectory)
   agg = null
   agg.lane_miles = {"sum"}
   final.summarize(agg)
+
+  // Remove the "Count" field
+  final.remove("Count")
 
   // output report
   file = scenarioDirectory + "/reports/lane miles by los.csv"
