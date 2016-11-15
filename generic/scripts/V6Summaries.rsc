@@ -12,6 +12,7 @@ Macro "V6 Summaries" (scenarioDirectory)
   RunMacro("Trav Time Map - Zonal", scenarioDirectory)
   RunMacro("Transit Boardings", scenarioDirectory)
   RunMacro("Lane Miles by LOS", scenarioDirectory)
+  RunMacro("Trips by Mode", scenarioDirectory)
 
   Return(1)
 
@@ -841,4 +842,104 @@ Macro "Lane Miles by LOS" (scenarioDirectory)
   // output report
   file = scenarioDirectory + "/reports/lane miles by los.csv"
   final.write_csv(file)
+EndMacro
+
+/*
+Produces tables of trips by mode and user class.
+Output used in CMP analysis.
+
+Depends
+  gplyr
+*/
+
+Macro "Trips by Mode" (scenarioDirectory)
+
+  out_dir = scenarioDirectory + "/outputs"
+  rep_dir = scenarioDirectory + "/reports"
+
+  // Resident and Visitor trips
+  a_class = {"resident", "visitor"}
+  a_mode = {"Auto", "Tran", "Nmot", "Othr"}
+  a_mode_pretty = {"Private automobile", "Transit", "Bike/walk", "Other"}
+  a_tod = {"EA", "AM", "MD", "PM", "EV"}
+  for r = 1 to a_class.length do
+    class = a_class[r]
+
+    class_total = 0
+    for m = 1 to a_mode.length do
+      mode = a_mode[m]
+      mode_pretty = a_mode_pretty[m]
+
+      mode_total = 0
+      for t = 1 to a_tod.length do
+        tod = a_tod[t]
+
+        in_file = out_dir + "/" + class + mode + "Trips_" + tod + ".mtx"
+        mtx = OpenMatrix(in_file, )
+        a_stats = MatrixStatistics(mtx, )
+
+        for s = 1 to a_stats.length do
+          mode_total = mode_total + a_stats[s][2].Sum
+        end
+      end
+
+      class_total = class_total + mode_total
+
+      // store the mode total in TBL
+      TBL.Class = TBL.Class + {Proper(class)}
+      TBL.Mode = TBL.Mode + {mode_pretty}
+      TBL.Trips = TBL.Trips + {mode_total}
+    end
+
+    // Add the class total to TBL
+    TBL.Class = TBL.Class + {Proper(class)}
+    TBL.Mode = TBL.Mode + {"Total"}
+    TBL.Trips = TBL.Trips + {class_total}
+  end
+
+  // Air trips
+  a_modes = {
+    "Private Automobile", "Taxi", "Transit", "Shuttle Bus",
+    "Tour Bus", "Rail"
+  }
+  temp = null
+  air_total = 0
+  for t = 1 to a_tod.length do
+    tod = a_tod[t]
+
+    in_file = out_dir + "/airp_" + tod + ".mtx"
+    mtx = OpenMatrix(in_file, )
+    a_stats = MatrixStatistics(mtx, )
+
+    for s = 1 to a_stats.length do
+      core = a_stats[s][1]
+
+      temp.(core) = nz(temp.(core)) + a_stats[s][2].Sum
+      air_total = air_total + a_stats[s][2].Sum
+    end
+  end
+
+  // Transfer temp data to TBL
+  for i = 1 to temp.length do
+    TBL.Class = TBL.Class + {"Air"}
+    TBL.Mode = TBL.Mode + {a_modes[i]}
+    TBL.Trips = TBL.Trips + {temp[i][2]}
+  end
+
+  // Add total air row
+  TBL.Class = TBL.Class + {"Air"}
+  TBL.Mode = TBL.Mode + {"Total"}
+  TBL.Trips = TBL.Trips + {air_total}
+
+  // Truck trips
+  in_file = out_dir + "/trck_" + tod + ".mtx"
+  mtx = OpenMatrix(in_file, )
+  a_stats = MatrixStatistics(mtx, )
+  TBL.Class = TBL.Class + {"Truck"}
+  TBL.Mode = TBL.Mode + {"Total"}
+  TBL.Trips = TBL.Trips + {a_stats[1][2].Sum}
+
+  // write out to csv
+  df = CreateObject("df", TBL)
+  df.write_csv(rep_dir + "/trips by class and mode.csv")
 EndMacro
