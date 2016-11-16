@@ -128,7 +128,7 @@ Macro "CMP Wrapper"
     RunMacro("OMPO6", path, Options, jump)
 
     // Create a shapefile of the project links
-    /*RunMacro("Create Project Shape", proj_id)*/
+    RunMacro("Create Project Shape", proj_id)
   end
 
 EndMacro
@@ -145,12 +145,6 @@ Depends
 Macro "Create Project Shape" (proj_id)
   shared path, scen_dir
 
-  // for testing, set the input variables
-  dim path[2]
-  path[2] = "C:\\projects/Honolulu/Version6/OMPORepo/generic/inputs/master_network/Oahu Network 102907.dbd"
-  scen_dir = "C:\\projects/Honolulu/Version6/OMPORepo/scenarios/CMP/cmp_proj_1"
-  proj_id = 1
-
   // Open map to export project links
   hwyDBD = path[2]
   {nLyr, lLyr} = GetDBLayers(hwyDBD)
@@ -165,15 +159,19 @@ Macro "Create Project Shape" (proj_id)
   // Remove CCs and ramps from set
   SetLayer(lLyr)
   qry = "Select * where nz(AB_FNCLASS) < 8 or nz(BA_FNCLASS) < 8"
-  SelectByQuery(set_name, "less", qry)
+  SelectByQuery(set_name, "subset", qry)
 
   // Export the selection set as a shapefile
   opts = null
-  opts.[NAD Conversion] = {"NAD83", "WGS840", }
-  opts.[Projection] = {"EPSG:3857", }
+  opts = {
+    {"Projection", "nad83:5101", },
+    {"Fields", {"ID"}}
+  }
   ExportArcViewShape(
     lLyr + "|" + set_name,
-    scen_dir + "/reports/shapefile/proj_shapefile.shp",
+    scen_dir + "/reports/proj_shapefile.shp",
     opts
   )
+
+  RunMacro("Close All")
 EndMacro
