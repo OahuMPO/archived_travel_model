@@ -5,6 +5,7 @@ Macro "V6 Summaries" (scenarioDirectory)
   // scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\LRTP2040"
 
   RunMacro("Close All")
+  RunMacro("Additional Network Calculations", scenarioDirectory)
   RunMacro("Summarize by FT and AT", scenarioDirectory)
   RunMacro("Emission Estimation", scenarioDirectory)
   RunMacro("V/C Map", scenarioDirectory)
@@ -15,6 +16,97 @@ Macro "V6 Summaries" (scenarioDirectory)
   RunMacro("Trips by Mode", scenarioDirectory)
 
   Return(1)
+
+EndMacro
+
+/*
+This macro adds extra fields to the loaded network including
+delay and daily metrics like slowest speed and max v/c
+*/
+
+Macro "Additional Network Calculations" (scenarioDirectory)
+
+  inputDir = scenarioDirectory + "\\inputs"
+
+  hwyDBD = inputDir + "\\network\\Scenario Line Layer.dbd"
+  {nLyr, lLyr} = GetDBLayers(hwyDBD)
+  AddLayerToWorkspace(lLyr, hwyDBD, lLyr)
+
+  a_dir = {"AB", "BA"}
+  a_tod = {"EA", "AM", "MD", "PM", "EV"}
+
+  // Speed and V/C daily fields
+  a_fields = {
+    {"AB_VOC_Max", "Real", 10, 2},
+    {"BA_VOC_Max", "Real", 10, 2},
+    {"AB_SPD_Min", "Real", 10, 2},
+    {"BA_SPD_Min", "Real", 10, 2}
+  }
+  RunMacro("Add Fields", lLyr, a_fields)
+
+  for d = 1 to a_dir.length do
+    dir = a_dir[d]
+
+    for t = 1 to a_tod.length do
+      tod = a_tod[t]
+
+      vc_field = dir + "_VOC_" + tod
+      spd_field = dir + "_SPD_" + tod
+
+      v_vc = GetDataVector(lLyr + "|", vc_field, )
+      v_spd = GetDataVector(lLyr + "|", spd_field, )
+
+      if t = 1 then do
+        v_max_vc = v_vc
+        v_min_spd = v_spd
+      end else do
+        v_max_vc = if v_vc > v_max_vc then v_vc else v_max_vc
+        v_min_spd = if v_spd < v_min_spd then v_spd else v_min_spd
+      end
+    end
+
+    SetDataVector(lLyr + "|", dir + "_VOC_Max", v_max_vc, )
+    SetDataVector(lLyr + "|", dir + "_SPD_Min", v_min_spd, )
+  end
+
+  // Delay fields
+  for t = 1 to a_tod.length do
+    tod = a_tod[t]
+
+    for d = 1 to a_dir.length do
+      dir = a_dir[d]
+
+      field = dir + "_Delay_" + tod
+      a_fields = {
+        {field, "Real", 10, 2}
+      }
+      RunMacro("Add Fields", lLyr, a_fields)
+
+      v_time = nz(GetDataVector(lLyr + "|", dir + "_TIME_" + tod, ))
+      v_fftime = nz(GetDataVector(lLyr + "|", dir + "_FFTIME", ))
+      v_vol = nz(GetDataVector(lLyr + "|", dir + "_FLOW_" + tod, ))
+      v_delay = (v_time - v_fftime) * v_vol
+
+      // correct any "negative zero" values (-0.00)
+      v_delay = if ( v_delay < .0001 and v_delay > -.0001 )
+        then 0
+        else v_delay
+
+      SetDataVector(lLyr + "|", field, v_delay, )
+
+      if t = 1
+        then TOTAL.(dir) = v_delay
+        else TOTAL.(dir) = TOTAL.(dir) + v_delay
+    end
+  end
+
+  a_fields = {
+    {"AB_Delay_Total", "Real", 10, 2},
+    {"BA_Delay_Total", "Real", 10, 2}
+  }
+  RunMacro("Add Fields", lLyr, a_fields)
+  SetDataVector(lLyr + "|", "AB_Delay_Total", TOTAL.AB, )
+  SetDataVector(lLyr + "|", "BA_Delay_Total", TOTAL.BA, )
 
 EndMacro
 
