@@ -135,7 +135,7 @@ EndMacro
 
 /*
 Creates a shapefile of the current project by extracting
-it from the master network.
+it from the scenario network.
 
 Depends
   RoadProjectManagement.rsc
@@ -146,7 +146,7 @@ Macro "Create Project Shape" (proj_id)
   shared path, scen_dir
 
   // Open map to export project links
-  hwyDBD = path[2]
+  hwyDBD = scen_dir + "/inputs/network/Scenario Line Layer.dbd"
   {nLyr, lLyr} = GetDBLayers(hwyDBD)
   map = RunMacro("G30 new map", hwyDBD)
 
@@ -165,7 +165,12 @@ Macro "Create Project Shape" (proj_id)
   opts = null
   opts = {
     {"Projection", "nad83:5101", },
-    {"Fields", {"ID"}}
+    {"Fields", {
+      "ID",
+      "AB_Flow_AM", "BA_Flow_AM",
+      "AB_VOC_AM", "BA_VOC_AM",
+      "AB_SPD_AM", "BA_SPD_AM"
+    }}
   }
   ExportArcViewShape(
     lLyr + "|" + set_name,
