@@ -53,7 +53,7 @@ I have rewritten the Walk portion to be substantially faster.
 Manual testing macro for transit access links
 */
 Macro "test tal"
-  scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\test_ta_links"
+  scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\CMP_2016\\cmp_proj_1"
   hwyfile = scenarioDirectory + "\\inputs\\network\\Scenario Line Layer.dbd"
   rtsfile = scenarioDirectory + "\\inputs\\network\\Scenario Route System.rts"
   nzones = 764
@@ -71,18 +71,20 @@ endMacro
 //**********************************************************************************************
 Macro "Transit Access Links" (scenarioDirectory, hwyfile, rtsfile, nzones,fixgdwy)
 
+    RunMacro("Close All")
+
     ret_value = RunMacro("Initial Setup",scenarioDirectory, hwyfile, rtsfile,fixgdwy)
-    if !ret_value then Throw()
+    if !ret_value then Throw("Initial setup failed")
 
     // Kyle - the following three skims from the original script will be used
     ret_value = RunMacro("Walk Time Matrix", scenarioDirectory, hwyfile, rtsfile, nzones)
-    if !ret_value then Throw()
+    if !ret_value then Throw("Walk time matrix failed")
 
     ret_value = RunMacro("PNR Time Matrix", scenarioDirectory, hwyfile, rtsfile, nzones)
-    if !ret_value then Throw()
+    if !ret_value then Throw("PNR time matrix failed")
 
     ret_value = RunMacro("KNR Time Matrix", scenarioDirectory, hwyfile, rtsfile, nzones)
-    if !ret_value then Throw()
+    if !ret_value then Throw("KNR Time matrix failed")
 
 
     // Realized that the KNR and PNR processes are different.  Leaving them alone.
@@ -167,17 +169,11 @@ Macro "Initial Setup" (scenarioDirectory, hwyfile, rtsfile,fixgdwy)
     link_lyr = lyrs[5]
 
 	  //*********************************Tag Route Stops to Line Layer Nodes*************************************************
-	  Opts = null
+   n = TagRouteStopsWithNode(rte_lyr, , "NODENUMBER", .1)
+   if n > 0 then Throw(String(n) + " stops not tagged with node ID")
 
-   	Opts.Input.[Dataview Set] = {rtsfile+"|Route Stops", "Route Stops"}  																															//Fill Layer is the Route Stops
-   	Opts.Input.[Tag View Set] = {hwyfile+"|Oahu Nodes", "Oahu Nodes"}       																													//Tag from file is the Node Layer
-   	Opts.Global.Fields = {"[Route Stops].NODENUMBER"}																																									//Put in the field NODENUMBER
-   	Opts.Global.Method = "Tag"
-   	Opts.Global.Parameter = {"Value", "Oahu Nodes", "[Oahu Nodes].ID"}																																//Tag with the nearest Nodes ID
 
-   ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
 
-   if !ret_value then Throw()
     //********************* Set up a Node field that corresponds to transit stops and a link field for shortest path *********************
 
     // new link fields for transit in-vehicle times
@@ -200,7 +196,7 @@ Macro "Initial Setup" (scenarioDirectory, hwyfile, rtsfile,fixgdwy)
     Opts.Global.Method = "Formula"
     Opts.Global.Parameter = {"Length*60/3"}
     ret_value = RunMacro("TCB Run Operation", 1, "Fill Dataview", Opts)
-    if !ret_value then Throw()
+    if !ret_value then Throw("Fill Dataview Failed")
 
     // code WALKTIME to 30 seconds for rail access links only if FG in scenario
      if fixgdwy<>0 then do
@@ -210,7 +206,7 @@ Macro "Initial Setup" (scenarioDirectory, hwyfile, rtsfile,fixgdwy)
    	 		Opts.Global.Method = "Value"
    	 		Opts.Global.Parameter = {0.50}
     		ret_value = RunMacro("TCB Run Operation", 2, "Fill Dataview", Opts)
-   	 	if !ret_value then Throw()
+   	 	if !ret_value then Throw("Fill Dataview Failed")
    	 end
 
 
@@ -238,7 +234,7 @@ Macro "Initial Setup" (scenarioDirectory, hwyfile, rtsfile,fixgdwy)
     Opts.Global.Method = "Value"
     Opts.Global.Parameter = {11}
     ret_value = RunMacro("TCB Run Operation", 2, "Fill Dataview", Opts)
-    if !ret_value then Throw()
+    if !ret_value then Throw("Fill Dataview Failed")
 
     // Add a new field AT_TRN to the node layer to indicate if it is a valid transit stop
     NewFlds = {{"AT_TRN","integer"}}
@@ -448,7 +444,7 @@ Macro "Walk Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     Opts.Output.[Network File] = hwynet_wlk
 
     ret_value = RunMacro("TCB Run Operation", "Build Highway Network", Opts, &Ret)
-    if !ret_value then Throw()
+    if !ret_value then Throw("Build highway network failed")
 
     //************Create shortest path for walking distance between centroid and transit stops************
     StraightLine = 1
@@ -464,7 +460,7 @@ Macro "Walk Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
         Opts.Global.[Update Network Fields].[Link Type] = {"*_FACTYPE", link_lyr+".[AB FACTYPE]", link_lyr+".[BA FACTYPE]"}	// need to confirm which variable to use, factype or linktype in the highway file
         Opts.Global.[Update Network Fields].Formulas = {}
         ret_value = RunMacro("TCB Run Operation", "Highway Network Setting", Opts, &Ret)
-        if !ret_value then Throw()
+        if !ret_value then Throw("Highway network settings failed")
 
         // Create a skim of shortest path walk length from origin nodes to valid transit stop nodes; also skim the times on the link
         Opts = null
@@ -479,7 +475,7 @@ Macro "Walk Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
         Opts.Output.[Output Matrix].[File Name] = hskim_wlkdist
 
         ret_value = RunMacro("TCB Run Procedure", "TCSPMAT", Opts, &Ret)
-        if !ret_value then Throw()
+        if !ret_value then Throw("Skimming failed")
 
         // Save the skim as a table
         m = OpenMatrix(hskim_wlkdist, "True")
@@ -631,7 +627,7 @@ Macro "KNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     Opts.Output.[Network File] = hwynet_knr
 
     ret_value = RunMacro("TCB Run Operation", "Build Highway Network", Opts, &Ret)
-    if !ret_value then Throw()
+    if !ret_value then Throw("Build highway network failed")
 
     //************Create shortest path for driving distance between centroid and transit stops************
 
@@ -648,7 +644,7 @@ Macro "KNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     Opts.Output.[Output Matrix].[File Name] = hskim_knrdist
 
     ret_value = RunMacro("TCB Run Procedure", "TCSPMAT", Opts, &Ret)
-    if !ret_value then Throw()
+    if !ret_value then Throw("Skimming failed")
 
     // Save the skim as a table
     m = OpenMatrix(hskim_knrdist, "True")
@@ -728,7 +724,7 @@ Macro "PNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     Opts.Output.[Network File] = hwynet_pnr
 
     ret_value = RunMacro("TCB Run Operation", "Build Highway Network", Opts, &Ret)
-    if !ret_value then Throw()
+    if !ret_value then Throw("Buld highway network failed")
 
     //************Create shortest path for driving distance between centroid and PNR lots (Using SOV Non-Toll Path) ************
     Opts = null
@@ -740,7 +736,7 @@ Macro "PNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     Opts.Global.[Update Network Fields].[Link Type] = {"*_FACTYPE", link_lyr+".[AB FACTYPE]", link_lyr+".[BA FACTYPE]"}
     Opts.Global.[Update Network Fields].Formulas = {}
     ret_value = RunMacro("TCB Run Operation", "Highway Network Setting", Opts, &Ret)
-    if !ret_value then Throw()
+    if !ret_value then Throw("Highway network settings failed")
 
     Opts = null
     Opts.Input.Network = hwynet_pnr
@@ -754,7 +750,7 @@ Macro "PNR Time Matrix" (scenarioDirectory, hwyfile, rtsfile, nzones)
     Opts.Output.[Output Matrix].[File Name] = hskim_pnrdist
 
     ret_value = RunMacro("TCB Run Procedure", "TCSPMAT", Opts, &Ret)
-    if !ret_value then Throw()
+    if !ret_value then Throw("Skimming failed")
 
     // convert matrix to table
     m = OpenMatrix(hskim_pnrdist, "True")
