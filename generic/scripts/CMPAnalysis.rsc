@@ -103,8 +103,10 @@ Macro "CMP Wrapper"
   for i = 1 to df_nec.nrow() do
     proj_id = df_nec.tbl.ProjID[i]
 
+    RunMacro("Close All")
+
     // Create scenario folder
-    scen_dir = dir + "/cmp_proj_" + if (TypeOf(proj_id) = "string")
+    scen_dir = dir + "cmp_proj_" + if (TypeOf(proj_id) = "string")
       then proj_id
       else String(proj_id)
     on error goto skip
@@ -122,6 +124,7 @@ Macro "CMP Wrapper"
     path[2] = scen_dir
     RunMacro("Create TAZ File")
     RunMacro("Create Network", path, Options, year)
+    RunMacro("Close All")
 
     // Start the model run
     jump = "UpdateLineLayer"
