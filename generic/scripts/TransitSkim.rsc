@@ -10,18 +10,16 @@
 
 Macro "Transit Network and Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, xferfile, nzones, iteration)
 
+    RunMacro("Close All")
+
     ret_value = RunMacro("Transit Time Update", scenarioDirectory, hwyfile, iteration)
-    if !ret_value then Throw()
+    if !ret_value then Throw("Transit time update failed")
 
     skim:
     ret_value = RunMacro("Transit Skim", scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, xferfile, nzones)
-    if !ret_value then Throw()
-
-    RunMacro("Close All")
+    if !ret_value then Throw("Transit skim failed")
 
     Return(1)
-    
-    	
 endMacro
 
 
@@ -34,38 +32,59 @@ endMacro
 ************************************************************************************************************************************/
 Macro "Transit Time Update" (scenarioDirectory, hwyfile, iteration)
 
-	aa = GetDBInfo(hwyfile)
+    aa = GetDBInfo(hwyfile)
     cc = CreateMap("bb",{{"Scope",aa[1]}})
     node_lyr=AddLayer(cc,"Oahu Nodes",hwyfile,"Oahu Nodes")
     link_lyr=AddLayer(cc,"Oahu Links",hwyfile,"Oahu Links")
 
+    a_tod = {"EA", "AM", "MD", "PM", "EV"}
+
     // if iteration 1, use first iteration times in line layer
     if(iteration <= 1) then do
-
         Opts = null
         Opts.Input.[Dataview Set] = {hwyfile+"|"+link_lyr,link_lyr}
-        Opts.Global.Fields = {"AB_EATRNTIME","BA_EATRNTIME",
-        	                    "AB_AMTRNTIME","BA_AMTRNTIME",
-        	                    "AB_MDTRNTIME","BA_MDTRNTIME",
-        	                    "AB_PMTRNTIME","BA_PMTRNTIME",
-        	                    "AB_EVTRNTIME","BA_EVTRNTIME"}
-
-
+        Opts.Global.Fields = {
+          "AB_EATRNTIME","BA_EATRNTIME",
+          "AB_AMTRNTIME","BA_AMTRNTIME",
+          "AB_MDTRNTIME","BA_MDTRNTIME",
+          "AB_PMTRNTIME","BA_PMTRNTIME",
+          "AB_EVTRNTIME","BA_EVTRNTIME"
+        }
         Opts.Global.Method = "Formula"
-        Opts.Global.Parameter = {"AB_EATIME * AB_OPTRNFAC", "BA_EATIME * BA_OPTRNFAC",
-        	                       "AB_AMTIME * AB_PKTRNFAC", "BA_AMTIME * BA_PKTRNFAC",
-        	                       "AB_MDTIME * AB_OPTRNFAC", "BA_MDTIME * BA_OPTRNFAC",
-        	                       "AB_PMTIME * AB_PKTRNFAC", "BA_PMTIME * BA_PKTRNFAC",
-        	                       "AB_EVTIME * AB_OPTRNFAC", "BA_EVTIME * BA_OPTRNFAC"}
+        Opts.Global.Parameter = {
+          "AB_EATIME * AB_OPTRNFAC", "BA_EATIME * BA_OPTRNFAC",
+          "AB_AMTIME * AB_PKTRNFAC", "BA_AMTIME * BA_PKTRNFAC",
+          "AB_MDTIME * AB_OPTRNFAC", "BA_MDTIME * BA_OPTRNFAC",
+          "AB_PMTIME * AB_PKTRNFAC", "BA_PMTIME * BA_PKTRNFAC",
+          "AB_EVTIME * AB_OPTRNFAC", "BA_EVTIME * BA_OPTRNFAC"
+        }
         ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
         if !ret_value then Throw()
-
-
-        end
     // if not iteration 1, use msa times in flow table
-    else do
+    end else do
 
-	    eaflowtable = scenarioDirectory+"\\outputs\\iter"+String(iteration-1)+"\\EAFlow"+String(iteration-1)+".bin"
+      for t = 1 to a_tod.length do
+        tod = a_tod[t]
+
+        pkop = if (tod = "AM" or tod = "PM")
+          then "PK"
+          else "OP"
+        flowtable = scenarioDirectory+"\\outputs\\iter"+String(iteration-1)+
+          "\\" + tod + "Flow"+String(iteration-1)+".bin"
+
+        Opts = null
+        Opts.Input.[Dataview Set] = {{hwyfile+"|"+link_lyr,flowtable,  {"ID"}, {"ID1"}}, "joinedvw"}
+        Opts.Global.Fields = {"AB_" + tod + "TRNTIME","BA_" + tod + "TRNTIME" }
+        Opts.Global.Method = "Formula"
+        Opts.Global.Parameter = {
+          "AB_MSA_TIME * AB_" + pkop + "TRNFAC",
+          "BA_MSA_TIME * BA_" + pkop + "TRNFAC"
+        }
+        ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
+        if !ret_value then Throw()
+      end
+
+	    /*eaflowtable = scenarioDirectory+"\\outputs\\iter"+String(iteration-1)+"\\EAFlow"+String(iteration-1)+".bin"
 	    amflowtable = scenarioDirectory+"\\outputs\\iter"+String(iteration-1)+"\\AMFlow"+String(iteration-1)+".bin"
 	    mdflowtable = scenarioDirectory+"\\outputs\\iter"+String(iteration-1)+"\\MDFlow"+String(iteration-1)+".bin"
 	    pmflowtable = scenarioDirectory+"\\outputs\\iter"+String(iteration-1)+"\\PMFlow"+String(iteration-1)+".bin"
@@ -115,7 +134,7 @@ Macro "Transit Time Update" (scenarioDirectory, hwyfile, iteration)
       Opts.Global.Method = "Formula"
       Opts.Global.Parameter = {"AB_MSA_TIME * AB_OPTRNFAC","BA_MSA_TIME * BA_OPTRNFAC"}
       ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
-      if !ret_value then Throw()
+      if !ret_value then Throw()*/
 
     end
 
@@ -126,44 +145,57 @@ Macro "Transit Time Update" (scenarioDirectory, hwyfile, iteration)
     if n1 > 0  then do
         Opts = null
         Opts.Input.[Dataview Set] = {hwyfile+"|"+link_lyr,link_lyr,"TranOnly"}
-        Opts.Global.Fields = {"AB_EATRNTIME","BA_EATRNTIME",
-                                "AB_AMTRNTIME","BA_AMTRNTIME",
-                              "AB_MDTRNTIME","BA_MDTRNTIME",
-                                "AB_PMTRNTIME","BA_PMTRNTIME",
-                                "AB_EVTRNTIME","BA_EVTRNTIME"}
+        Opts.Global.Fields = {
+          "AB_EATRNTIME","BA_EATRNTIME",
+          "AB_AMTRNTIME","BA_AMTRNTIME",
+          "AB_MDTRNTIME","BA_MDTRNTIME",
+          "AB_PMTRNTIME","BA_PMTRNTIME",
+          "AB_EVTRNTIME","BA_EVTRNTIME"
+        }
         Opts.Global.Method = "Formula"
-        Opts.Global.Parameter = {"(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
-                                   "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
-                                   "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
-                                   "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
-                                   "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60"}
-
+        Opts.Global.Parameter = {
+          "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
+          "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
+          "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
+          "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60",
+          "(Length/Tran_Only_Spd)*60","(Length/Tran_Only_Spd)*60"
+        }
         ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
         if !ret_value then Throw()
     end
     RunMacro("Close All")
 
 
-    RunMacro("Recode Values", hwyfile, {"MODE_ID","WALKTIME","AB_EATRNTIME","BA_EATRNTIME","AB_AMTRNTIME","BA_AMTRNTIME"},
-                                       {     null,      null,          null,          null,          null,          null},  //from
-                                       {       99,         0,        0.0001,        0.0001,        0.0001,        0.0001},  //to
-            {1,2,3,4,5,6,7,8,9,10,11,12,13,14,197})
+    RunMacro(
+      "Recode Values",
+      hwyfile,
+      {"MODE_ID","WALKTIME","AB_EATRNTIME","BA_EATRNTIME","AB_AMTRNTIME","BA_AMTRNTIME"},
+      {     null,      null,          null,          null,          null,          null},  //from
+      {       99,         0,        0.0001,        0.0001,        0.0001,        0.0001},  //to
+      {1,2,3,4,5,6,7,8,9,10,11,12,13,14,197}
+    )
 
 
-    RunMacro("Recode Values", hwyfile, {"AB_MDTRNTIME","BA_MDTRNTIME","AB_PMTRNTIME","BA_PMTRNTIME","AB_EVTRNTIME","BA_EVTRNTIME"},
-                                      {           null,          null,          null,          null,          null,          null},  //from
-                                      {         0.0001,        0.0001,        0.0001,        0.0001,        0.0001,        0.0001},  //to
-           {1,2,3,4,5,6,7,8,9,10,11,12,13,14,197})
+    RunMacro(
+      "Recode Values",
+      hwyfile,
+      {"AB_MDTRNTIME","BA_MDTRNTIME","AB_PMTRNTIME","BA_PMTRNTIME","AB_EVTRNTIME","BA_EVTRNTIME"},
+      {           null,          null,          null,          null,          null,          null},  //from
+      {         0.0001,        0.0001,        0.0001,        0.0001,        0.0001,        0.0001},  //to
+      {1,2,3,4,5,6,7,8,9,10,11,12,13,14,197}
+    )
 
-    RunMacro("Recode Values", hwyfile, {"MODE_ID"},
-                                       {        0},  //from
-                                       {       99},  //to
-            {1,2,3,4,5,6,7,8,9,10,11,12,13,14,197})
+    RunMacro(
+      "Recode Values",
+      hwyfile,
+      {"MODE_ID"},
+      {        0},  //from
+      {       99},  //to
+      {1,2,3,4,5,6,7,8,9,10,11,12,13,14,197}
+    )
 
+    RunMacro("Close All")
     Return(1)
-	
-        
-
 EndMacro
 
 Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, xferfile, nzones)
@@ -221,8 +253,6 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     	trn_wtp=scenarioDirectory+"\\outputs\\trn_wtp_"+periods[i]+".tnw"
     	trn_wtk=scenarioDirectory+"\\outputs\\trn_wtk_"+periods[i]+".tnw"
 
-
-
     	//output skims
     	trnskm_wloc=scenarioDirectory+"\\outputs\\transit_wloc_"+periods[i]+".mtx"
     	trnskm_wexp=scenarioDirectory+"\\outputs\\transit_wexp_"+periods[i]+".mtx"
@@ -240,7 +270,6 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     	                    trnskm_wtp,
     	                    trnskm_wtk
     	                }
-
 
     	//4: Local Bus; 5: Express Bus; 6: Limited Bus; 7: Fixed-Guideway 8: Ferry 11: Transfer Walk; 12: Walk Access
     	// Build Network
@@ -303,8 +332,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Output.[Network File] = trn
 
     ret_value = RunMacro("TCB Run Operation", "Build Transit Network", Opts, &Ret)
-    if !ret_value then Throw()
-
+    if !ret_value then Throw("Build transit network failed")
 
     //  PEAK Walk Access Transit Network Setting PF
     CopyFile(trn, trn_wloc)
@@ -371,7 +399,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Flag.[Use P&R Walk Access] = "No"
 
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then Throw()
+    if !ret_value then Throw("Transit network settings failed")
 
     // Settings for Walk-Express
     CopyFile(trn_wloc, trn_wexp)
@@ -380,7 +408,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Field.[Mode Imp Weight] = modes_vw+".Express_Weight"
     Opts.Field.[Mode Used] = modes_vw+".Walk_Express"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then Throw()
+    if !ret_value then Throw("Transit network settings failed")
 
     // Settings for Walk-Fixed Guideway
     CopyFile(trn_wloc, trn_wfxg)
@@ -391,7 +419,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Field.[Mode IWait Weight] = null
     Opts.Field.[Mode XWait Weight] = null
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then Throw()
+    if !ret_value then Throw("Transit network settings failed")
 
     // Settings for PTW
     CopyFile(trn_wloc, trn_ptw)
@@ -417,7 +445,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
 //    Opts.Global.[Max Drive Time] = 30
     Opts.Flag.[Use Park and Ride] = "Yes"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then Throw()
+    if !ret_value then Throw("Transit network settings failed")
 
     // Settings for KTW
     CopyFile(trn_ptw, trn_ktw)
@@ -442,7 +470,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
 //    Opts.Global.[Max Drive Time] = 30
     Opts.Flag.[Use Park and Ride] = "Yes"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then Throw()
+    if !ret_value then Throw("Transit network settings failed")
 
     // Settings for WTP
     CopyFile(trn_ptw, trn_wtp)
@@ -457,7 +485,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Flag.[Use P&R Walk Egress] = "No"
     Opts.Flag.[Use Parking Capacity] = "No"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then Throw()
+    if !ret_value then Throw("Transit network settings failed")
 
     // Settings for WTK
     CopyFile(trn_ktw, trn_wtk)
@@ -472,7 +500,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
     Opts.Flag.[Use P&R Walk Egress] = "No"
     Opts.Flag.[Use Parking Capacity] = "No"
     ret_value = RunMacro("TCB Run Operation", "Transit Network Setting PF", Opts, &Ret)
-    if !ret_value then Throw()
+    if !ret_value then Throw("Transit network settings failed")
 
     // the output pnr acc node tables
     pnr_pnrAccNode = scenarioDirectory+"\\outputs\\pnr_"+periods[i]+"_pnrAccNode.mtx"
@@ -517,7 +545,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
    	    end
 
    	    ret_value = RunMacro("TCB Run Procedure", "Transit Skim PF", Opts, &Ret)
-        if !ret_value then Throw()
+        if !ret_value then Throw("Transit skim failed")
 
    	    // Add the parking node matrix to the drive transit skims
    	    if(out_pnr_skm[j] != null) then do
@@ -529,20 +557,12 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
 		        parkingCopy = CreateMatrixCurrency(skimMatrix, parkingMatrixName, , , )
             parkingCopy := parkingCurrency
         end
+    end
 
-   	    if !ret_value then Throw()
-   end
-
- convert:
+    convert:
     ret_value = RunMacro("Convert Matrices To Binary", transitSkims)
-    if !ret_value then Throw()
-
+    if !ret_value then Throw("Convert mtx to bin failed")
 	end
     RunMacro("Close All")
-
-
-
     Return(1)
-    
-        
 endMacro
