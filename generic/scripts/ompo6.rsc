@@ -1,6 +1,6 @@
 
 Macro "OMPO6" (path, Options, jump)
-    shared scenarioDirectory, wrapper
+    shared scenarioDirectory, cmp_wrapper
 
     RunMacro("TCB Init")
     scenarioDirectory = path[2]
@@ -87,6 +87,10 @@ Macro "OMPO6" (path, Options, jump)
     ret_value = RunMacro("Create Highway Network" ,hwyfile, hnetfile, iftoll)
     if !ret_value then Throw()
 
+    // Return if this is CMP analysis
+    // (See CMPAnalysis.rsc)
+    if cmp_wrapper then return()
+
     // Create transit access links
     ret_value = RunMacro("Transit Access Links", scenarioDirectory, hwyfile, rtsfile, nzones,fixgdwy)
     if !ret_value then Throw()
@@ -94,6 +98,7 @@ Macro "OMPO6" (path, Options, jump)
       DestroyProgressBar()
       Return(ShowMessage("Done with 'Prepare Network'"))
     end
+
 
     Feedback:
     //Enter a feedback loop
@@ -221,6 +226,10 @@ Macro "OMPO6" (path, Options, jump)
           Return(ShowMessage("Done with 'Highway Assignment'"))
         end
 
+        // Return if this is CMP analysis
+        // (See CMPAnalysis.rsc)
+        if cmp_wrapper then return()
+
         CheckConvergence:
         /*
         The disaggregate java models create partial populations in the first two iterations.
@@ -305,7 +314,7 @@ Macro "OMPO6" (path, Options, jump)
     DestroyProgressBar()
     // Do not show a complete message if the model is being
     // run repeatedly by a wrapper function.
-    if wrapper = null
+    if !cmp_wrapper
       then Return(ShowMessage("Model Run Complete"))
 
     //don't run dta as part of the regular model

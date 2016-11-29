@@ -81,17 +81,20 @@ create and run a scenario for each non-E+C project.
 */
 
 Macro "CMP Wrapper"
-  shared year, seYear, path, Options, ec_list, nonec_list, scen_dir, wrapper
+  shared year, seYear, path, Options, ec_list, nonec_list
+  shared scen_dir, cmp_wrapper
 
   // This lets various steps in the model know
   // that they are being run by a wrapper.  This
   // prevents them from displaying completion
   // messages (which would pause the run).
-  wrapper = "True"
+  cmp_wrapper = "True"
 
-  // Use the nonec_list location to determine the working dir
+  // Use the lists to determine the working and ec directories
   a_path = SplitPath(nonec_list)
   dir = a_path[1] + a_path[2]
+  a_path = SplitPath(ec_list)
+  ec_dir = a_path[1] + a_path[2]
 
   // Read project lists
   df_ec = CreateObject("df")
@@ -114,7 +117,7 @@ Macro "CMP Wrapper"
     skip:
     on error default
 
-    // Create a project list csv for that scenario
+    // Create the project list csv for that scenario
     df = df_ec.copy()
     df.mutate("ProjID", V2A(df.tbl.ProjID) + {proj_id})
     df.write_csv(scen_dir + "/ProjectList.csv")
@@ -126,9 +129,26 @@ Macro "CMP Wrapper"
     RunMacro("Create Network", path, Options, year)
     RunMacro("Close All")
 
-    // Start the model run
+    // Copy the EC directory output
+    from = ec_dir + "/outputs"
+    to = scen_dir + "/outputs"
+    copy_files = "True"
+    subdirectories = "False"
+    RunMacro("Copy Directory", from, to, copy_files, subdirectories)
+
+    // Run the model to update the line layer and create
+    // a highway network
     jump = "UpdateLineLayer"
     RunMacro("OMPO6", path, Options, jump)
+
+    // Run highway assignment
+    jump = "HighwayAssign"
+    RunMacro("OMPO6", path, Options, jump)
+
+    // Run the various reporting macros
+    RunMacro("AppendAssign", scen_dir, 1)
+    RunMacro("Highway Assignment Summary", scen_dir)
+    RunMacro("V6 Summaries", scen_dir)
 
     // Create a shapefile of the project links
     RunMacro("Create Project Shape", proj_id)
