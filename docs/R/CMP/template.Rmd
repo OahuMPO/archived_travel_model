@@ -1,0 +1,478 @@
+```{r, include = FALSE}
+# Template for CMP project analysis
+```
+
+```{r setup, include=FALSE, cache = FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, error=FALSE)
+options(scipen=999) # removes sci notation
+```
+
+```{r libraries, include = FALSE}
+library(tidyverse)
+library(maptools)
+library(rgdal)
+library(leaflet)
+library(knitr)
+library(htmltools)
+library(DT)
+```
+
+# Project `r as.character(id)`
+
+## Project Table
+
+```{r}
+proj_info %>%
+  filter(`Model ProjID` == id) %>%
+  kable()
+```
+
+
+## Project Map
+
+```{r}
+#dir <- paste0("../cmp_proj_", id)
+#for testing
+dir <- "C:/projects/Honolulu/Version6/OMPORepo/scenarios/CMP_2016/cmp_proj_1"
+shp <- paste0(dir, "/reports/proj_shapefile.shp")
+  
+# shp <- readShapeSpatial(shp, proj4string = CRS("+init=EPSG:4326"))
+# shp <- readShapeSpatial(shp, proj4string = CRS("+init=EPSG:4269"))
+shp <- readShapeSpatial(shp, proj4string = CRS("+init=nad83:5101"))
+shp <- sp::spTransform(shp, CRS("+init=EPSG:4326"))
+```
+
+```{r}
+leaflet() %>%
+  addTiles() %>%
+  addPolylines(data = shp)
+```
+
+## Person Trips by Purpose and Mode
+
+```{r, include = FALSE}
+p_tbl <- paste0(dir, "/reports/trips by class and mode.csv")
+p_tbl <- read_csv(p_tbl) %>%
+  mutate(Scenario = "project")
+
+ec_tbl <- paste0(ec_dir, "/reports/trips by class and mode.csv")
+ec_tbl <- read_csv(ec_tbl) %>%
+  mutate(Scenario = "ec")
+```
+
+```{r}
+# join it with the ec table
+tbl <- bind_rows(ec_tbl, p_tbl) %>%
+  spread(key = Scenario, value = Trips) %>%
+  mutate(
+    diff = project - ec,
+    pct_diff = ifelse(ec == 0, 0, round(diff / ec * 100, 2)),
+    Class = factor(
+      Class, levels = c("Resident", "Visitor", "Air", "Truck"),
+      ordered = TRUE
+    ),
+    Mode = factor(
+      Mode, levels = c(
+        "Private automobile",
+        "Transit",
+        "Rail",
+        "Taxi",
+        "Tour Bus",
+        "Shuttle Bus",
+        "Bike/walk",
+        "Other",
+        "Total"
+      ), ordered = TRUE
+    )
+  ) %>%
+  arrange(Class, Mode) %>%
+  rename(
+    `Baseline / EC` = ec, Project = project, Difference = diff,
+    `Percent Diff` = pct_diff
+    )
+
+tbl %>% 
+  datatable(
+    filter = "top",
+    extensions = "Buttons",
+    options = list(
+      pageLength = 100,
+      dom = "Bt",
+      buttons = c("copy", "csv", "pdf")
+    )
+  ) %>%
+  formatCurrency(c(2:5), digits = 0, currency = "") %>%
+  formatPercentage(c(6)) %>%
+  formatStyle(
+    "Mode", target = "row",
+    fontWeight = styleEqual(c("Total"), c("bold"))
+  )
+```
+
+
+## Resident Mode Choice Summary
+
+By default, only 12 rows are shown at a time in the table below.  Increase this number, filter by purpose, or display other pages to see different purposes.
+
+```{r, include = FALSE}
+p_trips <- read_csv(paste0(dir, "/outputs/trips.csv"))
+
+p_mc_summary <- summarize_mc(p_trips) %>%
+  mutate(Scenario = "project")
+
+mc_summary <- bind_rows(ec_mc_summary, p_mc_summary) %>%
+  spread(key = Scenario, value = trips) %>%
+  marg_2d(., "trip_purp", "mode_name") %>%
+  mutate(
+    #project = round(project, 0),
+    #ec = round(ec, 0),
+    diff = project - ec,
+    pct_diff = ifelse(ec == 0, 0, diff / ec),
+    trip_purp = factor(trip_purp, levels = purp_labels, ordered = TRUE),
+    mode_name = factor(mode_name, levels = mode_labels, ordered = TRUE)
+  ) %>%
+  arrange(trip_purp, mode_name) #%>%
+  #mutate_at(c(3:6), funs(format(., big.mark = ",")))
+
+colnames(mc_summary) <- c(
+  "Purpose", "Mode", "Baseline / EC", "Project", "Difference", "Percent Diff"
+  )
+```
+
+```{r}
+mc_summary %>%
+  datatable(
+    filter = "top", 
+    extensions = "Buttons",
+    options = list(
+      dom = 'Blrtip',
+      buttons = c('copy', 'csv', 'pdf'),
+      pageLength = 12,
+      lengthMenu = c(12, 24, 48, 100)
+    )
+  ) %>%
+  formatCurrency(
+    c("Baseline / EC", "Project", "Difference"),
+    digits = 0, currency = ""
+  ) %>%
+  formatPercentage(c("Percent Diff"), digits = 2)  
+```
+
+
+## Project Impact
+
+```{r, include = FALSE}
+ec <- read_csv(paste0(ec_dir, "/reports/VMT and Speeds by FT and AT.csv")) %>%
+  mutate(scenario = "ec")
+proj <- read_csv(paste0(dir, "/reports/VMT and Speeds by FT and AT.csv")) %>%
+  mutate(scenario = "project")
+```
+
+```{r}
+tbl <- bind_rows(ec, proj) %>%
+  mutate(AreaType = as.character(AreaType))
+
+class_labels <- c(
+  "Freeway",
+  "Expressway",
+  "Principal Arterial",
+  "Minor Arterial",
+  "Major Collector",
+  "Minor Collector",
+  "Local",
+  "Ramp",
+  "CC", 
+  "Total"
+)
+```
+
+### Overview
+
+```{r}
+tbl %>%
+  group_by(scenario) %>%
+  summarize(VMT = sum(VMT), VHT = sum(VHT), Delay = sum(Delay)) %>%
+  gather(key = stat, value = number, -scenario) %>%
+  spread(key = scenario, value = number) %>%
+  mutate(
+    Difference = ec - project,
+    `Percent Diff` = round(Difference / ec * 100, 2),
+    stat = factor(stat, levels = c("VMT", "VHT", "Delay", ordered = TRUE))
+  ) %>%
+  arrange(stat) %>%
+  rename(Stat = stat, `Baseline / EC` = ec, Project = project) %>%
+  kable(
+    digits = c(0, 0, 0, 0, 2),
+    format.args = list(big.mark = ",")
+  )
+```
+
+### Vehicle Miles Traveled
+
+```{r}
+# custom container for the following tables
+# used to specify "Area Type" colspan
+imp_container = htmltools::withTags(table(
+  class = 'display',
+  thead(
+    tr(
+      th(colspan = 1, ""),
+      th(colspan = 9, "Area Type")
+    ),
+    tr(
+      lapply(c("FClass", "Most Dense", 2:7, "Least Dense", "Total"), th)
+    )
+  )
+))
+```
+
+#### With Project
+```{r}
+summary_tbl <- tbl %>%
+  group_by(AreaType, FClass, scenario) %>%
+  summarize(VMT = sum(VMT)) %>%
+  spread(key = scenario, value = VMT) %>%
+  marg_2d(., "AreaType", "FClass") %>%
+  mutate(
+    diff = ec - project,
+    pct_diff = ifelse(ec == 0, 0, diff / ec)
+  ) %>%
+  ungroup() %>%
+  mutate(FClass = factor(
+    FClass, levels = class_labels, ordered = TRUE
+  )) %>%
+  arrange(FClass)
+
+summary_tbl %>%
+  select(AreaType, FClass, project) %>%
+  spread(key = AreaType, value = project) %>%
+  datatable(
+    container = imp_container, rownames = FALSE,
+    extensions = "Buttons",
+    options = list(
+      dom = "Bt",
+      buttons = c("copy", "csv", "pdf")
+    )
+  ) %>%
+  formatCurrency(c(2:10), digits = 0, currency = "") %>%
+  formatStyle("Total", fontWeight = "bold") %>%
+  formatStyle(
+    "FClass", target = "row",
+    fontWeight = styleEqual(c("Total"), c("bold"))
+  )
+```
+
+#### Percent Change from Baseline / EC
+```{r}
+summary_tbl %>%
+  select(AreaType, FClass, pct_diff) %>%
+  spread(key = AreaType, value = pct_diff) %>%
+  datatable(
+    container = imp_container, rownames = FALSE,
+    extensions = "Buttons",
+    options = list(
+      dom = "Bt",
+      buttons = c("copy", "csv", "pdf")
+    )
+  ) %>%
+  formatPercentage(c(2:10), digits = 2) %>%
+  formatStyle("Total", fontWeight = "bold") %>%
+  formatStyle(
+    "FClass", target = "row",
+    fontWeight = styleEqual(c("Total"), c("bold"))
+  )
+```
+
+
+
+### Vehicle Hours Traveled
+
+#### With Project
+```{r}
+summary_tbl <- tbl %>%
+  group_by(AreaType, FClass, scenario) %>%
+  summarize(VHT = sum(VHT)) %>%
+  spread(key = scenario, value = VHT) %>%
+  marg_2d(., "AreaType", "FClass") %>%
+  mutate(
+    diff = ec - project,
+    pct_diff = ifelse(ec == 0, 0, diff / ec)
+  ) %>%
+  ungroup() %>%
+  mutate(FClass = factor(
+    FClass, levels = class_labels, ordered = TRUE
+  )) %>%
+  arrange(FClass)
+
+summary_tbl %>%
+  select(AreaType, FClass, project) %>%
+  spread(key = AreaType, value = project) %>%
+  datatable(
+    container = imp_container, rownames = FALSE,
+    extensions = "Buttons",
+    options = list(
+      dom = "Bt",
+      buttons = c("copy", "csv", "pdf")
+    )
+  ) %>%
+  formatCurrency(c(2:10), digits = 0, currency = "") %>%
+  formatStyle("Total", fontWeight = "bold") %>%
+  formatStyle(
+    "FClass", target = "row",
+    fontWeight = styleEqual(c("Total"), c("bold"))
+  )
+```
+
+
+#### Percent Change from Baseline / EC
+```{r}
+summary_tbl %>%
+  select(AreaType, FClass, pct_diff) %>%
+  spread(key = AreaType, value = pct_diff) %>%
+  datatable(
+    container = imp_container, rownames = FALSE,
+    extensions = "Buttons",
+    options = list(
+      dom = "Bt",
+      buttons = c("copy", "csv", "pdf")
+    )
+  ) %>%
+  formatPercentage(c(2:10), digits = 2) %>%
+  formatStyle("Total", fontWeight = "bold") %>%
+  formatStyle(
+    "FClass", target = "row",
+    fontWeight = styleEqual(c("Total"), c("bold"))
+  )
+```
+
+
+### Delay
+
+#### With Project
+```{r}
+summary_tbl <- tbl %>%
+  group_by(AreaType, FClass, scenario) %>%
+  summarize(Delay = sum(Delay)) %>%
+  spread(key = scenario, value = Delay) %>%
+  marg_2d(., "AreaType", "FClass") %>%
+  mutate(
+    diff = ec - project,
+    pct_diff = ifelse(ec == 0, 0, diff / ec)
+  ) %>%
+  ungroup() %>%
+  mutate(FClass = factor(
+    FClass, levels = class_labels, ordered = TRUE
+  )) %>%
+  arrange(FClass)
+
+summary_tbl %>%
+  select(AreaType, FClass, project) %>%
+  spread(key = AreaType, value = project) %>%
+  datatable(
+    container = imp_container, rownames = FALSE,
+    extensions = "Buttons",
+    options = list(
+      dom = "Bt",
+      buttons = c("copy", "csv", "pdf")
+    )
+  ) %>%
+  formatCurrency(c(2:10), digits = 0, currency = "") %>%
+  formatStyle("Total", fontWeight = "bold") %>%
+  formatStyle(
+    "FClass", target = "row",
+    fontWeight = styleEqual(c("Total"), c("bold"))
+  )
+```
+
+#### Percent Change from Baseline / EC
+```{r}
+summary_tbl %>%
+  select(AreaType, FClass, pct_diff) %>%
+  spread(key = AreaType, value = pct_diff) %>%
+  datatable(
+    container = imp_container, rownames = FALSE,
+    extensions = "Buttons",
+    options = list(
+      dom = "Bt",
+      buttons = c("copy", "csv", "pdf")
+    )
+  ) %>%
+  formatPercentage(c(2:10), digits = 2) %>%
+  formatStyle("Total", fontWeight = "bold") %>%
+  formatStyle(
+    "FClass", target = "row",
+    fontWeight = styleEqual(c("Total"), c("bold"))
+  )
+```
+
+
+### Transit Ridership
+
+```{r, include = FALSE}
+ec <- read_csv(paste0(ec_dir, "/reports/Transit Ridership.csv")) %>%
+  mutate(scenario = "ec")
+proj <- read_csv(paste0(dir, "/reports/Transit Ridership.csv")) %>%
+  mutate(scenario = "project")
+
+t_tbl <- bind_rows(ec, proj)
+```
+
+#### With Project
+```{r}
+summary_tbl <- t_tbl %>%
+  group_by(Mode, Period, scenario) %>%
+  summarize(Boardings = sum(Boardings)) %>%
+  spread(key = scenario, value = Boardings) %>%
+  marg_2d(., "Mode", "Period") %>%
+  mutate(
+    diff = ec - project,
+    pct_diff = ifelse(ec == 0, 0, diff / ec)
+  ) %>%
+  ungroup() %>%
+  mutate(Period = factor(
+    Period, 
+    levels = c("EA", "AM", "MD", "PM", "EV", "Total"),
+    ordered = TRUE
+  )) %>%
+  arrange(Period)
+
+summary_tbl %>%
+  select(Mode, Period, project) %>%
+  spread(key = Mode, value = project) %>%
+  datatable(
+    rownames = FALSE,
+    extensions = "Buttons",
+    options = list(
+      dom = "Bt",
+      buttons = c("copy", "csv", "pdf")
+    )
+  ) %>%
+  formatCurrency(c(2:6), digits = 0, currency = "") %>%
+  formatStyle("Total", fontWeight = "bold") %>%
+  formatStyle(
+    "Period", target = "row",
+    fontWeight = styleEqual(c("Total"), c("bold"))
+  )
+```
+
+#### Percent Change from Baseline / EC
+```{r}
+summary_tbl %>%
+  select(Mode, Period, pct_diff) %>%
+  spread(key = Mode, value = pct_diff) %>%
+  datatable(
+    rownames = FALSE,
+    extensions = "Buttons",
+    options = list(
+      dom = "Bt",
+      buttons = c("copy", "csv", "pdf")
+    )
+  ) %>%
+  formatPercentage(c(2:6), digits = 2) %>%
+  formatStyle("Total", fontWeight = "bold") %>%
+  formatStyle(
+    "Period", target = "row",
+    fontWeight = styleEqual(c("Total"), c("bold"))
+  )
+```
+

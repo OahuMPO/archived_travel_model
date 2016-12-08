@@ -1,0 +1,22 @@
+---
+title: "Oahu MPO Travel Modeling"
+author: "Systems Analysis Group"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache=FALSE,echo=TRUE,
+                      message=FALSE,warning=FALSE,error=FALSE)
+options(scipen=999) # removes sci notation
+```
+
+# Page Under Construction
+
+## Introduction
+
+This website will contain model-generated information used to support MPO 
+planning activities.
+
+The model user's guide can be found
+[here](https://github.com/pbsag/OMPOTravelModel/wiki) (currently private - requires
+invitation).
