@@ -136,7 +136,7 @@ for (id in non_ec$ProjID){
     unlist()
   
   rmarkdown::render(
-    "template.Rmd",
+    "road_proj_template.Rmd",
     output_file = paste0("cmp_proj_", id, ".html"),
     output_dir = out_dir,
     output_format = "html_document"
