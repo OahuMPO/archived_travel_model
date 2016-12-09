@@ -417,7 +417,7 @@ data_frame(
   )
 ```
 
-## Final Score
+# Final Score
 
 ```{r}
 score <- 0
