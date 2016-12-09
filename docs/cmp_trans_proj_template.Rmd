@@ -1,8 +1,16 @@
-```{r, include = FALSE}
-# Template for CMP project analysis
-```
+---
+title: '`r paste0("Project ", as.character(id), " CMP Analysis")`'
+author: "Oahu MPO"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output:
+  html_document:
+    toc_depth: 2
+---
 
 ```{r setup, include=FALSE, cache = FALSE}
+# Note, do not knit cmp_index.Rmd or the cmp project template Rmd files
+# manually. Use "R/CMP/creation_script.R"
+
 knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, error=FALSE)
 options(scipen=999) # removes sci notation
 ```
@@ -17,9 +25,7 @@ library(htmltools)
 library(DT)
 ```
 
-# Project `r as.character(id)`
-
-## Project Table
+# Project Info
 
 ```{r}
 proj_info %>%
@@ -28,12 +34,10 @@ proj_info %>%
 ```
 
 
-## Project Map
+# Project Map
 
 ```{r}
-#dir <- paste0("../cmp_proj_", id)
-#for testing
-dir <- "C:/projects/Honolulu/Version6/OMPORepo/scenarios/CMP_2016/cmp_proj_1"
+dir <- paste0(model_dir, "/scenarios/CMP_2016/cmp_proj_", id)
 shp <- paste0(dir, "/reports/proj_shapefile.shp")
   
 # shp <- readShapeSpatial(shp, proj4string = CRS("+init=EPSG:4326"))
@@ -48,7 +52,7 @@ leaflet() %>%
   addPolylines(data = shp)
 ```
 
-## Person Trips by Purpose and Mode
+# Person Trips by Purpose and Mode
 
 ```{r, include = FALSE}
 p_tbl <- paste0(dir, "/reports/trips by class and mode.csv")
@@ -110,7 +114,7 @@ tbl %>%
 ```
 
 
-## Resident Mode Choice Summary
+# Resident Mode Choice Summary
 
 By default, only 12 rows are shown at a time in the table below.  Increase this number, filter by purpose, or display other pages to see different purposes.
 
@@ -159,7 +163,7 @@ mc_summary %>%
 ```
 
 
-## Project Impact
+# Project Impact
 
 ```{r, include = FALSE}
 ec <- read_csv(paste0(ec_dir, "/reports/VMT and Speeds by FT and AT.csv")) %>%
@@ -186,7 +190,7 @@ class_labels <- c(
 )
 ```
 
-### Overview
+## Overview
 
 ```{r}
 tbl %>%
@@ -207,7 +211,7 @@ tbl %>%
   )
 ```
 
-### Vehicle Miles Traveled
+## Vehicle Miles Traveled
 
 ```{r}
 # custom container for the following tables
@@ -226,7 +230,7 @@ imp_container = htmltools::withTags(table(
 ))
 ```
 
-#### With Project
+### With Project
 ```{r}
 summary_tbl <- tbl %>%
   group_by(AreaType, FClass, scenario) %>%
@@ -262,7 +266,7 @@ summary_tbl %>%
   )
 ```
 
-#### Percent Change from Baseline / EC
+### Percent Change
 ```{r}
 summary_tbl %>%
   select(AreaType, FClass, pct_diff) %>%
@@ -285,9 +289,9 @@ summary_tbl %>%
 
 
 
-### Vehicle Hours Traveled
+## Vehicle Hours Traveled
 
-#### With Project
+### With Project
 ```{r}
 summary_tbl <- tbl %>%
   group_by(AreaType, FClass, scenario) %>%
@@ -324,7 +328,7 @@ summary_tbl %>%
 ```
 
 
-#### Percent Change from Baseline / EC
+### Percent Change
 ```{r}
 summary_tbl %>%
   select(AreaType, FClass, pct_diff) %>%
@@ -346,9 +350,9 @@ summary_tbl %>%
 ```
 
 
-### Delay
+## Delay
 
-#### With Project
+### With Project
 ```{r}
 summary_tbl <- tbl %>%
   group_by(AreaType, FClass, scenario) %>%
@@ -384,7 +388,7 @@ summary_tbl %>%
   )
 ```
 
-#### Percent Change from Baseline / EC
+### Percent Change
 ```{r}
 summary_tbl %>%
   select(AreaType, FClass, pct_diff) %>%
@@ -406,7 +410,7 @@ summary_tbl %>%
 ```
 
 
-### Transit Ridership
+## Transit Ridership
 
 ```{r, include = FALSE}
 ec <- read_csv(paste0(ec_dir, "/reports/Transit Ridership.csv")) %>%
@@ -417,7 +421,7 @@ proj <- read_csv(paste0(dir, "/reports/Transit Ridership.csv")) %>%
 t_tbl <- bind_rows(ec, proj)
 ```
 
-#### With Project
+### With Project
 ```{r}
 summary_tbl <- t_tbl %>%
   group_by(Mode, Period, scenario) %>%
@@ -455,7 +459,7 @@ summary_tbl %>%
   )
 ```
 
-#### Percent Change from Baseline / EC
+### Percent Change
 ```{r}
 summary_tbl %>%
   select(Mode, Period, pct_diff) %>%
