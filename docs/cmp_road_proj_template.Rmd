@@ -87,7 +87,7 @@ class_labels <- c(
 ## Overview
 
 ```{r}
-tbl %>%
+overview <- tbl %>%
   group_by(scenario) %>%
   summarize(VMT = sum(VMT), VHT = sum(VHT), Delay = sum(Delay)) %>%
   gather(key = stat, value = number, -scenario) %>%
@@ -98,11 +98,17 @@ tbl %>%
     stat = factor(stat, levels = c("VMT", "VHT", "Delay", ordered = TRUE))
   ) %>%
   arrange(stat) %>%
-  rename(Stat = stat, `Baseline / EC` = ec, Project = project) %>%
+  rename(Stat = stat, `Baseline / EC` = ec, Project = project) 
+
+overview %>%
   kable(
     digits = c(0, 0, 0, 0, 2),
     format.args = list(big.mark = ",")
   )
+
+vmt_diff <- overview$Difference[overview$Stat == "VMT"]
+vht_diff <- overview$Difference[overview$Stat == "VHT"]
+vhd_diff <- overview$Difference[overview$Stat == "Delay"]
 ```
 
 ## Vehicle Miles Traveled
@@ -118,22 +124,6 @@ The table below shows the island-wide change in VMT by facility type and area
 type. For scoring, the change in total VMT is used. Because no single project
 can have a dramatic influence on island-wide VMT, changes of any amount are
 scored as an increase or decrease.
-```{r}
-# custom container for the following tables
-# used to specify "Area Type" colspan
-imp_container = htmltools::withTags(table(
-  class = 'display',
-  thead(
-    tr(
-      th(colspan = 1, ""),
-      th(colspan = 9, "Area Type")
-    ),
-    tr(
-      lapply(c("FClass", "Most Dense", 2:7, "Least Dense", "Total"), th)
-    )
-  )
-))
-```
 
 ### With Project
 ```{r}
@@ -401,6 +391,8 @@ ec_vc <- ec_shp@data %>%
   mutate(max_vc = max(AB_VOC_AM + BA_VOC_AM)) %>%
   summarize(max(max_vc))
 
+vc_diff <- proj_vc - ec_vc
+
 vc_change <- "No Change"
 if (proj_vc > ec_vc + .05) {vc_change <- "Increase"}
 if (proj_vc < ec_vc - .05) {vc_change <- "Decrease"}
@@ -420,20 +412,45 @@ data_frame(
 # Final Score
 
 ```{r}
-score <- 0
+vc_score <- 0
+cong_score <- 0
+
+score_tbl <- data_frame(
+  Component = c(
+    "V/C",
+    "Congested Roadway",
+    "Volume",
+    "VMT", "VHT", "VHD",
+    "Final Score"
+  ),
+  Value = c(
+    unlist(round(vc_diff, 2)),
+    cong_road,
+    unlist(format(round(vol_diff, -1), big.mark = ",")),
+    unlist(format(round(vmt_diff, -2), big.mark = ",")),
+    unlist(format(round(vht_diff, -2), big.mark = ",")),
+    unlist(format(round(vhd_diff, -2), big.mark = ",")),
+    ""
+  ),
+  Score = rep(0, 7)
+)
 
 # v/c score
-if (vc_change == "No Change") {score <- score + 2}
-if (vc_change == "New Road") {score <- score + 3}
-if (vc_change == "Decrease") {score <- score + 5}
+if (vc_change == "No Change") {vc_score <- 2}
+if (vc_change == "New Road") {vc_score <- 3}
+if (vc_change == "Decrease") {vc_score <- 5}
+score_tbl$Score[score_tbl$Component == "V/C"] <- vc_score
 
 # list of congested roadways
-if (cong_road == 1) {score <- score + 1}
+if (cong_road == "Yes") {
+  cong_score <- 1
+}
+score_tbl$Score[score_tbl$Component == "Congested Roadway"] <- cong_score
 
 # Assume no transit mode change for highway projects
 
 # Volume increase
-score <- score + case_when(
+score_tbl$Score[score_tbl$Component == "Volume"] <-  case_when(
   vol_diff > 3500 ~ 8,
   vol_diff > 3000 ~ 7,
   vol_diff > 2500 ~ 6,
@@ -447,15 +464,29 @@ score <- score + case_when(
 
 # VMT
 vmt_diff <- sum(vmt_tbl$diff)
-if (vmt_diff < 0) {score <- score + 2}
+if (vmt_diff < 0) {
+  score_tbl$Score[score_tbl$Component == "VMT"] <- 2
+}
 
 # VHT
 vht_diff <- sum(vht_tbl$diff)
-if (vht_diff < 0) {score <- score + 2}
+if (vht_diff < 0) {
+  score_tbl$Score[score_tbl$Component == "VHT"] <- 2
+}
 
 # VHD
 vhd_diff <- sum(vhd_tbl$diff)
-if (vhd_diff < 0) {score <- score + 2}
+if (vhd_diff < 0) {
+  score_tbl$Score[score_tbl$Component == "VHD"] <- 2
+}
+
+final_score <- sum(score_tbl$Score)
+score_tbl$Score[score_tbl$Component == "Final Score"] <- final_score
 ```
 
-<font size = 20>`r score` / 20 points</font>
+<font size = 20>`r final_score` / 20 points</font>
+
+```{r}
+score_tbl %>% kable()
+```
+

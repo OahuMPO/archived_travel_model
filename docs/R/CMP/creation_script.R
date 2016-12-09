@@ -157,7 +157,7 @@ for (id in non_ec$ProjID){
   )
   
   # set the score of the project into the non_ec table
-  non_ec[non_ec$ProjID == id, "score"] <- score
+  non_ec[non_ec$ProjID == id, "score"] <- final_score
 }
 
 # write out the non_ec csv

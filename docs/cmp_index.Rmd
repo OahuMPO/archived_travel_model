@@ -79,7 +79,7 @@ proj_info %>%
   select(-c(rep_link, cong_road)) %>%
   filter(!is.na(score)) %>%
   rename(Score = score) %>%
-  arrange(desc(score)) %>%
+  arrange(desc(Score)) %>%
   kable()
 ```
 
