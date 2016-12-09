@@ -1,0 +1,110 @@
+---
+title: "CMP Analysis"
+author: "Oahu MPO"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+```{r setup, include=FALSE, cache = FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, error=FALSE)
+options(scipen=999) # removes sci notation
+```
+
+```{r libraries, include = FALSE}
+library(tidyverse)
+library(htmlTable)
+library(DT)
+```
+
+# Introduction
+
+The following information presents the results of project analysis performed for
+the Congestion Management Program (CMP). Projects are scored based on various
+metrics derviced from the model (e.g., change in volume).
+
+The table below presents the scoring rubric. Note that transit mode share is
+only applied to transit projects.
+
+```{r roadway scoring rubric}
+road_score <- data_frame(
+  `Performance Measure` = c(
+    "Change in V/C Ratio",
+    "List of Congested Roadways",
+    "Transit Mode Share",
+    "Vehicle Volume Increase",
+    "VMT",
+    "VHT",
+    "VHD"
+  ),
+  Increase = c(0, "", 3, 0, 0, 0, 0),
+  `No Change` = c(2, "", 1, 0, 1, 1, 1),
+  Decrease = c(5, "", 0, 0, 2, 2, 2),
+  `New Road` = c(3, "", "", "", "", "", ""),
+  `Cong Road` = c("", 1, "", "", "", "", ""),
+  `<= 0` = c("", "", "", 0, "", "", ""),
+  `< 0` = c("", "", "", 1, "", "", ""),
+  `> 500` = c("", "", "", 2, "", "", ""),
+  `> 1000` = c("", "", "", 3, "", "", ""),
+  `> 1500` = c("", "", "", 4, "", "", ""),
+  `> 2000` = c("", "", "", 5, "", "", ""),
+  `> 2500` = c("", "", "", 6, "", "", ""),
+  `> 3000` = c("", "", "", 7, "", "", ""),
+  `> 3500` = c("", "", "", 8, "", "", "")
+)
+```
+
+```{r}
+# custom container for table
+cont = htmltools::withTags(table(
+  class = 'display',
+  thead(
+    tr(
+      th(colspan = 1, ""),
+      th(colspan = 5, "Change"),
+      th(colspan = 8, "Additional Vehicle Volume")
+    ),
+    tr(
+      lapply(colnames(road_score), th)
+    )
+  )
+))
+
+road_score %>%
+  datatable(
+    rownames = FALSE,
+    container = cont,
+    options = list(
+      dom = "t",
+      autoWidth = TRUE,
+      columnDefs = list(
+        list(
+          width = "200px", targets = 0
+        )
+      )
+    )
+  )
+```
+
+# Project Scores
+
+```{r project scores}
+proj_info %>%
+  left_join(non_ec, by = c("Model ProjID" = "ProjID")) %>%
+  select(-c(rep_link, cong_road)) %>%
+  filter(!is.na(score)) %>%
+  rename(Score = score) %>%
+  arrange(desc(score)) %>%
+  kable()
+```
+
+
+# Individual Project Pages
+Each link below provides detailed information for a single project.  
+
+```{r, results='asis'}
+# The non_ec file is read by creation_script.R
+for (id in non_ec$ProjID){
+  char_id <- as.character(id)
+  cat("<br>[Project ", char_id, "](cmp_proj_", char_id, ".html)", sep = "")
+}
+```
+

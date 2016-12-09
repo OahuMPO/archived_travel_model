@@ -1,0 +1,465 @@
+---
+title: "CMP Project Analysis"
+author: "Oahu MPO"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+```{r, include = FALSE}
+# Template for CMP project analysis
+```
+
+```{r setup, include=FALSE, cache = FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, error=FALSE)
+options(scipen=999) # removes sci notation
+```
+
+```{r libraries, include = FALSE}
+library(tidyverse)
+library(maptools)
+library(rgdal)
+library(leaflet)
+library(knitr)
+library(htmltools)
+library(DT)
+```
+
+# Project `r as.character(id)`
+
+## Project Table
+
+```{r}
+proj_info %>%
+  filter(`Model ProjID` == id) %>%
+  kable()
+```
+
+
+## Project Map
+In the map below, the blue line shows the extent of the project as modeled.
+The link or links highlighted red are the ones selected to report changes in
+volume and volume-to-capacity (V/C) ratios.
+```{r}
+#dir <- paste0("../cmp_proj_", id)
+#for testing
+dir <- "C:/projects/Honolulu/Version6/OMPORepo/scenarios/CMP_2016/cmp_proj_1"
+shp <- paste0(dir, "/reports/proj_shapefile.shp")
+  
+# shp <- readShapeSpatial(shp, proj4string = CRS("+init=EPSG:4326"))
+# shp <- readShapeSpatial(shp, proj4string = CRS("+init=EPSG:4269"))
+shp <- readShapeSpatial(shp, proj4string = CRS("+init=nad83:5101"))
+shp <- sp::spTransform(shp, CRS("+init=EPSG:4326"))
+
+# Create a shapefile of just the representative links that are used to
+# retrieve point data like volume and V/C change
+rep_link_shp <- shp[shp$ID %in% rep_links, ]
+```
+
+```{r}
+leaflet() %>%
+  addTiles() %>%
+  addPolylines(data = shp) %>%
+  addPolylines(data = rep_link_shp, color = "red", opacity = 1)
+```
+
+## Project Impact
+
+```{r, include = FALSE}
+ec <- read_csv(paste0(ec_dir, "/reports/VMT and Speeds by FT and AT.csv")) %>%
+  mutate(scenario = "ec")
+proj <- read_csv(paste0(dir, "/reports/VMT and Speeds by FT and AT.csv")) %>%
+  mutate(scenario = "project")
+```
+
+```{r}
+tbl <- bind_rows(ec, proj) %>%
+  mutate(AreaType = as.character(AreaType))
+
+class_labels <- c(
+  "Freeway",
+  "Expressway",
+  "Principal Arterial",
+  "Minor Arterial",
+  "Major Collector",
+  "Minor Collector",
+  "Local",
+  "Ramp",
+  "CC", 
+  "Total"
+)
+```
+
+### Overview
+
+```{r}
+tbl %>%
+  group_by(scenario) %>%
+  summarize(VMT = sum(VMT), VHT = sum(VHT), Delay = sum(Delay)) %>%
+  gather(key = stat, value = number, -scenario) %>%
+  spread(key = scenario, value = number) %>%
+  mutate(
+    Difference = ec - project,
+    `Percent Diff` = round(Difference / ec * 100, 2),
+    stat = factor(stat, levels = c("VMT", "VHT", "Delay", ordered = TRUE))
+  ) %>%
+  arrange(stat) %>%
+  rename(Stat = stat, `Baseline / EC` = ec, Project = project) %>%
+  kable(
+    digits = c(0, 0, 0, 0, 2),
+    format.args = list(big.mark = ",")
+  )
+```
+
+### Vehicle Miles Traveled
+Vehicle Miles Traveled (VMT) is a unit that measures travel distance made by a 
+vehicle, such as an automobile, van, pickup truck, commercial vehicle, or 
+motorcycle. This measure reflects total year 2040 forecasted islandwide VMT 
+produced by the CMP project package for all facility and area types for the
+two-hour AM peak period. Projects in a CMP package that show a decrease in VMT
+receive two points, one point for no change, and zero points for an increase in
+VMT.
+
+The table below shows the island-wide change in VMT by facility type and area
+type. For scoring, the change in total VMT is used. Because no single project
+can have a dramatic influence on island-wide VMT, changes of any amount are
+scored as an increase or decrease.
+```{r}
+# custom container for the following tables
+# used to specify "Area Type" colspan
+imp_container = htmltools::withTags(table(
+  class = 'display',
+  thead(
+    tr(
+      th(colspan = 1, ""),
+      th(colspan = 9, "Area Type")
+    ),
+    tr(
+      lapply(c("FClass", "Most Dense", 2:7, "Least Dense", "Total"), th)
+    )
+  )
+))
+```
+
+#### With Project
+```{r}
+vmt_tbl <- tbl %>%
+  group_by(AreaType, FClass, scenario) %>%
+  summarize(VMT = sum(VMT)) %>%
+  spread(key = scenario, value = VMT) %>%
+  marg_2d(., "AreaType", "FClass") %>%
+  mutate(
+    diff = ec - project,
+    pct_diff = ifelse(ec == 0, 0, diff / ec)
+  ) %>%
+  ungroup() %>%
+  mutate(FClass = factor(
+    FClass, levels = class_labels, ordered = TRUE
+  )) %>%
+  arrange(FClass)
+
+vmt_tbl %>%
+  select(AreaType, FClass, project) %>%
+  spread(key = AreaType, value = project) %>%
+  datatable(
+    container = imp_container, rownames = FALSE,
+    extensions = "Buttons",
+    options = list(
+      dom = "Bt",
+      buttons = c("copy", "csv", "pdf")
+    )
+  ) %>%
+  formatCurrency(c(2:10), digits = 0, currency = "") %>%
+  formatStyle("Total", fontWeight = "bold") %>%
+  formatStyle(
+    "FClass", target = "row",
+    fontWeight = styleEqual(c("Total"), c("bold"))
+  )
+```
+
+#### Percent Change from Baseline / EC
+```{r}
+vmt_tbl %>%
+  select(AreaType, FClass, pct_diff) %>%
+  spread(key = AreaType, value = pct_diff) %>%
+  datatable(
+    container = imp_container, rownames = FALSE,
+    extensions = "Buttons",
+    options = list(
+      dom = "Bt",
+      buttons = c("copy", "csv", "pdf")
+    )
+  ) %>%
+  formatPercentage(c(2:10), digits = 2) %>%
+  formatStyle("Total", fontWeight = "bold") %>%
+  formatStyle(
+    "FClass", target = "row",
+    fontWeight = styleEqual(c("Total"), c("bold"))
+  )
+```
+
+
+
+### Vehicle Hours Traveled
+Vehicle Hours Traveled (VHT) is a measurement of the total hours traveled by all
+vehicles. It is calculated by multiplying the number of vehicles times the
+travel time of those vehicles on a network or specific links within that
+network. VHT is an indicator of how additional travel demand influences
+congestion in the system from a travel time standpoint. This measure reflects
+total year 2040 forecasted islandwide VHT produced by the CMP project package
+for all facility and area types for the two-hour AM peak period. Projects in a
+CMP package that show a decrease in VHT receive two points, one point for no
+change, and zero points for an increase in VHT.
+
+The table below shows the island-wide change in VHT by facility type and area
+type. For scoring, the change in total VHT is used. Because no single project
+can have a dramatic influence on island-wide VHT, changes of any amount are
+scored as an increase or decrease.
+
+#### With Project
+```{r}
+vht_tbl <- tbl %>%
+  group_by(AreaType, FClass, scenario) %>%
+  summarize(VHT = sum(VHT)) %>%
+  spread(key = scenario, value = VHT) %>%
+  marg_2d(., "AreaType", "FClass") %>%
+  mutate(
+    diff = ec - project,
+    pct_diff = ifelse(ec == 0, 0, diff / ec)
+  ) %>%
+  ungroup() %>%
+  mutate(FClass = factor(
+    FClass, levels = class_labels, ordered = TRUE
+  )) %>%
+  arrange(FClass)
+
+vht_tbl %>%
+  select(AreaType, FClass, project) %>%
+  spread(key = AreaType, value = project) %>%
+  datatable(
+    container = imp_container, rownames = FALSE,
+    extensions = "Buttons",
+    options = list(
+      dom = "Bt",
+      buttons = c("copy", "csv", "pdf")
+    )
+  ) %>%
+  formatCurrency(c(2:10), digits = 0, currency = "") %>%
+  formatStyle("Total", fontWeight = "bold") %>%
+  formatStyle(
+    "FClass", target = "row",
+    fontWeight = styleEqual(c("Total"), c("bold"))
+  )
+```
+
+
+#### Percent Change from Baseline / EC
+```{r}
+vht_tbl %>%
+  select(AreaType, FClass, pct_diff) %>%
+  spread(key = AreaType, value = pct_diff) %>%
+  datatable(
+    container = imp_container, rownames = FALSE,
+    extensions = "Buttons",
+    options = list(
+      dom = "Bt",
+      buttons = c("copy", "csv", "pdf")
+    )
+  ) %>%
+  formatPercentage(c(2:10), digits = 2) %>%
+  formatStyle("Total", fontWeight = "bold") %>%
+  formatStyle(
+    "FClass", target = "row",
+    fontWeight = styleEqual(c("Total"), c("bold"))
+  )
+```
+
+
+### Delay
+Vehicle Hours of Delay (VHD) is defined as the difference between vehicle-hours 
+traveled under congested conditions and vehicle hours of travel that would
+otherwise be expected under free flow (uncongested) conditions. VHD is
+calculated using travel times and travel speeds. This measure reflects total
+year 2040 forecasted islandwide VHD produced by the CMP project package for all
+facility and area types for the two-hour AM peak period. Projects in a CMP
+package that show a decrease in VHD receive two points, one point for no change,
+and zero points for an increase in VHD.
+
+The table below shows the island-wide change in VHD by facility type and area
+type. For scoring, the change in total VHD is used. Because no single project
+can have a dramatic influence on island-wide VHD, changes of any amount are
+scored as an increase or decrease.
+
+#### With Project
+```{r}
+vhd_tbl <- tbl %>%
+  group_by(AreaType, FClass, scenario) %>%
+  summarize(Delay = sum(Delay)) %>%
+  spread(key = scenario, value = Delay) %>%
+  marg_2d(., "AreaType", "FClass") %>%
+  mutate(
+    diff = ec - project,
+    pct_diff = ifelse(ec == 0, 0, diff / ec)
+  ) %>%
+  ungroup() %>%
+  mutate(FClass = factor(
+    FClass, levels = class_labels, ordered = TRUE
+  )) %>%
+  arrange(FClass)
+
+vhd_tbl %>%
+  select(AreaType, FClass, project) %>%
+  spread(key = AreaType, value = project) %>%
+  datatable(
+    container = imp_container, rownames = FALSE,
+    extensions = "Buttons",
+    options = list(
+      dom = "Bt",
+      buttons = c("copy", "csv", "pdf")
+    )
+  ) %>%
+  formatCurrency(c(2:10), digits = 0, currency = "") %>%
+  formatStyle("Total", fontWeight = "bold") %>%
+  formatStyle(
+    "FClass", target = "row",
+    fontWeight = styleEqual(c("Total"), c("bold"))
+  )
+```
+
+#### Percent Change from Baseline / EC
+```{r}
+vhd_tbl %>%
+  select(AreaType, FClass, pct_diff) %>%
+  spread(key = AreaType, value = pct_diff) %>%
+  datatable(
+    container = imp_container, rownames = FALSE,
+    extensions = "Buttons",
+    options = list(
+      dom = "Bt",
+      buttons = c("copy", "csv", "pdf")
+    )
+  ) %>%
+  formatPercentage(c(2:10), digits = 2) %>%
+  formatStyle("Total", fontWeight = "bold") %>%
+  formatStyle(
+    "FClass", target = "row",
+    fontWeight = styleEqual(c("Total"), c("bold"))
+  )
+```
+
+## Spot Metrics
+For spot measurements, a representative link or links is selected. The
+representative links are highlighted red in the project map. Each metric shows
+the before and after value, and whether it is considered an increase or a
+decrease.
+
+### Spot Volume Change
+Vehicle volume is the number of vehicles that use a given roadway over a
+specified period of time. Vehicle volumes are presented in concert with V/C
+ratio to provide a comparison of project effectiveness. For example, does the
+project (or projects) in a CMP project package reduce congestion (reduced V/C
+ratio), while carrying more traffic (higher vehicle volumes)? For this
+particular metric, points are assigned based on the ability of project to show
+higher vehicle volumes on an existing facility. Points range from zero for no
+change in comparison to the Baseline alternative during the AM peak period up to
+eight points for increases in vehicle volumes between 3,501 to 4,000 vehicle
+trips.
+
+The table below shows the change in volume during the AM period. Changes less than 10% are considered no change for scoring.
+```{r}
+proj_vol <- rep_link_shp@data %>%
+  mutate(tot_vol = AB_FLOW_AM + BA_FLOW_AM) %>%
+  summarize(sum(tot_vol))
+
+ec_vol <- ec_shp@data %>%
+  filter(ID %in% rep_links) %>%
+  mutate(tot_vol = AB_FLOW_AM + BA_FLOW_AM) %>%
+  summarize(sum(tot_vol))
+
+vol_diff <- proj_vol - ec_vol
+  
+vol_change <- "No Change"
+if (proj_vol > ec_vol * 1.1) vol_change <- "Increase"
+if (proj_vol < ec_vol * .9) vol_change <- "Decrease"
+
+proj_vol <- format(round(proj_vol, -1), big.mark = ",")
+ec_vol <- format(round(ec_vol, -1), big.mark = ",")
+
+data_frame(
+  ` ` = c("Baseline", "With Project", "Change"),
+  Value = c(ec_vol, proj_vol, vol_change)
+) %>%
+  kable(
+    format.args = list(big.mark = ",")
+  )
+```
+
+### Spot V/C
+The table below shows the change in maximum volume-to-capacity (V/C) ratios
+during the AM period. Changes by +/- .05 are considered no change for scoring.
+```{r}
+proj_vc <- rep_link_shp@data %>%
+  mutate(max_vc = max(AB_VOC_AM + BA_VOC_AM)) %>%
+  summarize(max(max_vc))
+
+ec_vc <- ec_shp@data %>%
+  filter(ID %in% rep_links) %>%
+  mutate(max_vc = max(AB_VOC_AM + BA_VOC_AM)) %>%
+  summarize(max(max_vc))
+
+vc_change <- "No Change"
+if (proj_vc > ec_vc + .05) {vc_change <- "Increase"}
+if (proj_vc < ec_vc - .05) {vc_change <- "Decrease"}
+
+proj_vc <- format(round(proj_vc, 2), big.mark = ",")
+ec_vc <- format(round(ec_vc, 2), big.mark = ",")
+
+data_frame(
+  ` ` = c("Baseline", "With Project", "Change"),
+  Value = c(ec_vc, proj_vc, vc_change)
+) %>%
+  kable(
+    format.args = list(big.mark = ",")
+  )
+```
+
+## Final Score
+
+```{r}
+score <- 0
+
+# v/c score
+if (vc_change == "No Change") {score <- score + 2}
+if (vc_change == "New Road") {score <- score + 3}
+if (vc_change == "Decrease") {score <- score + 5}
+
+# list of congested roadways
+if (cong_road == 1) {score <- score + 1}
+
+# Assume no transit mode change for highway projects
+
+# Volume increase
+score <- score + case_when(
+  vol_diff > 3500 ~ 8,
+  vol_diff > 3000 ~ 7,
+  vol_diff > 2500 ~ 6,
+  vol_diff > 2000 ~ 5,
+  vol_diff > 1500 ~ 4,
+  vol_diff > 1000 ~ 3,
+  vol_diff > 500 ~ 2,
+  vol_diff > 0 ~ 1,
+  vol_diff <= 0 ~ 0
+)
+
+# VMT
+vmt_diff <- sum(vmt_tbl$diff)
+if (vmt_diff < 0) {score <- score + 2}
+
+# VHT
+vht_diff <- sum(vht_tbl$diff)
+if (vht_diff < 0) {score <- score + 2}
+
+# VHD
+vhd_diff <- sum(vhd_tbl$diff)
+if (vhd_diff < 0) {score <- score + 2}
+```
+
+<font size = 20>`r score` / 20 points</font>

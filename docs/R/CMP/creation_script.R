@@ -4,6 +4,8 @@
 library(tidyverse)
 library(readxl)
 library(rmarkdown)
+library(maptools)
+library(rgdal)
 
 # Set up common directories
 model_dir <- normalizePath("../../..")
@@ -18,8 +20,11 @@ proj_info <- proj_info[, 1:12]
 proj_info <- proj_info %>%
   select(-c(`TIP ID`, `PROJECT NO 2040`, `Project Status (@2012)`, FROM, TO))
 
-# read the list of non-ec projects
-non_ec <- read_csv(paste0(cmp_dir, "/non_ec_project_list.csv"))
+# read the list of non-ec projects and
+# create a score column to hold final scores
+non_ec_file <- paste0(cmp_dir, "/non_ec_project_list.csv")
+non_ec <- read_csv(non_ec_file)
+non_ec$score <- 0
 
 # purp equiv table
 purp_labels <- c("HBW", "HBSC", "HBU", "HBES", "HBO", "NHB", "Total")
@@ -122,8 +127,12 @@ ec_dir <- paste0(cmp_dir, "/EC")
 ec_trips <- read_csv(paste0(ec_dir, "/outputs/trips.csv"))
 ec_mc_summary <- summarize_mc(ec_trips) %>%
   mutate(Scenario = "ec")
+ec_shp <- paste0(ec_dir, "/reports/ec_shapefile.shp")
+ec_shp <- readShapeSpatial(ec_shp, proj4string = CRS("+init=nad83:5101"))
+ec_shp <- sp::spTransform(ec_shp, CRS("+init=EPSG:4326"))
 
-# Looping over each project and creating pages
+
+# Create project pages
 for (id in non_ec$ProjID){
   
   # Create a vector of representative link IDs. These IDs are used
@@ -135,10 +144,28 @@ for (id in non_ec$ProjID){
     strsplit(., ";") %>%
     unlist()
   
+  # is project on list of congested roads?
+  cong_road <- non_ec %>%
+    filter(ProjID == id) %>%
+    .$cong_road
+  
   rmarkdown::render(
-    "road_proj_template.Rmd",
+    "../../cmp_road_proj_template.Rmd",
     output_file = paste0("cmp_proj_", id, ".html"),
-    output_dir = out_dir,
-    output_format = "html_document"
+    output_dir = out_dir#,
+    # output_format = "html_document"
   )
+  
+  # set the score of the project into the non_ec table
+  non_ec[non_ec$ProjID == id, "score"] <- score
 }
+
+# write out the non_ec csv
+write_csv(non_ec, non_ec_file)
+
+# Create cmp_index.html
+rmarkdown::render(
+  "../../cmp_index.Rmd",
+  output_dir = out_dir#,
+  # output_format = "html_document"
+)

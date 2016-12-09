@@ -6,6 +6,10 @@ navbar:
     - text: Development
       menu:
         - text: "For future development"
+    - text: Application
+      menu:
+        - text: Congestion Management
+          href: cmp_index.html
   right:
     - text: "User's Guide"
       href: https://github.com/pbsag/OMPOTravelModel/wiki
