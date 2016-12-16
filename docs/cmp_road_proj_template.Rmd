@@ -25,6 +25,23 @@ library(htmltools)
 library(DT)
 ```
 
+```{r inital calcs}
+# Create a vector of representative link IDs. These IDs are used
+# to measure changes in point volume and V/C
+rep_links <- non_ec %>%
+  filter(ProjID == id) %>%
+  select(rep_link)
+rep_links <- as.character(rep_links[1]) %>%
+  strsplit(., ";") %>%
+  unlist()
+
+# is project on list of congested roads?
+cong_road <- non_ec %>%
+  filter(ProjID == id) %>%
+  .$cong_road
+```
+
+
 # Project Info
 
 ```{r}
@@ -48,6 +65,7 @@ shp <- sp::spTransform(shp, CRS("+init=EPSG:4326"))
 # Create a shapefile of just the representative links that are used to
 # retrieve point data like volume and V/C change
 rep_link_shp <- shp[shp$ID %in% rep_links, ]
+rep_link_shp@data[is.na(rep_link_shp@data)] <- 0
 ```
 
 ```{r}
@@ -124,6 +142,22 @@ The table below shows the island-wide change in VMT by facility type and area
 type. For scoring, the change in total VMT is used. Because no single project
 can have a dramatic influence on island-wide VMT, changes of any amount are
 scored as an increase or decrease.
+```{r}
+# custom container for the following tables
+# used to specify "Area Type" colspan
+imp_container = htmltools::withTags(table(
+  class = 'display',
+  thead(
+    tr(
+      th(colspan = 1, ""),
+      th(colspan = 9, "Area Type")
+    ),
+    tr(
+      lapply(c("FClass", "Most Dense", 2:7, "Least Dense", "Total"), th)
+    )
+  )
+))
+```
 
 ### With Project
 ```{r}
@@ -161,6 +195,7 @@ vmt_tbl %>%
   )
 ```
 
+<p><p>
 ### Percent Change
 ```{r}
 vmt_tbl %>%
@@ -182,8 +217,7 @@ vmt_tbl %>%
   )
 ```
 
-
-
+<p><p>
 ## Vehicle Hours Traveled
 Vehicle Hours Traveled (VHT) is a measurement of the total hours traveled by all
 vehicles. It is calculated by multiplying the number of vehicles times the
@@ -236,7 +270,7 @@ vht_tbl %>%
   )
 ```
 
-
+<p><p>
 ### Percent Change
 ```{r}
 vht_tbl %>%
@@ -259,6 +293,7 @@ vht_tbl %>%
 ```
 
 
+<p><p>
 ## Delay
 Vehicle Hours of Delay (VHD) is defined as the difference between vehicle-hours 
 traveled under congested conditions and vehicle hours of travel that would
@@ -310,6 +345,7 @@ vhd_tbl %>%
   )
 ```
 
+<p><p>
 ### Percent Change
 ```{r}
 vhd_tbl %>%
@@ -331,6 +367,7 @@ vhd_tbl %>%
   )
 ```
 
+<p><p>
 ## Spot Metrics
 For spot measurements, a representative link or links is selected. The
 representative links are highlighted red in the project map. Each metric shows
@@ -351,6 +388,7 @@ trips.
 
 The table below shows the change in volume during the AM period. Changes less than 10% are considered no change for scoring.
 ```{r}
+
 proj_vol <- rep_link_shp@data %>%
   mutate(tot_vol = AB_FLOW_AM + BA_FLOW_AM) %>%
   summarize(sum(tot_vol))
@@ -396,6 +434,7 @@ vc_diff <- proj_vc - ec_vc
 vc_change <- "No Change"
 if (proj_vc > ec_vc + .05) {vc_change <- "Increase"}
 if (proj_vc < ec_vc - .05) {vc_change <- "Decrease"}
+if (ec_vc == 0) {vc_change <- "New Road"}
 
 proj_vc <- format(round(proj_vc, 2), big.mark = ",")
 ec_vc <- format(round(ec_vc, 2), big.mark = ",")

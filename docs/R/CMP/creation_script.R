@@ -127,28 +127,18 @@ ec_dir <- paste0(cmp_dir, "/EC")
 ec_trips <- read_csv(paste0(ec_dir, "/outputs/trips.csv"))
 ec_mc_summary <- summarize_mc(ec_trips) %>%
   mutate(Scenario = "ec")
+# The ec shapefile must be manually exported from TransCAD.
+# It is a shapefile of the entire network. Currently, on the data
+# is used, but future enhancements will likely involve mapping
+# changes between EC and project scenarios.
 ec_shp <- paste0(ec_dir, "/reports/ec_shapefile.shp")
 ec_shp <- readShapeSpatial(ec_shp, proj4string = CRS("+init=nad83:5101"))
 ec_shp <- sp::spTransform(ec_shp, CRS("+init=EPSG:4326"))
+ec_shp@data[is.na(ec_shp@data)] <- 0
 
 
 # Create project pages
 for (id in non_ec$ProjID){
-  
-  # Create a vector of representative link IDs. These IDs are used
-  # to measure changes in point volume and V/C
-  rep_links <- non_ec %>%
-    filter(ProjID == id) %>%
-    select(rep_link)
-  rep_links <- as.character(rep_links[1]) %>%
-    strsplit(., ";") %>%
-    unlist()
-  
-  # is project on list of congested roads?
-  cong_road <- non_ec %>%
-    filter(ProjID == id) %>%
-    .$cong_road
-  
   rmarkdown::render(
     "../../cmp_road_proj_template.Rmd",
     output_file = paste0("cmp_proj_", id, ".html"),
@@ -168,4 +158,4 @@ rmarkdown::render(
   "../../cmp_index.Rmd",
   output_dir = out_dir#,
   # output_format = "html_document"
-)
+)                                                                                                            
