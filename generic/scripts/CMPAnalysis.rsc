@@ -152,6 +152,9 @@ Macro "CMP Wrapper"
 
     // Create a shapefile of the project links
     RunMacro("Create Project Shape", proj_id)
+
+    // Close all progress bars
+    RunMacro("Destroy Progress Bars")
   end
 
 EndMacro
