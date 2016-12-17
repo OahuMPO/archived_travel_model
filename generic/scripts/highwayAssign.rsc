@@ -1,24 +1,24 @@
 /*****************************************************************************************************************************************
 * Macro "Highway Assignment" (scenarioDirectory)
-* 
-* 
-*    (1) Highway links used in the assignment:								
-* 	    Non-Toll Skims: 
-*           SOV Skims:                  limit=0,1,6 
+*
+*
+*    (1) Highway links used in the assignment:
+* 	    Non-Toll Skims:
+*           SOV Skims:                  limit=0,1,6
 *           HOV2 Skims:                 limit=0,1,2,6
-*           HOV3+ Skims:                limit=0,1,2,3,6				
-* 	    Toll Skims: 
-*           SOV NT:                     limit=0,1,6 
-*           HOV2 NT:                    limit=0,1,2,6,11 
-*           HOV3+ NT:                   limit=0,1,2,3,6,11,12		
-* 		    SOV Toll:                   limit=0,1,6,10,11,12 
-*           HOV2 Toll:                  limit=0,1,2,6,10,11,12 			
-* 		    HOV3+ Toll:                 limit=0,1,2,3,6,10,11,12							
-* 
-* 
-* 
-* 
-* 
+*           HOV3+ Skims:                limit=0,1,2,3,6
+* 	    Toll Skims:
+*           SOV NT:                     limit=0,1,6
+*           HOV2 NT:                    limit=0,1,2,6,11
+*           HOV3+ NT:                   limit=0,1,2,3,6,11,12
+* 		    SOV Toll:                   limit=0,1,6,10,11,12
+*           HOV2 Toll:                  limit=0,1,2,6,10,11,12
+* 		    HOV3+ Toll:                 limit=0,1,2,3,6,10,11,12
+*
+*
+*
+*
+*
 /****************************************************************************************************************************************/
 Macro "testassignment"
     scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\2012_6_calibration"
@@ -29,40 +29,40 @@ EndMacro
 
 Macro "Highway Assignment" (scenarioDirectory, nzones, iteration)
     RunMacro("TCB Init")
-    
+
       periods = {"EA","AM","MD","PM","EV"}
- 			
+
  			for i = 1 to periods.length do
- 
+
  					ODMatrix = scenarioDirectory+"\\outputs\\auto_"+periods[i]+".mtx"
     	  	period = periods[i]
-    
+
     			ret_value = RunMacro("Perform Assignment",scenarioDirectory, ODMatrix, period, nzones, iteration)
     			if !ret_value then Throw()
 			end
-		
+
     Return(1)
 
-    
-    ShowMessage("Error running assignment for period "+period+" iteration "+String(iteration))
-    
 
-EndMacro 
+    ShowMessage("Error running assignment for period "+period+" iteration "+String(iteration))
+
+
+EndMacro
 /*****************************************************************************************************************************************
 * Macro "Final Highway Assignment" (scenarioDirectory)
-* 
+*
 * Performs an AM 4-Hour and PM 4-Hour highway assignment.
-* 
+*
 * NOT CURRENTLY USED IN TOUR BASED MODEL
-* 
+*
 /****************************************************************************************************************************************/
 Macro "Final Highway Assignment" (scenarioDirectory, nzones)
-    
+
     iteration = 1
     //assign 4-hour AM peak
     ODMatrix = scenarioDirectory+"\\outputs\\hwyAM4Hour.mtx"
     period = "AM4Hour"
-    
+
     ret_value = RunMacro("Perform Assignment",scenarioDirectory, ODMatrix, period, nzones, iteration)
     if !ret_value then Throw()
 
@@ -75,15 +75,15 @@ Macro "Final Highway Assignment" (scenarioDirectory, nzones)
 
     Return(1)
 
-    
-    ShowMessage("Error running assignment for period "+period+" iteration "+String(iteration))
-    
 
-EndMacro 
- 
- 
-Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteration) 
-   
+    ShowMessage("Error running assignment for period "+period+" iteration "+String(iteration))
+
+
+EndMacro
+
+
+Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteration)
+
     //input files
     highway_db=scenarioDirectory+"\\inputs\\network\\Scenario Line Layer.dbd"
     highway_net=scenarioDirectory+"\\outputs\\hwy"+period+".net"
@@ -92,7 +92,7 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
     	  scenarioDirectory+"\\inputs\\turns\\md turn penalties.bin",
     	  scenarioDirectory+"\\inputs\\turns\\pm turn penalties.bin",
     	  scenarioDirectory+"\\inputs\\turns\\link type turn penalties.bin"}
-    	  
+
     //period
     outtable = scenarioDirectory+"\\outputs\\"+period+"Flow"+String(iteration)+".bin"
     if (period = "EA") then do
@@ -103,7 +103,7 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
         ba_capacity = "BA_CAP_EA3HR"
         end
     else if (period = "AM") then do
-        
+
         turns = tpen[1]
         ab_limit = "[AB_LIMITA]"
         ba_limit = "[BA_LIMITA]"
@@ -136,7 +136,7 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
         end
     else do
         ShowMessage("Error in Highway Assignment: Period "+String(period)+" not recognized")
-        Throw() 
+        Throw()
     end
 
 
@@ -157,26 +157,26 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
                                                    {          0,           0,         99,        99},
         {1,2,3,4,5,6,7,8,9,10,11,12,13,14,197})
       end
-     
+
      //add the layers
-    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", highway_db,,)  
-     SetLayer(link_lyr) //Line Layer  
-  
+    {node_lyr, link_lyr} = RunMacro("TCB Add DB Layers", highway_db,,)
+     SetLayer(link_lyr) //Line Layer
+
     if(iteration = 1) then do
         NewFlds = {{"COST_DANT", "real"},
                    {"COST_S2NT", "real"},
                    {"COST_S3NT", "real"},
                    {"COST_DATL", "real"},
                    {"COST_S2TL", "real"},
-                   {"COST_S3TL", "real"}}     
-    
+                   {"COST_S3TL", "real"}}
+
         // add the new fields to the link layer
          ret_value = RunMacro("TCB Add View Fields", {link_lyr, NewFlds})
         if !ret_value then Throw()
 
         costpermile=0.12
         Opts = null
-        Opts.Input.[Dataview Set] = {highway_db+"|"+link_lyr, link_lyr}	
+        Opts.Input.[Dataview Set] = {highway_db+"|"+link_lyr, link_lyr}
         Opts.Global.Fields = {"COST_DANT",
                               "COST_S2NT",
                               "COST_S3NT",
@@ -185,23 +185,23 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
                               "COST_S3TL"}
         Opts.Global.Method = "Formula"
         Opts.Global.Parameter = {"Length * "+String(costpermile),
-                                 "Length * "+String(costpermile),   
+                                 "Length * "+String(costpermile),
                                  "Length * "+String(costpermile),
                                  "Length * "+String(costpermile), // delete this toll cost for a test; take half of hte toll cost in path-building since VOT in assignment is low
                                  "Length * "+String(costpermile),
                                  "Length * "+String(costpermile)}
         ret_value = RunMacro("TCB Run Operation", "Fill Dataview", Opts, &Ret)
         if !ret_value then Throw()
-    
+
     end
 
     m = OpenMatrix(ODMatrix,)
     matrixCores = GetMatrixCoreNames(GetMatrix())
     coreName = matrixCores[1]
-        
+
     LayerInfo = {highway_db + "|" + link_lyr, link_lyr}
     validlink = "(([AB FACTYPE]  between 1 and 13 ) or ([BA FACTYPE] between 1 and 13))"
-    
+
     exists = GetFileInfo(highway_net)
     if(exists = null or iteration = 1) then do
         //*************************************************** Create Highway Network ***************************************************
@@ -216,13 +216,13 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
         Opts.Global.[Network Options].[Keep Duplicate Links] = "FALSE"
         Opts.Global.[Network Options].[Ignore Link Direction] = "FALSE"
         Opts.Global.[Network Options].[Time Unit] = "Minutes"
-        Opts.Global.[Link Options] = {{"Length", {link_lyr+".Length", link_lyr+".Length", , , "False"}}, 
-                      {"*_Speed", {link_lyr+".[AB Speed]", link_lyr+".[BA Speed]", , , "False"}}, 
-     				  {"*_FACTYPE", {link_lyr+".[AB FACTYPE]", link_lyr+".[BA FACTYPE]", , , "False"}}, 
-     				  {"*_LIMITA", {link_lyr+".[AB_LIMITA]", link_lyr+".[BA_LIMITA]", , , "False"}}, 
-     				  {"*_LIMITM", {link_lyr+".[AB_LIMITM]", link_lyr+".[BA_LIMITM]", , , "False"}}, 
-     				  {"*_LIMITP", {link_lyr+".[AB_LIMITP]", link_lyr+".[BA_LIMITP]", , , "False"}}, 
-     				  {"*_FFTIME", {link_lyr+".AB_FFTIME", link_lyr+".BA_FFTIME", , , "False"}}, 
+        Opts.Global.[Link Options] = {{"Length", {link_lyr+".Length", link_lyr+".Length", , , "False"}},
+                      {"*_Speed", {link_lyr+".[AB Speed]", link_lyr+".[BA Speed]", , , "False"}},
+     				  {"*_FACTYPE", {link_lyr+".[AB FACTYPE]", link_lyr+".[BA FACTYPE]", , , "False"}},
+     				  {"*_LIMITA", {link_lyr+".[AB_LIMITA]", link_lyr+".[BA_LIMITA]", , , "False"}},
+     				  {"*_LIMITM", {link_lyr+".[AB_LIMITM]", link_lyr+".[BA_LIMITM]", , , "False"}},
+     				  {"*_LIMITP", {link_lyr+".[AB_LIMITP]", link_lyr+".[BA_LIMITP]", , , "False"}},
+     				  {"*_FFTIME", {link_lyr+".AB_FFTIME", link_lyr+".BA_FFTIME", , , "False"}},
      				  {"*_CAPACITY", {link_lyr+"."+ab_capacity, link_lyr+"."+ba_capacity, , , "False"}},
      				  {"*_ALPHA", {link_lyr+".[AB_ALPHA]", link_lyr+".[BA_ALPHA]", , , "False"}},
      				  {"*_COST_DANT", {link_lyr+".COST_DANT", link_lyr+".COST_DANT", , , "False"}},
@@ -233,13 +233,13 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
      				  {"*_COST_S3TL", {link_lyr+".COST_S3TL", link_lyr+".COST_S3TL", , , "False"}}
      				  }
 
-        // Opts.Global.[Node Options] = {{"[ID:1]", {node_lyr+".[ID:1]", , }}, 
-        Opts.Global.[Node Options] = {{"[ID]", {node_lyr+".[ID]", , }}, 
-            {"X", {node_lyr+".X", , }}, {"Y", {node_lyr+".Y", , }}, 
-            {"Original_Node_ID", {node_lyr+".Original_Node_ID", , }}, 
-            {"Original", {node_lyr+".Original", , }}, 
-            {"CCSTYLE", {node_lyr+".CCSTYLE", , }}, 
-     	    {"ON", {node_lyr+".ON", , }}, 
+        // Opts.Global.[Node Options] = {{"[ID:1]", {node_lyr+".[ID:1]", , }},
+        Opts.Global.[Node Options] = {{"[ID]", {node_lyr+".[ID]", , }},
+            {"X", {node_lyr+".X", , }}, {"Y", {node_lyr+".Y", , }},
+            {"Original_Node_ID", {node_lyr+".Original_Node_ID", , }},
+            {"Original", {node_lyr+".Original", , }},
+            {"CCSTYLE", {node_lyr+".CCSTYLE", , }},
+     	    {"ON", {node_lyr+".ON", , }},
      	    {"OFF", {node_lyr+".OFF", , }}}
         Opts.Global.[Length Unit] = "Miles"
         Opts.Global.[Time Unit] = "Minutes"
@@ -248,7 +248,7 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
         ret_value = RunMacro("TCB Run Operation", "Build Highway Network", Opts, &Ret)
         if !ret_value then Throw()
      end
-    
+
     // Set turn penalties for the time period
      // First enable all links, and set the line layer and network properties
     Opts = null
@@ -256,14 +256,14 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
     Opts.Input.Network = highway_net
     Opts.Input.[Centroids Set] = {highway_db+"|"+node_lyr, node_lyr, "Centroid", "Select * where ID<="+String(nzones)}
     Opts.Input.[Toll Set] = {highway_db+"|"+link_lyr, link_lyr}
-    
+
     // Kyle: Don't need to update the link attributes
     // Opts.Input.[Update Link Set] = {highway_db+"|"+link_lyr, link_lyr}
     // Opts.Global.[Update Link Options].[Link ID] = link_lyr+".ID"
     // Opts.Global.[Update Link Options].Type = "Enable"
     // Opts.Global.[Update Network Fields].[Link Type] = {"*_FACTYPE", link_lyr+".[AB FACTYPE]", link_lyr+".[BA FACTYPE]"}
     // Opts.Global.[Update Network Fields].Formulas = {}
-    
+
     // Kyle: Corrected turn penalty options
     //Opts.Input.[Link Type Turn Penalties] = tpen[4]
     // Opts.Input.[Spc Turn Pen Table] = {turns}
@@ -273,12 +273,12 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
     Opts.Global.[Spc Turn Pen Method] = 3
     Opts.Local.[Spc Turn Pen Fields] = {"PENALTY"}
     Opts.Local.[Spc Turn Pen Default Field] = "PENALTY"
-    
+
     Opts.Flag.[Use Link Types] = "True"
     ret_value = RunMacro("TCB Run Operation", "Highway Network Setting", Opts, &Ret)
     if !ret_value then do
         ShowMessage("Highway network settings failed.")
-        ShowMessage(1)    
+        ShowMessage(1)
         Throw()
     end
     // Link selection for assignment:
@@ -299,7 +299,7 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
     //
 
     // 6 sets of links: SOV-NT, HOV-NT, HOV3+ NT, SOV-TOLL, HOV2-TOLL, HOV3+ TOLL
-    excl_qry={    
+    excl_qry={
     	          "Select * where !"+validlink+" or !(("+ab_limit+"=0 | "+ab_limit+"=1 | "+ab_limit+"=6 | "+ba_limit+"=0 | "+ba_limit+"=1 | "+ba_limit+"=6)" + ")",
     	          "Select * where !"+validlink+" or !(("+ab_limit+"=0 | "+ab_limit+"=1 | "+ab_limit+"=2 | "+ab_limit+"=6 | "+ab_limit+"=11 | "+ba_limit+"=0 | "+ba_limit+"=1 | "+ba_limit+"=2 | "+ba_limit+"=6 | "+ba_limit+"=11)" + ")",
     	          "Select * where !"+validlink+" or !(("+ab_limit+"=0 | "+ab_limit+"=1 | "+ab_limit+"=2 | "+ab_limit+"=3 | "+ab_limit+"=6 | "+ab_limit+"=11 | "+ab_limit+"=12| "+ba_limit+"=0 | "+ba_limit+"=1 | "+ba_limit+"=2 | "+ba_limit+"=3 | "+ba_limit+"=6 | "+ba_limit+"=11 | "+ba_limit+"=12)" + ")",
@@ -307,9 +307,9 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
     	          "Select * where !"+validlink+" or !(("+ab_limit+"=0 | "+ab_limit+"=1 | "+ab_limit+"=2 | "+ab_limit+"=6 | "+ab_limit+"=10 | "+ab_limit+"=11 | "+ab_limit+"=12 | "+ba_limit+"=0 | "+ba_limit+"=1 | "+ba_limit+"=2 | "+ba_limit+"=6 | "+ba_limit+"=10 | "+ba_limit+"=11 | "+ba_limit+"=12)" + ")",
     	          "Select * where !"+validlink+" or !(("+ab_limit+"=0 | "+ab_limit+"=1 | "+ab_limit+"=2 | "+ab_limit+"=3 | "+ab_limit+"=6 | "+ab_limit+"=10 | "+ab_limit+"=11 | "+ab_limit+"=12 | "+ba_limit+"=0 | "+ba_limit+"=1 | "+ba_limit+"=2 | "+ba_limit+"=3 | "+ba_limit+"=6 | "+ba_limit+"=10 | "+ba_limit+"=11 | "+ba_limit+"=12)" + ")"
     	     }
-    
-	Dim Excl_set[8]     
-	
+
+	Dim Excl_set[8]
+
 	Excl_set[1] = LayerInfo + {"SOV -FREE",excl_qry[1]}     //SOV   - FREE
 	Excl_set[2] = LayerInfo + {"HOV2-FREE",excl_qry[2]}     //HOV2  - FREE
 	Excl_set[3] = LayerInfo + {"HOV3-FREE",excl_qry[3]}     //HOV3+ - FREE
@@ -318,13 +318,13 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
 	Excl_set[6] = LayerInfo + {"HOV3-PAY",excl_qry[6]}      //HOV3+ - PAY
 	Excl_set[7] = LayerInfo + {"TRCK-FREE",excl_qry[1]}     //TRCK  - FREE
 	Excl_set[8] = LayerInfo + {"TRCK-PAY",excl_qry[4]}      //TRCK  - PAY
-	
+
     Opts = null
     Opts.Input.Database = highway_db
     Opts.Input.Network = highway_net
     Opts.Input.[OD Matrix Currency] = {ODMatrix, coreName, , }
     Opts.Input.[Exclusion Link Sets] = Excl_set
-    
+
     // Class information
     Opts.Field.[Vehicle Classes] = {1,2,3,4,5,6,7,8}
     Opts.Global.[Number of Classes] = 8
@@ -332,12 +332,12 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
     Opts.Global.[Class VOIs] = {0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25}
     Opts.Field.[Fixed Toll Fields] = {"*_COST_DANT","*_COST_S2NT","*_COST_S3NT","*_COST_DATL","*_COST_S2TL","*_COST_S3TL","*_COST_DANT","*_COST_DATL"}
     Opts.Field.[Turn Attributes] = {"PENALTY", "PENALTY", "PENALTY", "PENALTY", "PENALTY", "PENALTY", "PENALTY", "PENALTY"}
-    
+
     Opts.Field.[VDF Fld Names] = {"*_FFTIME", "*_CAPACITY", "*_ALPHA",  "None"}  // JL Added for Conical Function
     Opts.Field.[MSA Flow] = "_MSAFlow" + period
     Opts.Field.[MSA Cost] = "_MSACost" + period
     Opts.Global.[MSA Iteration] = iteration
-    Opts.Global.[Load Method] = "NCFW" 
+    Opts.Global.[Load Method] = "NCFW"
     // Opts.Global.[Load Method] = "BFW"
     if (Opts.Global.[Load Method] = "NCFW") then Opts.Global.[N Conjugate] = 2
     if (Opts.Global.[Load Method] = "NCFW") then do
@@ -357,19 +357,18 @@ Macro "Perform Assignment" (scenarioDirectory,ODMatrix, period, nzones, iteratio
     // Opts.Flag.[Do Critical] = 1
     // Opts.Output.[Critical Matrix].[File Name] = scenarioDirectory + "\\outputs\\select.mtx"
     // Opts.Output.[Critical Matrix].Label = "Critical Matrix"
-    
-    ret_value = RunMacro("TCB Run Procedure", 1, "MMA", Opts)
-    
+
+    ret_value = RunMacro("TCB Run Procedure", 1, "MMA", Opts, &Ret)
+
     if !ret_value then do
         ShowMessage("Highway assignment failed.")
-        // ShowMessage(1)
         Throw()
     end
 
     RunMacro("Close All")
-    
+
     Return(1)
-	
-    
-        
+
+
+
 EndMacro
