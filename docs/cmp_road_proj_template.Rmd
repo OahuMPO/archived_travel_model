@@ -111,7 +111,7 @@ overview <- tbl %>%
   gather(key = stat, value = number, -scenario) %>%
   spread(key = scenario, value = number) %>%
   mutate(
-    Difference = ec - project,
+    Difference = project - ec,
     `Percent Diff` = round(Difference / ec * 100, 2),
     stat = factor(stat, levels = c("VMT", "VHT", "Delay", ordered = TRUE))
   ) %>%
@@ -167,7 +167,7 @@ vmt_tbl <- tbl %>%
   spread(key = scenario, value = VMT) %>%
   marg_2d(., "AreaType", "FClass") %>%
   mutate(
-    diff = ec - project,
+    diff = project - ec,
     pct_diff = ifelse(ec == 0, 0, diff / ec)
   ) %>%
   ungroup() %>%
@@ -242,7 +242,7 @@ vht_tbl <- tbl %>%
   spread(key = scenario, value = VHT) %>%
   marg_2d(., "AreaType", "FClass") %>%
   mutate(
-    diff = ec - project,
+    diff = project - ec,
     pct_diff = ifelse(ec == 0, 0, diff / ec)
   ) %>%
   ungroup() %>%
@@ -317,7 +317,7 @@ vhd_tbl <- tbl %>%
   spread(key = scenario, value = Delay) %>%
   marg_2d(., "AreaType", "FClass") %>%
   mutate(
-    diff = ec - project,
+    diff = project - ec,
     pct_diff = ifelse(ec == 0, 0, diff / ec)
   ) %>%
   ungroup() %>%
