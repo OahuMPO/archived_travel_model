@@ -100,126 +100,116 @@ dbox "Oahu Model"
 
 
 //***************************This part of the code sets up the Stages of the model*************************************************************************
+/*break*/
+button "Quit" 12, 50, 24, 1.5 cancel do
+  Return()
+enditem
 
-    Frame 1, 26, 45, 27 Prompt: "STAGES"
+Tab List 1, 26, 45, 23
+Tab prompt: "Stages"
 
-	button  3, 27.5 icon: "bmp\\plannetwork.bmp"
-	button "Prepare Network" 18, 27.5, 26, 1.5 do
+	button  1, 1 icon: "bmp\\plannetwork.bmp"
+	button "Prepare Network" 16, 1, 26, 1.5 do
 	    jump = "UpdateLineLayer"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
-    button  3, 30 icon: "bmp\\planskim.bmp"
-	button "Create Highway Skims" 18, 30, 26, 1.5 do
+  button  1, 3 icon: "bmp\\planskim.bmp"
+	button "Create Highway Skims" 16, 3, 26, 1.5 do
 	    jump = "HighwaySkim"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
-    button  3, 32.5 icon: bmpDir + "/TS.bmp" do
-	 	     maps = GetMapNames()
-	 	     views = GetViewNames()
-	 	     if((maps <> null) or (views <> null)) then do
-	 	         RunMacro("Close All")
-				 end
-				 else do
-	 	 	 	      	// add the hwyfile, and make the route system refer to it
-            		hwyfile=path[2]+ "\\inputs\\network\\Scenario Line Layer.dbd"
-            		rtsfile=path[2]+ "\\inputs\\network\\Scenario Route System.rts"
-	 	 	 	      	baselyrs = GetDBLayers(hwyfile)
-	 	 	 	      	ModifyRouteSystem(rtsfile, {{"Geography", hwyfile, baselyrs[2]}, {"Link ID", "ID"}})
-	 	 	 	      	// create a map and add the route system layer to it, change some display settings
-	 	 	 	      	aa = GetDBInfo(hwyfile)
-	 	 	 	      	cc = CreateMap("bb",{{"Scope",aa[1]}})
-	 	 	 	      	lyrs=AddRouteSystemLayer(cc, "Route System", rtsfile,{})
-	 	 	 	      	RunMacro("Set Default RS Style", lyrs, "True", "True")
-	 	 	 	      	if getlayervisibility(lyrs[5])= "Off" then SetLayerVisibility(lyrs[5], "True")
-	 	 	 	      	SetLayerVisibility(lyrs[4], "True")
-	 	 	 	 end
-     enditem
+  button  1, 5 icon: bmpDir + "/TS.bmp" do
+    maps = GetMapNames()
+    views = GetViewNames()
+    if((maps <> null) or (views <> null)) then do
+      RunMacro("Close All")
+    end
+    else do
+      // add the hwyfile, and make the route system refer to it
+      hwyfile=path[2]+ "\\inputs\\network\\Scenario Line Layer.dbd"
+      rtsfile=path[2]+ "\\inputs\\network\\Scenario Route System.rts"
+      baselyrs = GetDBLayers(hwyfile)
+      ModifyRouteSystem(rtsfile, {{"Geography", hwyfile, baselyrs[2]}, {"Link ID", "ID"}})
+      // create a map and add the route system layer to it, change some display settings
+      aa = GetDBInfo(hwyfile)
+      cc = CreateMap("bb",{{"Scope",aa[1]}})
+      lyrs=AddRouteSystemLayer(cc, "Route System", rtsfile,{})
+      RunMacro("Set Default RS Style", lyrs, "True", "True")
+      if getlayervisibility(lyrs[5])= "Off" then SetLayerVisibility(lyrs[5], "True")
+      SetLayerVisibility(lyrs[4], "True")
+    end
+  enditem
 
-	button "Create Transit Skims" 18, 32.5, 26, 1.5 do
-	    jump = "TransitSkim"
-	    RunMacro("OMPO6", path, Options, jump)
+	button "Create Transit Skims" 16, 5, 26, 1.5 do
+    jump = "TransitSkim"
+    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
-    button  3, 35 icon: "bmp\\plantripgen.bmp" do
-	 	     maps = GetMapNames()
-	 	     views = GetViewNames()
-	 	     if((maps <> null) or (views <> null)) then do
-   	 	         RunMacro("Close All")
-				 end
-				 else do
-                scenarioTAZFile = path[2] + "\\inputs\\taz\\Scenario TAZ Layer.DBD"
-                dbInfo = GetDBInfo(scenarioTAZFile)
-                dbLayers = GetDBLayers(scenarioTAZFile)
-                newmap = CreateMap("TempMap",{{"Scope",dbInfo[1]}})
-                tazLayer=AddLayer("TempMap","Oahu_TAZs",scenarioTAZFile,dbLayers[1])
-                SetLayerVisibility(tazLayer,"True")
-
-                //path[2] + "\\inputs\\taz\\hdistrib.ASC"
-                fptr = OpenFile(path[2] + "\\inputs\\taz\\hdistrib.ASC", "r")
-
-
-                //path[2] + "\inputs\taz\Scenario TAZ Layer.ASC"
-                //HDistrib  = OpenTable("FutureYearData", "FFB", {HDistrib,null}, {{"Shared", "True"}})
-    						//baseYearDistrib = OpenTable("BaseYearDistrib", "FFB", {baseYearHHFile,null}, {{"Shared", "True"}})
-
-				end
-	 enditem
-	button "Special Market Models" 18, 35, 26, 1.5 do
+  button  1, 7 icon: "bmp\\plantripgen.bmp" do
+    maps = GetMapNames()
+    views = GetViewNames()
+    if((maps <> null) or (views <> null)) then do
+      RunMacro("Close All")
+    end
+    else do
+      scenarioTAZFile = path[2] + "\\inputs\\taz\\Scenario TAZ Layer.DBD"
+      dbInfo = GetDBInfo(scenarioTAZFile)
+      dbLayers = GetDBLayers(scenarioTAZFile)
+      newmap = CreateMap("TempMap",{{"Scope",dbInfo[1]}})
+      tazLayer=AddLayer("TempMap","Oahu_TAZs",scenarioTAZFile,dbLayers[1])
+      SetLayerVisibility(tazLayer,"True")
+      fptr = OpenFile(path[2] + "\\inputs\\taz\\hdistrib.ASC", "r")
+    end
+  enditem
+	button "Special Market Models" 16, 7, 26, 1.5 do
 	    jump = "SpecialMarket"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
-    button  3, 37.5 icon: "bmp\\plantripdist.bmp"
-	button "Tour-Based Models" 18, 37.5, 26, 1.5 do
+  button  1, 9 icon: "bmp\\plantripdist.bmp"
+	button "Tour-Based Models" 16, 9, 26, 1.5 do
 	    jump = "TourBasedModels"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
-    button  3, 40 icon: bmpDir + "/TOD.bmp"
-	button "Time of Day" 18, 40, 26, 1.5 do
+  button  1, 11 icon: bmpDir + "/TOD.bmp"
+	button "Time of Day" 16, 11, 26, 1.5 do
 	    jump = "TimeOfDay"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
-    button  3, 42.5 icon: "bmp\\planassign.bmp"
-	button "Highway Assignment" 18, 42.5, 26, 1.5 do
+    button  1, 13 icon: "bmp\\planassign.bmp"
+	button "Highway Assignment" 16, 13, 26, 1.5 do
 	    jump = "HighwayAssign"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
-    button  3, 45 icon: bmpDir + "/TA.bmp"
-	button "Transit Assignment" 18, 45, 26, 1.5 do
+    button  1, 15 icon: bmpDir + "/TA.bmp"
+	button "Transit Assignment" 16, 15, 26, 1.5 do
 	    jump = "TransitAssign"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
-    button  3, 47.5 icon: "bmp\\planmatrix.bmp"
-	button "Summaries" 18, 47.5, 26, 1.5 do
+    button  1, 17 icon: "bmp\\planmatrix.bmp"
+	button "Summaries" 16, 17, 26, 1.5 do
 	    jump = "Summaries"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
-	button  3, 50 icon: bmpDir + "/DTA.bmp"
-	button "Run DTA" 18, 50, 26, 1.5 do
+	button  1, 19 icon: bmpDir + "/DTA.bmp"
+	button "Run DTA" 16, 19, 26, 1.5 do
 	    jump = "DTArun"
 	    RunMacro("OMPO6", path, Options, jump)
 	enditem
 
 //**********************************************************************************************************************************************************************
+Tab Prompt: "Utilities"
 
-  button "CMP Analysis" 3, 56, , 1.5 do
+  button "CMP Analysis" 1, 1, , 1.5 do
     RunDbox("CMP")
   enditem
-
-	button "Quit" 20, 56, 24, 1.5 cancel do
-		//ShowMessage(" Exit")
-		Return()
-	enditem
-
-    text "                " 1, 54.1
-
 
 EndDbox
 
