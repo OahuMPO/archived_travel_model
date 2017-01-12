@@ -207,8 +207,12 @@ Tab prompt: "Stages"
 //**********************************************************************************************************************************************************************
 Tab Prompt: "Utilities"
 
-  button "CMP Analysis" 1, 1, , 1.5 do
+  button "CMP GUI" 1, 1, 15 do
     RunDbox("CMP")
+  enditem
+
+  button "EJ GUI" same, after, 15 do
+    RunDbox("EJ")
   enditem
 
 EndDbox
