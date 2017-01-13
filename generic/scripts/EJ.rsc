@@ -13,7 +13,9 @@ dBox "EJ"
     // Set the scen_dir to the currently selected scenario
     // if there is one.
     scen_dir = path[2]
-    if !RunMacro("Scenario is Run?", scen_dir) then scen_dir = null
+    if scen_dir <> null then do
+      if !RunMacro("Scenario is Run?", scen_dir) then scen_dir = null
+    end
 
     race_or_inc = null
 
@@ -42,27 +44,26 @@ dBox "EJ"
     opts = null
     opts.[Initial Directory] = init_dir
     scen_dir = ChooseDirectory("Choose the directory to analyze.", opts)
+    if !RunMacro("Scenario is Run?", scen_dir) then scen_dir = null
     nodir:
     on error, notfound, escape default
-
-    if !RunMacro("Scenario is Run?", scen_dir) then scen_dir = null
   enditem
 
   // Race / Income Radio
-  Radio List 2, 5 prompt: "Race or Income"
+  /*Radio List 2, 5 prompt: "Race or Income"
   Radio Button 4, 6.5 prompt: "Race" do
     race_or_inc = "race"
   enditem
   Radio Button 4, 7.75 prompt: "Income" do
     race_or_inc = "income"
-  enditem
+  enditem*/
 
   // Analyze Button
   button "Perform Analysis" 2, 10 do
     if scen_dir = null
       then ShowMessage("Select a scenario")
-      else if race_or_inc = null
-        then ShowMessage("Select race or income")
+      /*else if race_or_inc = null
+        then ShowMessage("Select race or income")*/
         else do
           RunMacro("EJ Analysis")
           ShowMessage("EJ Analysis Complete")
@@ -98,6 +99,10 @@ Macro "EJ Analysis"
   RunMacro("EJ CSV to MTX")
 EndMacro
 
+/*
+
+*/
+
 Macro "Create EJ Trip Table"
   shared scen_dir, ej_dir, race_or_inc
 
@@ -122,7 +127,7 @@ Macro "Create EJ Trip Table"
   // Read in the trip csv
   a_fields = {
     "hh_id", "person_id", "tripMode", "period",
-    "originTaz", "destinationTaz"
+    "originTaz", "destinationTaz", "expansionFactor"
   }
   trip_df = CreateObject("df")
   trip_df.read_csv(scen_dir + "/outputs/trips.csv", a_fields)
@@ -136,29 +141,54 @@ Macro "Create EJ Trip Table"
     {"hh_id", "person_id"},
     {"household_id", "pums_pnum"}
   )
+  trip_df.rename("race", "race_num")
   trip_df.left_join(house_df, "hh_id", "household_id")
+
+  // Join the race description table
+  trip_df.left_join(race_df, "race_num", "Race")
+  trip_df.rename("Value", "race")
 
   // Calculate income group field
   trip_df.mutate(
-    "inc_group",
+    "IncGroup",
     if (trip_df.tbl.income < 25000) then "Low" else "NotLow"
   )
 
+  // Remove any records missing income/race info
+  trip_df.filter("race_num <> null")
+  trip_df.filter("income <> null")
+
   // write to final table to csv
-  trip_df.write_csv(scen_dir + "/outputs/trips_by_ej.csv")
+  trip_df.write_csv(scen_dir + "/outputs/ej_am_trips.csv")
+
+  RunMacro("Close All")
 EndMacro
+
+/*
+
+*/
 
 Macro "EJ CSV to MTX"
   shared scen_dir, ej_dir, race_or_inc
 
-  // Open the ej trip table csv
-  csv_file = scen_dir + "/outputs/ej_trips.csv"
-  vw = OpenTable("ej", "CSV", {csv_file})
+  // Open the long-format trip table
+  csv_file = scen_dir + "/outputs/ej_am_trips.csv"
+  vw_long = OpenTable("ej_long", "CSV", {csv_file})
 
   // For race and income separately
-  a_type = {"race", "inc_group"}
+  a_type = {"race", "IncGroup"}
   for t = 1 to a_type.length do
     type = a_type[t]
+
+    // read in the trip table and spread by type
+    trip_df = CreateObject("df")
+    opts = null
+    opts.view = vw_long
+    trip_df.read_view(opts)
+    trip_df.spread(type, "expansionFactor", 0)
+    csv_file = scen_dir + "/outputs/ej_am_trips_by_" + type + ".csv"
+    trip_df.write_csv(csv_file)
+    vw = OpenTable("ej_" + type, "CSV", {csv_file})
 
     // Create a copy of the resident am matrix
     in_file = scen_dir + "/outputs/residentAutoTrips_AM.mtx"
@@ -167,38 +197,42 @@ Macro "EJ CSV to MTX"
 
     // Create an array of cores to remove
     mtx = OpenMatrix(out_file, )
-    cores_to_remove = GetMatrixCoreNames()
+    cores_to_remove = GetMatrixCoreNames(mtx)
 
     // Create a vector of unique groups
-    vec = GetDataVector(vw + "|", type, )
+    vec = GetDataVector(vw_long + "|", type, )
     opts = null
     opts.Unique = "True"
-    v_uniq = SortVector(vec, opts)
+    opts.[Omit Missing] = "True"
+    a_groups = V2A(SortVector(vec, opts))
 
-    // for each unique value of race or income group
-    for i = 1 to v_uniq.length do
-      name = v_uniq[i]
-
-      // Add a matrix core
-      AddMatrixCore(mtx, name)
-
-      // Create a selection set of trips of that unique value
-      SetView(vw)
-      SelectByQuery("sel", "Several", type + " = " + name)
-
-      // Update the new core with the trips
-      opts = null
-      opts.[Missing is zero] = "True"
-      UpdateMatrixFromView(
-        mtx,
-        vw + "|sel",
-        "originTaz",
-        "destinationTaz",
-        "expansionFactor",
-        ,
-        "Add",
-        opts
-      )
+    // add a core for each unique group
+    for i = 1 to a_groups.length do
+      AddMatrixCore(mtx, a_groups[i])
     end
+
+    // Remove the original cores
+    for i = 1 to cores_to_remove.length do
+      DropMatrixCore(mtx, cores_to_remove[i])
+    end
+
+    // Update the new cores with the trips
+    SetView(vw)
+    opts = null
+    opts.[Missing is zero] = "True"
+    UpdateMatrixFromView(
+      mtx,
+      vw + "|",
+      "originTaz",
+      "destinationTaz",
+      ,
+      a_groups,
+      "Add",
+      opts
+    )
+
+    CloseView(vw)
   end
+
+  RunMacro("Close All")
 EndMacro
