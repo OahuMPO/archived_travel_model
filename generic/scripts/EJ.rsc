@@ -8,7 +8,7 @@ dBox "EJ"
   title: "EJ Analysis Toolbox"
 
   init do
-    shared scen_dir, path, ej_dir, race_or_inc
+    shared scen_dir, path, ej_dir
 
     // Set the scen_dir to the currently selected scenario
     // if there is one.
@@ -16,8 +16,6 @@ dBox "EJ"
     if scen_dir <> null then do
       if !RunMacro("Scenario is Run?", scen_dir) then scen_dir = null
     end
-
-    race_or_inc = null
 
     // Determine UI location, initial search dir, and ej dir
     uiDBD = GetInterface()
@@ -49,25 +47,14 @@ dBox "EJ"
     on error, notfound, escape default
   enditem
 
-  // Race / Income Radio
-  /*Radio List 2, 5 prompt: "Race or Income"
-  Radio Button 4, 6.5 prompt: "Race" do
-    race_or_inc = "race"
-  enditem
-  Radio Button 4, 7.75 prompt: "Income" do
-    race_or_inc = "income"
-  enditem*/
-
   // Analyze Button
   button "Perform Analysis" 2, 10 do
     if scen_dir = null
       then ShowMessage("Select a scenario")
-      /*else if race_or_inc = null
-        then ShowMessage("Select race or income")*/
-        else do
-          RunMacro("EJ Analysis")
-          ShowMessage("EJ Analysis Complete")
-        end
+      else do
+        RunMacro("EJ Analysis")
+        ShowMessage("EJ Analysis Complete")
+      end
   enditem
 
   // Quit button
@@ -97,6 +84,7 @@ Macro "EJ Analysis"
 
   RunMacro("Create EJ Trip Table")
   RunMacro("EJ CSV to MTX")
+  RunMacro("EJ Assignment")
 EndMacro
 
 /*
@@ -104,7 +92,7 @@ EndMacro
 */
 
 Macro "Create EJ Trip Table"
-  shared scen_dir, ej_dir, race_or_inc
+  shared scen_dir, ej_dir
 
   // Read in the ej param files
   mode_df = CreateObject("df")
@@ -169,7 +157,7 @@ EndMacro
 */
 
 Macro "EJ CSV to MTX"
-  shared scen_dir, ej_dir, race_or_inc
+  shared scen_dir, ej_dir
 
   // Open the long-format trip table
   csv_file = scen_dir + "/outputs/ej_am_trips.csv"
@@ -235,4 +223,94 @@ Macro "EJ CSV to MTX"
   end
 
   RunMacro("Close All")
+EndMacro
+
+/*
+The settings are intended to mirror those found in highwayAssign.rsc
+for the AM period.
+*/
+
+Macro "EJ Assignment"
+  shared scen_dir, ej_dir
+
+  // Input files and link exclusion
+  hwy_dbd = scen_dir + "/inputs/network/Scenario Line Layer.dbd"
+  {nlyr, llyr} = GetDBLayers(hwy_dbd)
+  net = scen_dir + "/outputs/hwyAM.net"
+  turn_pen = scen_dir + "\\inputs\\turns\\am turn penalties.bin"
+  ab_limit = "[AB_LIMITA]"
+  ba_limit = "[BA_LIMITA]"
+  // Using the SOV link exclusion query for all matrix cores
+  validlink = "(([AB FACTYPE]  between 1 and 13 ) or ([BA FACTYPE] between 1 and 13))"
+  excl_qry = "Select * where !"+validlink+" or !(("+ab_limit+"=0 | "+
+    ab_limit+"=1 | "+ab_limit+"=6 | "+ba_limit+"=0 | "+ba_limit+"=1 | "+
+    ba_limit+"=6)" + ")"
+  Opts = null
+  Opts.Input.Database = hwy_dbd
+  Opts.Input.Network = net
+  excl_set = {hwy_dbd + "|" + llyr, llyr, "SOV -FREE", excl_qry}
+
+
+  // VDF options
+  Opts.Field.[VDF Fld Names] = {"*_FFTIME", "*_CAPACITY", "*_ALPHA",  "None"}  // JL Added for Conical Function
+  Opts.Global.[Load Method] = "NCFW"
+  if (Opts.Global.[Load Method] = "NCFW") then Opts.Global.[N Conjugate] = 2
+  if (Opts.Global.[Load Method] = "NCFW") then do
+      Opts.Global.[N Conjugate] = 2
+      Opts.Global.[T2 Iterations] = 100
+  end
+  Opts.Global.[Loading Multiplier] = 1
+  Opts.Global.Convergence = 0.0001
+  Opts.Global.Iterations = 300
+  Opts.Global.[Cost Function File] = "emme2.vdf"
+  Opts.Global.[VDF Defaults] = {, , 4, }
+
+  // Settings that vary depending on the matrix used
+  a_type = {"race", "IncGroup"}
+  for t = 1 to a_type.length do
+    type = a_type[t]
+
+    // set od matrix
+    od_mtx = scen_dir + "/outputs/ej_od_by_" + type + ".mtx"
+    mtx = OpenMatrix(od_mtx, )
+    a_cores = GetMatrixCoreNames(mtx)
+    core_name = a_cores[1]
+    mtx = null
+    Opts.Input.[OD Matrix Currency] = {od_mtx, core_name, , }
+
+    // Exclusion set array
+    Opts.Input.[Exclusion Link Sets] = null
+    for i = 1 to a_cores.length do
+      Opts.Input.[Exclusion Link Sets] = Opts.Input.[Exclusion Link Sets] +
+        {excl_set}
+    end
+
+    // Class information
+    a_class_num = null
+    a_class_pce = null
+    a_class_voi = null
+    a_toll = null
+    a_turn = null
+    for i = 1 to a_cores.length do
+      a_class_num = a_class_num + {i}
+      a_class_pce = a_class_pce + {1}
+      a_class_voi = a_class_voi + {.25}
+      a_toll = a_toll + {"*_COST_DANT"}
+      a_turn = a_turn + {"PENALTY"}
+    end
+    Opts.Field.[Vehicle Classes] = a_class_num
+    Opts.Global.[Number of Classes] = a_cores.length
+    Opts.Global.[Class PCEs] = a_class_pce
+    Opts.Global.[Class VOIs] = a_class_voi
+    Opts.Field.[Fixed Toll Fields] = a_toll
+    Opts.Field.[Turn Attributes] = a_turn
+
+    // output file
+    Opts.Output.[Flow Table] = scen_dir + "/outputs/ej_am_flow_by_" + type + ".bin"
+
+    ret_value = RunMacro("TCB Run Procedure", 1, "MMA", Opts, &Ret)
+    if !ret_value then do
+        Throw("Highway assignment failed.")
+    end
+  end
 EndMacro
