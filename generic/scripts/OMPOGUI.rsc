@@ -18,10 +18,13 @@ dbox "Oahu Model"
 //        LoadResourceFile(,"C:\\Projects\\Ompo\\Conversion\\Application\\scripts\\tazmanager.rsc",)
 
     // Use the ui location to find the bmp directory
+    // Also set the initial scenario directory
     uiDBD = GetInterface()
     a_path = SplitPath(uiDBD)
     uiDir = a_path[1] + a_path[2]
     bmpDir = uiDir + "../bmp"
+    init_dir = uiDir + "../../scenarios"
+    init_dir = RunMacro("Resolve Path", init_dir)
 
     // Check to see if any script files (rsc or lst) have a later date than the
     // compiled UI.  If so, show a warning.
@@ -49,15 +52,14 @@ dbox "Oahu Model"
 //	text "                " 59, 15
 
 	button ".." 41, 12 icons: "bmp\\buttons|114.bmp" do
-	    on error, notfound, escape do
-            goto nodir
-        end
-		path[2] = ChooseDirectory("Choose a Scenario Directory", {{"Initial Directory", "C:\\Projects\\Ompo\\Conversion\\Application\\generic\\"}})
-		path[2] = path[2]
-//		ShowMessage(path[1])
-        nodir:
-            on error, notfound, escape default
-		enditem
+    on error, notfound, escape goto nodir
+    opts = null
+    opts.[Initial Directory] = init_dir
+    path[2] = ChooseDirectory("Choose a Scenario Directory", opts)
+    path[2] = path[2]
+    nodir:
+    on error, notfound, escape default
+	enditem
 
 	button "Scenario Manager" 3, 14, 41, 1.5 do
 //        LoadResourceFile(, "tazmanager.rsc", )
