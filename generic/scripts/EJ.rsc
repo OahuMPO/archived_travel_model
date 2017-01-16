@@ -82,9 +82,10 @@ EndMacro
 
 Macro "EJ Analysis"
 
-  RunMacro("Create EJ Trip Table")
+  /*RunMacro("Create EJ Trip Table")
   RunMacro("EJ CSV to MTX")
-  RunMacro("EJ Assignment")
+  RunMacro("EJ Assignment")*/
+  RunMacro("EJ Mapping")
 EndMacro
 
 /*
@@ -313,4 +314,34 @@ Macro "EJ Assignment"
         Throw("Highway assignment failed.")
     end
   end
+EndMacro
+
+/*
+
+*/
+
+Macro "EJ Mapping"
+  shared scen_dir, ej_dir
+
+  // Open the ej trip table
+  trip_df = CreateObject("df")
+  trip_df.read_csv(scen_dir + "/outputs/ej_am_trips.csv")
+
+  // Create summary tables by o/d and race/income
+  a_od = {"origin", "destination"}
+  a_ej = {"race", "IncGroup"}
+  for o = 1 to a_od.length do
+    od = a_od[o]
+
+    for e = 1 to a_ej.length do
+      ej = a_ej[e]
+
+      temp_df = trip_df.copy()
+      trip_df.group_by({od + "Taz", ej})
+      agg.expansionFactor = {"sum"}
+      trip_df.summarize(agg)
+      trip_df.create_editor()
+    end
+  end
+
 EndMacro
