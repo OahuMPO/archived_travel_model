@@ -8,13 +8,13 @@ dBox "EJ"
   title: "EJ Analysis Toolbox"
 
   init do
-    shared scen_dir, path, ej_dir
+    shared scen_dir, path, ej_dir, rep_dir
 
     // Set the scen_dir to the currently selected scenario
     // if there is one.
     scen_dir = path[2]
     if scen_dir <> null then do
-      if !RunMacro("Scenario is Run?", scen_dir) then scen_dir = null
+      if !RunMacro("Is Scenario Run?", scen_dir) then scen_dir = null
     end
 
     // Determine UI location, initial search dir, and ej dir
@@ -35,14 +35,18 @@ dBox "EJ"
     ShowMessage(message)
   enditem
 
-  // Scenario folder
+  // Scenario folder (and report directory)
   text 1, 3, 35 variable: scen_dir prompt: "Scenario Directory" framed
   button ".." after, same icons: "bmp\\buttons|114.bmp" do
     on error, notfound, escape goto nodir
     opts = null
     opts.[Initial Directory] = init_dir
     scen_dir = ChooseDirectory("Choose the directory to analyze.", opts)
-    if !RunMacro("Scenario is Run?", scen_dir) then scen_dir = null
+    rep_dir = scen_dir + "/reports"
+    if !RunMacro("Is Scenario Run?", scen_dir) then do
+      scen_dir = null
+      rep_dir = null
+    end
     nodir:
     on error, notfound, escape default
   enditem
@@ -63,7 +67,7 @@ dBox "EJ"
   enditem
 EndDbox
 
-Macro "Scenario is Run?" (scen_dir)
+Macro "Is Scenario Run?" (scen_dir)
 
   test_file = scen_dir + "/reports/VMT and Speeds by FT and AT.csv"
   if GetFileInfo(test_file) = null
@@ -93,7 +97,7 @@ EndMacro
 */
 
 Macro "Create EJ Trip Table"
-  shared scen_dir, ej_dir
+  shared scen_dir, ej_dir, rep_dir
 
   // Read in the ej param files
   mode_df = CreateObject("df")
@@ -147,8 +151,8 @@ Macro "Create EJ Trip Table"
   trip_df.filter("race_num <> null")
   trip_df.filter("income <> null")
 
-  // write to final table to csv
-  trip_df.write_csv(scen_dir + "/outputs/ej_am_trips.csv")
+  // write final table to csv
+  trip_df.write_csv(rep_dir + "/ej_am_trips.csv")
 
   RunMacro("Close All")
 EndMacro
@@ -158,10 +162,10 @@ EndMacro
 */
 
 Macro "EJ CSV to MTX"
-  shared scen_dir, ej_dir
+  shared scen_dir, ej_dir, rep_dir
 
   // Open the long-format trip table
-  csv_file = scen_dir + "/outputs/ej_am_trips.csv"
+  csv_file = rep_dir + "/ej_am_trips.csv"
   vw_long = OpenTable("ej_long", "CSV", {csv_file})
 
   // For race and income separately
@@ -175,13 +179,13 @@ Macro "EJ CSV to MTX"
     opts.view = vw_long
     trip_df.read_view(opts)
     trip_df.spread(type, "expansionFactor", 0)
-    csv_file = scen_dir + "/outputs/ej_am_trips_by_" + type + ".csv"
+    csv_file = rep_dir + "/ej_am_trips_by_" + type + ".csv"
     trip_df.write_csv(csv_file)
     vw = OpenTable("ej_" + type, "CSV", {csv_file})
 
     // Create a copy of the resident am matrix
     in_file = scen_dir + "/outputs/residentAutoTrips_AM.mtx"
-    out_file = scen_dir + "/outputs/ej_od_by_" + type + ".mtx"
+    out_file = rep_dir + "/ej_od_by_" + type + ".mtx"
     CopyFile(in_file, out_file)
 
     // Create an array of cores to remove
@@ -232,7 +236,7 @@ for the AM period.
 */
 
 Macro "EJ Assignment"
-  shared scen_dir, ej_dir
+  shared scen_dir, ej_dir, rep_dir
 
   // Input files and link exclusion
   hwy_dbd = scen_dir + "/inputs/network/Scenario Line Layer.dbd"
@@ -272,7 +276,7 @@ Macro "EJ Assignment"
     type = a_type[t]
 
     // set od matrix
-    od_mtx = scen_dir + "/outputs/ej_od_by_" + type + ".mtx"
+    od_mtx = rep_dir + "/ej_od_by_" + type + ".mtx"
     mtx = OpenMatrix(od_mtx, )
     a_cores = GetMatrixCoreNames(mtx)
     core_name = a_cores[1]
@@ -307,7 +311,7 @@ Macro "EJ Assignment"
     Opts.Field.[Turn Attributes] = a_turn
 
     // output file
-    Opts.Output.[Flow Table] = scen_dir + "/outputs/ej_am_flow_by_" + type + ".bin"
+    Opts.Output.[Flow Table] = rep_dir + "/ej_am_flow_by_" + type + ".bin"
 
     ret_value = RunMacro("TCB Run Procedure", 1, "MMA", Opts, &Ret)
     if !ret_value then do
@@ -321,11 +325,11 @@ EndMacro
 */
 
 Macro "EJ Mapping"
-  shared scen_dir, ej_dir
+  shared scen_dir, ej_dir, rep_dir
 
   // Open the ej trip table
   trip_df = CreateObject("df")
-  trip_df.read_csv(scen_dir + "/outputs/ej_am_trips.csv")
+  trip_df.read_csv(rep_dir + "/ej_am_trips.csv")
 
   // Create summary tables by o/d and race/income
   a_od = {"origin", "destination"}
