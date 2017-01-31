@@ -375,18 +375,19 @@ the before and after value, and whether it is considered an increase or a
 decrease.
 
 ### Spot Volume Change
-Vehicle volume is the number of vehicles that use a given roadway over a
-specified period of time. Vehicle volumes are presented in concert with V/C
-ratio to provide a comparison of project effectiveness. For example, does the
-project (or projects) in a CMP project package reduce congestion (reduced V/C
-ratio), while carrying more traffic (higher vehicle volumes)? For this
-particular metric, points are assigned based on the ability of project to show
-higher vehicle volumes on an existing facility. Points range from zero for no
+Vehicle volume is the number of vehicles that use a given roadway over a 
+specified period of time. Vehicle volumes are presented in concert with V/C 
+ratio to provide a comparison of project effectiveness. For example, does the 
+project (or projects) in a CMP project package reduce congestion (reduced V/C 
+ratio), while carrying more traffic (higher vehicle volumes)? For this 
+particular metric, points are assigned based on the ability of project to show 
+higher vehicle volumes on an existing facility. Points range from zero for no 
 change in comparison to the Baseline alternative during the AM peak period up to
-eight points for increases in vehicle volumes between 3,501 to 4,000 vehicle
+eight points for increases in vehicle volumes between 3,501 to 4,000 vehicle 
 trips.
 
-The table below shows the change in volume during the AM period. Changes less than 10% are considered no change for scoring.
+The table below shows the change in volume during the AM period. Changes less
+than 10% are considered no change for scoring.
 ```{r}
 
 proj_vol <- rep_link_shp@data %>%
@@ -434,7 +435,13 @@ vc_diff <- proj_vc - ec_vc
 vc_change <- "No Change"
 if (proj_vc > ec_vc + .05) {vc_change <- "Increase"}
 if (proj_vc < ec_vc - .05) {vc_change <- "Decrease"}
-if (ec_vc == 0) {vc_change <- "New Road"}
+if (ec_vc == -Inf) {vc_change <- "New Road"}
+
+# For the table, change any -Inf on new links to 0
+if (ec_vc == -Inf){
+  ec_vc <- 0
+  vc_diff <- 0
+}
 
 proj_vc <- format(round(proj_vc, 2), big.mark = ",")
 ec_vc <- format(round(ec_vc, 2), big.mark = ",")
