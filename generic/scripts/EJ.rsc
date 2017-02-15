@@ -14,7 +14,9 @@ dBox "EJ"
     // if there is one.
     scen_dir = path[2]
     if scen_dir <> null then do
-      if !RunMacro("Is Scenario Run?", scen_dir) then scen_dir = null
+      if !RunMacro("Is Scenario Run?", scen_dir)
+        then scen_dir = null
+        else output_dir = scen_dir + "/reports/ej"
     end
 
     // Determine UI location, initial search dir, and ej dir
@@ -86,9 +88,9 @@ EndMacro
 
 Macro "EJ Analysis"
 
-  RunMacro("Create EJ Trip Table")
+  /*RunMacro("Create EJ Trip Table")
   RunMacro("EJ CSV to MTX")
-  RunMacro("EJ Assignment")
+  RunMacro("EJ Assignment")*/
   RunMacro("EJ Mapping")
 EndMacro
 
@@ -324,7 +326,7 @@ Macro "EJ Assignment"
 EndMacro
 
 /*
-
+Create a map showing EJ origins and flows.
 */
 
 Macro "EJ Mapping"
@@ -337,18 +339,100 @@ Macro "EJ Mapping"
   // Create summary tables by o/d and race/income
   a_od = {"origin", "destination"}
   a_ej = {"race", "IncGroup"}
-  for o = 1 to a_od.length do
-    od = a_od[o]
+  for e = 1 to a_ej.length do
+    ej = a_ej[e]
 
-    for e = 1 to a_ej.length do
-      ej = a_ej[e]
+    // Determine Categories
+    if ej = "race" then do
+      race_df = CreateObject("df")
+      race_df.read_csv(ej_dir + "/race_codes.csv")
+      a_cats = V2A(race_df.tbl.Value)
+    end else a_cats = {"Low", "NotLow"}
 
-      temp_df = trip_df.copy()
-      trip_df.group_by({od + "Taz", ej})
+    for o = 1 to a_od.length do
+      od = a_od[o]
+
+      // Create a summary table of trip origins by category by TAZ
+      /*temp_df = trip_df.copy()
+      temp_df.group_by({od + "Taz", ej})
       agg.expansionFactor = {"sum"}
-      trip_df.summarize(agg)
-      trip_df.create_editor()
+      temp_df.summarize(agg)
+      temp_df.spread("race", "sum_expansionFactor", 0)
+      temp_df.group_by({od + "Taz"})
+      agg = null
+      for c = 1 to a_cats.length do  // set array of category fields to agg
+        agg.(a_cats[c]) = {"sum"}
+        sum_names = sum_names + {"sum_" + a_cats[c]}
+      end
+      temp_df.summarize(agg)
+      temp_df.rename(sum_names, a_cats)
+      csv = output_dir + "/" + od + "s_by_" + ej + ".csv"
+      temp_df.write_csv(csv)*/
+
+      // Create a map
+      if od = "origin" then RunMacro("EJ Map Helper", od, ej, a_cats)
     end
   end
+EndMacro
 
+/*
+Middle-man macro between "EJ Mapping" and the gisdk_tools macro
+"Create Chart Theme". Sets up the options before calling "Create" macro
+for tazs and links.
+*/
+
+Macro "EJ Map Helper" (od, ej, a_cats)
+  shared scen_dir, output_dir, ej_dir
+
+  // Determine which ej files to map
+  orig_tbl = output_dir + "/" + od + "s_by_" + ej + ".csv"
+  flow_tbl = output_dir + "/ej_am_flow_by_" + ej + ".bin"
+
+  // Create Map
+  hwy_dbd = scen_dir + "/inputs/network/Scenario Line Layer.dbd"
+  taz_dbd = scen_dir + "/inputs/taz/Scenario TAZ Layer.dbd"
+  {nlyr, llyr} = GetDBLayers(hwy_dbd)
+  {tlyr} = GetDBLayers(taz_dbd)
+  map = RunMacro("G30 new map", hwy_dbd)
+  MinimizeWindow(GetWindowName())
+  AddLayer(map, tlyr, taz_dbd, tlyr)
+  RunMacro("G30 new layer default settings", tlyr)
+
+  // Create pie chart theme on the TAZ layer of origins by category
+  orig_tbl = OpenTable("origins", "CSV", {orig_tbl})
+  taz_jv = JoinViews("jv", tlyr + ".TAZ", orig_tbl + ".originTaz", )
+  SetLayer(tlyr)
+  a_cat_specs = V2A(taz_jv + "." + A2V(a_cats))
+  opts = null
+  opts.layer = tlyr
+  opts.field_specs = a_cat_specs
+  opts.type = "Pie"
+  opts.Title = "Trip " + od + "s by " + ej
+  RunMacro("Create Chart Theme", opts)
+
+  // Summarize the assignment table to combine ab/ba
+  flow_tbl = OpenTable("flow", "FFB", {flow_tbl})
+  df = CreateObject("df")
+  opts = null
+  opts.view = flow_tbl
+  df.read_view(opts)
+  a_dir = {"AB", "BA"}
+  v_fields = ("tot_" + A2V(a_cats) + "_flow")
+  for f = 1 to v_fields.length do
+    field_name = v_fields[f]
+    cat = a_cats[f]
+
+    df.mutate(
+      field_name,
+      df.tbl.("AB_Flow_" + cat) + df.tbl.("BA_Flow_" + cat)
+    )
+  end
+  df.select(v_fields)
+  df.update_view(flow_tbl)
+
+  // Create pie chart of flow
+
+
+  RedrawMap(map)
+  SaveMap(map, output_dir + "/map by race.map")
 EndMacro
