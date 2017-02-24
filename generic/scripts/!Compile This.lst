@@ -38,6 +38,8 @@ summarizeTransit.rsc
 HwyTTDistSum.rsc
 V6Summaries.rsc
 CMPAnalysis.rsc
+EJ.rsc
 gisdk_tools/gplyr/gplyr.rsc
 gisdk_tools/ModelUtilities.rsc
 gisdk_tools/RoadProjectManagement.rsc
+gisdk_tools/Summaries.rsc
