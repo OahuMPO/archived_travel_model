@@ -88,9 +88,9 @@ EndMacro
 
 Macro "EJ Analysis"
 
-  /*RunMacro("Create EJ Trip Table")
+  RunMacro("Create EJ Trip Table")
   RunMacro("EJ CSV to MTX")
-  RunMacro("EJ Assignment")*/
+  RunMacro("EJ Assignment")
   RunMacro("EJ Mapping")
 EndMacro
 
@@ -353,13 +353,15 @@ Macro "EJ Mapping"
       od = a_od[o]
 
       // Create a summary table of trip origins by category by TAZ
-      /*temp_df = trip_df.copy()
+      temp_df = trip_df.copy()
       temp_df.group_by({od + "Taz", ej})
+      agg = null
       agg.expansionFactor = {"sum"}
       temp_df.summarize(agg)
-      temp_df.spread("race", "sum_expansionFactor", 0)
+      temp_df.spread(ej, "sum_expansionFactor", 0)
       temp_df.group_by({od + "Taz"})
       agg = null
+      sum_names = null
       for c = 1 to a_cats.length do  // set array of category fields to agg
         agg.(a_cats[c]) = {"sum"}
         sum_names = sum_names + {"sum_" + a_cats[c]}
@@ -367,7 +369,7 @@ Macro "EJ Mapping"
       temp_df.summarize(agg)
       temp_df.rename(sum_names, a_cats)
       csv = output_dir + "/" + od + "s_by_" + ej + ".csv"
-      temp_df.write_csv(csv)*/
+      temp_df.write_csv(csv)
 
       // Create a map
       if od = "origin" then RunMacro("EJ Map Helper", od, ej, a_cats)
@@ -379,6 +381,14 @@ EndMacro
 Middle-man macro between "EJ Mapping" and the gisdk_tools macro
 "Create Chart Theme". Sets up the options before calling "Create" macro
 for tazs and links.
+
+od
+  String "origin" or "destination"
+  Whether the TAZ origins or destinations will be mapped
+
+ej
+  String "race" or "IncGroup"
+  Which ej category will be mapped
 */
 
 Macro "EJ Map Helper" (od, ej, a_cats)
@@ -431,8 +441,18 @@ Macro "EJ Map Helper" (od, ej, a_cats)
   df.update_view(flow_tbl)
 
   // Create pie chart of flow
+  link_jv = JoinViews("jv_link", llyr + ".ID", flow_tbl + ".ID1", )
+  SetLayer(llyr)
+  a_cat_specs = V2A(link_jv + ".tot_" + A2V(a_cats) + "_flow")
+  opts = null
+  opts.layer = llyr
+  opts.field_specs = a_cat_specs
+  opts.type = "Pie"
+  opts.Title = "Flow by " + ej
+  RunMacro("Create Chart Theme", opts)
 
-
+  MaximizeWindow(GetWindowName())
   RedrawMap(map)
-  SaveMap(map, output_dir + "/map by race.map")
+  SaveMap(map, output_dir + "/ej map by " + ej + ".map")
+  CloseMap(map)
 EndMacro
