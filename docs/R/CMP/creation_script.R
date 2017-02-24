@@ -18,7 +18,13 @@ proj_info <- read_excel(
 )
 proj_info <- proj_info[, 1:12]
 proj_info <- proj_info %>%
-  select(-c(`TIP ID`, `PROJECT NO 2040`, `Project Status (@2012)`, FROM, TO))
+  mutate(
+    `Cost (000s)` = format(Cost / 1000, big.mark = ",")
+    ) %>%
+  select(-c(
+    `TIP ID`, `PROJECT NO 2040`, `Project Status (@2012)`, FROM, TO,
+    Cost
+    ))
 
 # read the list of non-ec projects and
 # create a score column to hold final scores
