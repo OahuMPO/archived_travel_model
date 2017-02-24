@@ -58,7 +58,9 @@ dBox "EJ"
     if scen_dir = null
       then ShowMessage("Select a scenario")
       else do
+        CreateProgressBar("Performing EJ Analysis", "False")
         RunMacro("EJ Analysis")
+        DestroyProgressBar()
         ShowMessage("EJ Analysis Complete")
       end
   enditem
@@ -100,6 +102,7 @@ EndMacro
 
 Macro "Create EJ Trip Table"
   shared scen_dir, ej_dir, output_dir
+  UpdateProgressBar("Create EJ Trip Table", 0)
 
   // Create output_dir if it doesn't exist
   if GetDirectoryInfo(output_dir, "All") = null then CreateDirectory(output_dir)
@@ -168,6 +171,7 @@ EndMacro
 
 Macro "EJ CSV to MTX"
   shared scen_dir, ej_dir, output_dir
+  UpdateProgressBar("EJ CSV to MTX", 0)
 
   // Open the long-format trip table
   csv_file = output_dir + "/ej_am_trips.csv"
@@ -242,6 +246,7 @@ for the AM period.
 
 Macro "EJ Assignment"
   shared scen_dir, ej_dir, output_dir
+  UpdateProgressBar("EJ Assignment", 0)
 
   // Input files and link exclusion
   hwy_dbd = scen_dir + "/inputs/network/Scenario Line Layer.dbd"
@@ -331,6 +336,7 @@ Create a map showing EJ origins and flows.
 
 Macro "EJ Mapping"
   shared scen_dir, ej_dir, output_dir
+  UpdateProgressBar("EJ Mapping", 0)
 
   // Open the ej trip table
   trip_df = CreateObject("df")
@@ -379,8 +385,8 @@ EndMacro
 
 /*
 Middle-man macro between "EJ Mapping" and the gisdk_tools macro
-"Create Chart Theme". Sets up the options before calling "Create" macro
-for tazs and links.
+"Create Chart Theme". Creaets a map and sets up the options before calling
+chart macro for tazs and links.
 
 od
   String "origin" or "destination"
