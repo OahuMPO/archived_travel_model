@@ -54,7 +54,7 @@ dBox "EJ"
   enditem
 
   // Analyze Button
-  button "Perform Analysis" 2, 10 do
+  button "Perform Analysis" 7, 7 do
     if scen_dir = null
       then ShowMessage("Select a scenario")
       else do
