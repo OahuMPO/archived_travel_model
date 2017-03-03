@@ -209,7 +209,13 @@ Tab prompt: "Stages"
 //**********************************************************************************************************************************************************************
 Tab Prompt: "Utilities"
 
-  button "CMP GUI" 1, 1, 15 do
+  button 1, 1, 15 Prompt:"Clear Workspace" do
+    RunMacro("Close All")
+    RunMacro("Destroy Progress Bars")
+    ShowMessage("Workspace Cleared")
+  EndItem
+
+  button "CMP GUI" same, after, 15 do
     RunDbox("CMP")
   enditem
 
