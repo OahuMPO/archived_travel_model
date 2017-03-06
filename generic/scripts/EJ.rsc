@@ -90,10 +90,10 @@ EndMacro
 
 Macro "EJ Analysis"
 
-  RunMacro("Create EJ Trip Table")
-  RunMacro("EJ CSV to MTX")
-  /*RunMacro("EJ Assignment")
-  RunMacro("EJ Mapping")*/
+  /*RunMacro("Create EJ Trip Table")
+  RunMacro("EJ CSV to MTX")*/
+  RunMacro("EJ Assignment")
+  /*RunMacro("EJ Mapping")*/
 EndMacro
 
 /*
@@ -164,7 +164,7 @@ Macro "Create EJ Trip Table"
   trip_df.filter("income <> null")
 
   // write final table to csv
-  trip_df.write_csv(output_dir + "/ej_am_trips.csv")
+  trip_df.write_csv(output_dir + "/trips_am.csv")
 
   RunMacro("Close All")
 EndMacro
@@ -183,7 +183,7 @@ Macro "EJ CSV to MTX"
   v_modes = mode_df.unique("Value")
 
   // Open the long-format trip table
-  csv_file = output_dir + "/ej_am_trips.csv"
+  csv_file = output_dir + "/trips_am.csv"
   vw_long = OpenTable("ej_long", "CSV", {csv_file})
 
   // for each mode
@@ -211,11 +211,6 @@ Macro "EJ CSV to MTX"
         trip_df.read_view(opts)
 
         // Create a vector of unique groups
-        /*vec = GetDataVector(vw_long + "|", type, )
-        opts = null
-        opts.Unique = "True"
-        opts.[Omit Missing] = "True"
-        a_groups = V2A(SortVector(vec, opts))*/
         a_groups = trip_df.unique(type)
 
         // spread the trip table by type
