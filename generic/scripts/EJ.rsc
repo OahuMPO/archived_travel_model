@@ -90,9 +90,9 @@ EndMacro
 
 Macro "EJ Analysis"
 
-  /*RunMacro("Create EJ Trip Table")
-  RunMacro("EJ CSV to MTX")*/
-  RunMacro("EJ Assignment")
+  /*RunMacro("Create EJ Trip Table")*/
+  RunMacro("EJ CSV to MTX")
+  /*RunMacro("EJ Assignment")*/
   /*RunMacro("EJ Mapping")*/
 EndMacro
 
@@ -221,7 +221,7 @@ Macro "EJ CSV to MTX"
 
         // Create a copy of the resident am matrix
         in_file = scen_dir + "/outputs/residentAutoTrips_AM.mtx"
-        out_file = output_dir + "/trips_am_" + mode + "_by_" + type + ".csv"
+        out_file = output_dir + "/trips_am_" + mode + "_by_" + type + ".mtx"
         CopyFile(in_file, out_file)
 
         // Create an array of cores to remove
