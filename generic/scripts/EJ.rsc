@@ -92,8 +92,8 @@ Macro "EJ Analysis"
 
   RunMacro("Create EJ Trip Table")
   RunMacro("EJ CSV to MTX")
-  RunMacro("EJ Assignment")
-  RunMacro("EJ Mapping")
+  /*RunMacro("EJ Assignment")
+  RunMacro("EJ Mapping")*/
 EndMacro
 
 /*
@@ -145,6 +145,10 @@ Macro "Create EJ Trip Table"
   trip_df.rename("race", "race_num")
   trip_df.left_join(house_df, "hh_id", "household_id")
 
+  // Join the mode description table
+  trip_df.left_join(mode_df, "tripMode", "Mode")
+  trip_df.rename("Value", "mode")
+
   // Join the race description table
   trip_df.left_join(race_df, "race_num", "Race")
   trip_df.rename("Value", "race")
@@ -173,67 +177,90 @@ Macro "EJ CSV to MTX"
   shared scen_dir, ej_dir, output_dir
   UpdateProgressBar("EJ CSV to MTX", 0)
 
+  // Open the mode table to get unique modes
+  mode_df = CreateObject("df")
+  mode_df.read_csv(ej_dir + "/mode_codes.csv")
+  v_modes = mode_df.unique("Value")
+
   // Open the long-format trip table
   csv_file = output_dir + "/ej_am_trips.csv"
   vw_long = OpenTable("ej_long", "CSV", {csv_file})
 
-  // For race and income separately
-  a_type = {"race", "IncGroup"}
-  for t = 1 to a_type.length do
-    type = a_type[t]
+  // for each mode
+  for m = 1 to v_modes.length do
+    mode = v_modes[m]
 
-    // read in the trip table and spread by type
-    trip_df = CreateObject("df")
-    opts = null
-    opts.view = vw_long
-    trip_df.read_view(opts)
-    trip_df.spread(type, "expansionFactor", 0)
-    csv_file = output_dir + "/ej_am_trips_by_" + type + ".csv"
-    trip_df.write_csv(csv_file)
-    vw = OpenTable("ej_" + type, "CSV", {csv_file})
+    // Create a selection set on the view
+    SetView(vw_long)
+    qry = "Select * where Mode = '" + mode + "'"
+    n = SelectByQuery("mode_set", "Several", qry)
 
-    // Create a copy of the resident am matrix
-    in_file = scen_dir + "/outputs/residentAutoTrips_AM.mtx"
-    out_file = output_dir + "/ej_od_by_" + type + ".mtx"
-    CopyFile(in_file, out_file)
+    // continue if there are records for current mode
+    if n > 0 then do
 
-    // Create an array of cores to remove
-    mtx = OpenMatrix(out_file, )
-    cores_to_remove = GetMatrixCoreNames(mtx)
+      // For race and income separately
+      a_type = {"race", "IncGroup"}
+      for t = 1 to a_type.length do
+        type = a_type[t]
 
-    // Create a vector of unique groups
-    vec = GetDataVector(vw_long + "|", type, )
-    opts = null
-    opts.Unique = "True"
-    opts.[Omit Missing] = "True"
-    a_groups = V2A(SortVector(vec, opts))
+        // read in the trip table
+        trip_df = CreateObject("df")
+        opts = null
+        opts.view = vw_long
+        opts.set = "mode_set"
+        trip_df.read_view(opts)
 
-    // add a core for each unique group
-    for i = 1 to a_groups.length do
-      AddMatrixCore(mtx, a_groups[i])
+        // Create a vector of unique groups
+        /*vec = GetDataVector(vw_long + "|", type, )
+        opts = null
+        opts.Unique = "True"
+        opts.[Omit Missing] = "True"
+        a_groups = V2A(SortVector(vec, opts))*/
+        a_groups = trip_df.unique(type)
+
+        // spread the trip table by type
+        trip_df.spread(type, "expansionFactor", 0)
+        csv_file = output_dir + "/trips_am_" + mode + "_by_" + type + ".csv"
+        trip_df.write_csv(csv_file)
+        vw = OpenTable("ej_" + type, "CSV", {csv_file})
+
+        // Create a copy of the resident am matrix
+        in_file = scen_dir + "/outputs/residentAutoTrips_AM.mtx"
+        out_file = output_dir + "/trips_am_" + mode + "_by_" + type + ".csv"
+        CopyFile(in_file, out_file)
+
+        // Create an array of cores to remove
+        mtx = OpenMatrix(out_file, )
+        cores_to_remove = GetMatrixCoreNames(mtx)
+
+        // add a core for each unique group
+        for i = 1 to a_groups.length do
+          AddMatrixCore(mtx, a_groups[i])
+        end
+
+        // Remove the original cores
+        for i = 1 to cores_to_remove.length do
+          DropMatrixCore(mtx, cores_to_remove[i])
+        end
+
+        // Update the new cores with the trips
+        SetView(vw)
+        opts = null
+        opts.[Missing is zero] = "True"
+        UpdateMatrixFromView(
+          mtx,
+          vw + "|",
+          "originTaz",
+          "destinationTaz",
+          ,
+          v2a(a_groups),
+          "Add",
+          opts
+        )
+
+        CloseView(vw)
+      end
     end
-
-    // Remove the original cores
-    for i = 1 to cores_to_remove.length do
-      DropMatrixCore(mtx, cores_to_remove[i])
-    end
-
-    // Update the new cores with the trips
-    SetView(vw)
-    opts = null
-    opts.[Missing is zero] = "True"
-    UpdateMatrixFromView(
-      mtx,
-      vw + "|",
-      "originTaz",
-      "destinationTaz",
-      ,
-      a_groups,
-      "Add",
-      opts
-    )
-
-    CloseView(vw)
   end
 
   RunMacro("Close All")
