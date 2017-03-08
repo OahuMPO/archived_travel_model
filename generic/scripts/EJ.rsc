@@ -90,10 +90,10 @@ EndMacro
 
 Macro "EJ Analysis"
 
-  /*RunMacro("Create EJ Trip Table")*/
+  RunMacro("Create EJ Trip Table")
   RunMacro("EJ CSV to MTX")
-  /*RunMacro("EJ Assignment")*/
-  /*RunMacro("EJ Mapping")*/
+  RunMacro("EJ Assignment")
+  RunMacro("EJ Mapping")
 EndMacro
 
 /*
@@ -308,7 +308,7 @@ Macro "EJ Assignment"
     type = a_type[t]
 
     // set od matrix
-    od_mtx = output_dir + "/ej_od_by_" + type + ".mtx"
+    od_mtx = output_dir + "/trips_am_auto_by_" + type + ".mtx"
     mtx = OpenMatrix(od_mtx, )
     a_cores = GetMatrixCoreNames(mtx)
     core_name = a_cores[1]
@@ -343,7 +343,7 @@ Macro "EJ Assignment"
     Opts.Field.[Turn Attributes] = a_turn
 
     // output file
-    Opts.Output.[Flow Table] = output_dir + "/ej_am_flow_by_" + type + ".bin"
+    Opts.Output.[Flow Table] = output_dir + "/flow_am_by_" + type + ".bin"
 
     ret_value = RunMacro("TCB Run Procedure", 1, "MMA", Opts, &Ret)
     if !ret_value then do
@@ -362,45 +362,69 @@ Macro "EJ Mapping"
 
   // Open the ej trip table
   trip_df = CreateObject("df")
-  trip_df.read_csv(output_dir + "/ej_am_trips.csv")
+  trip_df.read_csv(output_dir + "/trips_am.csv")
 
-  // Create summary tables by o/d and race/income
+  // Determine modes in the model
+  mode_df = CreateObject("df")
+  mode_df.read_csv(ej_dir + "/mode_codes.csv")
+  a_modes = v2a(mode_df.unique("Value"))
+
+  // Create summary tables by mode, o/d, and race/income
   a_od = {"origin", "destination"}
   a_ej = {"race", "IncGroup"}
-  for e = 1 to a_ej.length do
-    ej = a_ej[e]
 
-    // Determine Categories
-    if ej = "race" then do
-      race_df = CreateObject("df")
-      race_df.read_csv(ej_dir + "/race_codes.csv")
-      a_cats = V2A(race_df.tbl.Value)
-    end else a_cats = {"Low", "NotLow"}
+  for m = 1 to a_modes.length do
+    mode = a_modes[m]
 
-    for o = 1 to a_od.length do
-      od = a_od[o]
+    // Check to make sure that the current mode exists in the table.
+    // This primarily effects the walk_to_rail mode, which isn't always present.
+    mode_present = trip_df.in(mode, trip_df.unique("mode"))
+    if mode_present then do
+      for e = 1 to a_ej.length do
+        ej = a_ej[e]
 
-      // Create a summary table of trip origins by category by TAZ
-      temp_df = trip_df.copy()
-      temp_df.group_by({od + "Taz", ej})
-      agg = null
-      agg.expansionFactor = {"sum"}
-      temp_df.summarize(agg)
-      temp_df.spread(ej, "sum_expansionFactor", 0)
-      temp_df.group_by({od + "Taz"})
-      agg = null
-      sum_names = null
-      for c = 1 to a_cats.length do  // set array of category fields to agg
-        agg.(a_cats[c]) = {"sum"}
-        sum_names = sum_names + {"sum_" + a_cats[c]}
+        // Determine Categories
+        if ej = "race" then do
+          race_df = CreateObject("df")
+          race_df.read_csv(ej_dir + "/race_codes.csv")
+          a_cats = V2A(race_df.tbl.Value)
+        end else a_cats = {"Low", "NotLow"}
+
+        for o = 1 to a_od.length do
+          od = a_od[o]
+
+          // Create a summary table of trips by TAZ for current mode/ej/od
+          temp_df = trip_df.copy()
+          temp_df.filter("mode = '" + mode + "'")
+          temp_df.group_by({od + "Taz", ej})
+          agg = null
+          agg.expansionFactor = {"sum"}
+          temp_df.summarize(agg)
+          temp_df.spread(ej, "sum_expansionFactor", 0)
+          temp_df.group_by({od + "Taz"})
+          agg = null
+          sum_names = null
+          renames = null
+          for c = 1 to a_cats.length do  // set array of category fields to agg
+            cat = a_cats[c]
+
+            // check that the category exists as a column before including it
+            if temp_df.in(cat, temp_df.colnames()) then do
+              agg.(a_cats[c]) = {"sum"}
+              sum_names = sum_names + {"sum_" + a_cats[c]}
+              renames = renames + {a_cats[c]}
+            end
+          end
+          temp_df.summarize(agg)
+          temp_df.rename(sum_names, renames)
+          csv = output_dir + "/summary_" + mode + "_" + od + "s_by_" + ej + ".csv"
+          temp_df.remove("Count")
+          temp_df.write_csv(csv)
+
+          // Create a map
+          if od = "origin" then RunMacro("EJ Map Helper", mode, od, ej, a_cats)
+        end
       end
-      temp_df.summarize(agg)
-      temp_df.rename(sum_names, a_cats)
-      csv = output_dir + "/" + od + "s_by_" + ej + ".csv"
-      temp_df.write_csv(csv)
-
-      // Create a map
-      if od = "origin" then RunMacro("EJ Map Helper", od, ej, a_cats)
     end
   end
 EndMacro
@@ -409,6 +433,11 @@ EndMacro
 Middle-man macro between "EJ Mapping" and the gisdk_tools macro
 "Create Chart Theme". Creaets a map and sets up the options before calling
 chart macro for tazs and links.
+
+mode
+  String
+  The mode to be mapped. Link flows will only be mapped for
+  the "auto" mode.
 
 od
   String "origin" or "destination"
@@ -419,12 +448,12 @@ ej
   Which ej category will be mapped
 */
 
-Macro "EJ Map Helper" (od, ej, a_cats)
+Macro "EJ Map Helper" (mode, od, ej, a_cats)
   shared scen_dir, output_dir, ej_dir
 
   // Determine which ej files to map
-  orig_tbl = output_dir + "/" + od + "s_by_" + ej + ".csv"
-  flow_tbl = output_dir + "/ej_am_flow_by_" + ej + ".bin"
+  orig_tbl = output_dir + "/summary_" + mode + "_" + od + "s_by_" + ej + ".csv"
+  flow_tbl = output_dir + "/flow_am_by_" + ej + ".bin"
 
   // Create Map
   hwy_dbd = scen_dir + "/inputs/network/Scenario Line Layer.dbd"
@@ -448,39 +477,41 @@ Macro "EJ Map Helper" (od, ej, a_cats)
   opts.Title = "Trip " + od + "s by " + ej
   RunMacro("Create Chart Theme", opts)
 
-  // Summarize the assignment table to combine ab/ba
-  flow_tbl = OpenTable("flow", "FFB", {flow_tbl})
-  df = CreateObject("df")
-  opts = null
-  opts.view = flow_tbl
-  df.read_view(opts)
-  a_dir = {"AB", "BA"}
-  v_fields = ("tot_" + A2V(a_cats) + "_flow")
-  for f = 1 to v_fields.length do
-    field_name = v_fields[f]
-    cat = a_cats[f]
+  if mode = "auto" then do
+    // Summarize the assignment table to combine ab/ba
+    flow_tbl = OpenTable("flow", "FFB", {flow_tbl})
+    df = CreateObject("df")
+    opts = null
+    opts.view = flow_tbl
+    df.read_view(opts)
+    a_dir = {"AB", "BA"}
+    v_fields = ("tot_" + A2V(a_cats) + "_flow")
+    for f = 1 to v_fields.length do
+      field_name = v_fields[f]
+      cat = a_cats[f]
 
-    df.mutate(
-      field_name,
-      df.tbl.("AB_Flow_" + cat) + df.tbl.("BA_Flow_" + cat)
-    )
+      df.mutate(
+        field_name,
+        df.tbl.("AB_Flow_" + cat) + df.tbl.("BA_Flow_" + cat)
+      )
+    end
+    df.select(v_fields)
+    df.update_view(flow_tbl)
+
+    // Create pie chart of flow
+    link_jv = JoinViews("jv_link", llyr + ".ID", flow_tbl + ".ID1", )
+    SetLayer(llyr)
+    a_cat_specs = V2A(link_jv + ".tot_" + A2V(a_cats) + "_flow")
+    opts = null
+    opts.layer = llyr
+    opts.field_specs = a_cat_specs
+    opts.type = "Pie"
+    opts.Title = "Flow by " + ej
+    RunMacro("Create Chart Theme", opts)
   end
-  df.select(v_fields)
-  df.update_view(flow_tbl)
-
-  // Create pie chart of flow
-  link_jv = JoinViews("jv_link", llyr + ".ID", flow_tbl + ".ID1", )
-  SetLayer(llyr)
-  a_cat_specs = V2A(link_jv + ".tot_" + A2V(a_cats) + "_flow")
-  opts = null
-  opts.layer = llyr
-  opts.field_specs = a_cat_specs
-  opts.type = "Pie"
-  opts.Title = "Flow by " + ej
-  RunMacro("Create Chart Theme", opts)
 
   MaximizeWindow(GetWindowName())
   RedrawMap(map)
-  SaveMap(map, output_dir + "/ej map by " + ej + ".map")
+  SaveMap(map, output_dir + "/map_" + mode + "_by_" + ej + ".map")
   CloseMap(map)
 EndMacro
