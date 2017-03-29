@@ -198,6 +198,7 @@ Tab prompt: "Stages"
 	button "Summaries" 16, 17, 26, 1.5 do
 	    jump = "Summaries"
 	    RunMacro("OMPO6", path, Options, jump)
+      RunMacro("Volume Adjustment")
 	enditem
 
 	button  1, 19 icon: bmpDir + "/DTA.bmp"
