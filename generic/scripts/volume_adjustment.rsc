@@ -52,6 +52,8 @@ EndMacro
 
 /*
 Volume adjustment based on centroid loading.
+
+SelectByLinks() / SelectByNodes()
 */
 
 Macro "Kyle's Macro"
@@ -67,6 +69,9 @@ Macro "Kyle's Macro"
   cc_set = CreateSet("CCs")
   adjusted_set = CreateSet("adjusted")
   SetLayer(nlyr)
+  midblock_node_set = CreateSet("midblock")
+  intersection_node_set = CreateSet("intersection")
+  centroid_node_set = CreateSet("centroid")
   processed_node_set = CreateSet("processed")
   
   // Define centroids.
@@ -94,73 +99,77 @@ Macro "Kyle's Macro"
     end
   end
   SelectByQuery(cc_set, "several", qry)
-  v_lid = GetDataVector(llyr + "|" + cc_set, "ID", )
   
-  // loop over each centroid connector's link id
-  for i = 1 to v_lid.length do
-    lid = v_id[i]
+  // Classify all nodes on network
+  RunMacro("Classify Nodes")
+  
+  // Create a set of midblock links
+  SetLayer(llyr)
+  midblock_link_set = CreateSet("midblock")
+  SelectByNodes(midblock_link_set, Several, midblock_node_set)
+  
+  // Adjust block volumes until all midblock nodes have been processed
+  ntp = GetSetCount(midblock_node_set)
+  while ntp > 0 do
     
-    // Check both endpoints of the link
-    v_nid = GetEndpoints(lid)
-    for n = 1 to v_nid.length do
-      nid = v_nid[n]
-      
-      // Classify the node
-      {class, a_non_cc} = RunMacro("Classify Node", llyr, cc_set, nid)
-      
-      // If the node is midblock, define the block as a series of link IDs
-      if class = "midblock"  then do
-        SetLayer(llyr)
-        block_set = CreateSet("block")
-        a_block = RunMacro("Define Block", llyr, cc_set, nid)
-      end
-    end
+    // create set of midblock nodes that haven't been processed
+    not_processed = SetInvert("not processed", processed_node_set)
+    target_set = SetAND("target", {midblock_node_set, not_processed})
+    a_nid = GetSetIDs(nlyr + "|" + target_set)
+    
+    nid = a_nid[1]
+    RunMacro("Create Block Set", llyr, nlyr, nid)
+  
+    ntp = GetSetCount(midblock_node_set) - GetSetCount(processed_node_set)
   end
+  
 EndMacro
 
 /*
-Helper macro used to classify a node.
+Classifies nodes as either a centroid, midblock, or intersection.
 
 Input
   llyr
     String
     Name of link layer
-  set
+  cc_set
     String
-    Name of centroid selection set
-  nid
-    Integer
-    Node ID
-
-Returns
-  String classifying the node as either a centroid, midblock, or intersection.
-  "na" is returned if the node is connected to a single CC and non CC.
+    Name of CC link selection set
 */
 
-Macro "Classify Node" (llyr, set, nid)
+Macro "Classify Nodes" (llyr, cc_set)
 
   SetLayer(llyr)
   nlyr = GetNodeLayer(llyr)
-  a_links = GetNodeLinks(nid)
+  v_nid = GetDataVector(nlyr + "|", "ID", )
   
-  // Array of CC and non-CC IDs connected to the node
-  a_cc = {}
-  a_non_cc = {}
-  for l = 1 to a_links.length do
-    lid = a_links[l]
+  SetLayer(nlyr)
+  for n = 1 to v_nid.length do
+    nid = v_nid[n]
     
-    rh = ID2RH(lid)
-    if IsMember(set) then cc = cc + {lid}
-    else non_cc = non_cc + {lid}
+    // Set node as current record and get connected links
+    rh = ID2RH(nid)
+    SetRecord(rh)
+    a_links = GetNodeLinks(nid)
+    
+    // Array of CC and non-CC link IDs connected to the node
+    a_cc = 0
+    a_non_cc = 0
+    for l = 1 to a_links.length do
+      lid = a_links[l]
+      
+      rh = ID2RH(lid)
+      if IsMember(cc_set) then cc = cc + 1
+      else non_cc = non_cc + 1
+    end
+    
+    // Classify the node based on non-centroid count
+    // Add them to the appropriate selection set
+    if non_cc.length = 0 SelectRecord(centroid_node_set)
+    else if non_cc.length = 1 then SelectRecord(intersection_node_set)
+    else if non_cc.length = 2 then SelectRecord(midblock_node_set)
+    else if non_cc.length > 2 then SelectRecord(intersection_node_set)
   end
-  
-  // Classify the node based on non-centroid count
-  class = if non_cc.length = 0 then "centroid"
-    else if non_cc.length = 1 then "na"
-    else if non_cc.length = 2 then "midblock"
-    else if non_cc.length > 2 then "intersection"
-    
-  return({class, a_non_cc})
 EndMacro
 
 /*
@@ -193,4 +202,13 @@ Macro "Define Block" (llyr, set, nid)
       v_nid = GetEndpoints()
     end
   end
+EndMacro
+
+/*
+
+*/
+
+Macro "Create Block Set" (llyr, nlyr, nid)
+
+  link_block_set = CreateSet(llyr, "block links")
 EndMacro
