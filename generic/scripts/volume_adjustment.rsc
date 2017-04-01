@@ -63,17 +63,6 @@ Macro "Kyle's Macro"
   map = RunMacro("G30 new map", hwy_dbd)
   {nlyr, llyr} = GetDBLayers(hwy_dbd)
   
-  // Create the various selection sets to be used
-  SetLayer(llyr)
-  block_set = CreateSet("block")
-  cc_set = CreateSet("CCs")
-  adjusted_set = CreateSet("adjusted")
-  SetLayer(nlyr)
-  midblock_node_set = CreateSet("midblock")
-  intersection_node_set = CreateSet("intersection")
-  centroid_node_set = CreateSet("centroid")
-  processed_node_set = CreateSet("processed")
-  
   // Define centroids.
   // The arrays used below mean that any link with a 12 in either
   // "AB FACTYPE" or "BA FACTYPE" will be treated as a centroid.
