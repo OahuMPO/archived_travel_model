@@ -15,6 +15,12 @@ where traffic loads. The second adjustment is to spread the volume out around
 the centroid connection. Total VMT is maintained.
 */
 
+Macro "test va"
+  shared path
+  path = {, "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\test"}
+  RunMacro("Volume Adjustment")
+EndMacro
+
 Macro "Volume Adjustment"
 
   RunMacro("Copy Highway Network")
@@ -68,17 +74,17 @@ Macro "Kyle's Macro"
   // "AB FACTYPE" or "BA FACTYPE" will be treated as a centroid.
   // Other facility types could be included - for example, you
   // may want to smooth out local street loading.
-  a_type_fields = {"AB FACTYPE", "BA FACTYPE"}
-  a_type_values = {12}
+  a_type_fields = {"[AB FACTYPE]", "[BA FACTYPE]"}
+  a_type_values = {12, 197}
   
-  // Create selection set and get link IDs
+  // Create selection set of centroids
   SetLayer(llyr)
   qry = "Select * where"
   for f = 1 to a_type_fields.length do
     field = a_type_fields[f]
     
     for v = 1 to a_type_values.length do
-      value = a_type_values[c]
+      value = a_type_values[v]
       
       if TypeOf(value) = "string" then value = "'" + value + "'"
       else value = String(value)
@@ -87,16 +93,22 @@ Macro "Kyle's Macro"
       else qry = qry + " or " + field + " = " + value
     end
   end
+  cc_set = "centroid connectors"
   SelectByQuery(cc_set, "several", qry)
   
-  // Classify all nodes on network
-  RunMacro("Classify Nodes")
-  
-  // Create a set of midblock links
+  // Classify all nodes on network into centroid, intersection, and 
+  // midblock selection sets
+  {centroid_node_set, intersection_node_set, midblock_node_set} = 
+    RunMacro("Classify Nodes", llyr, cc_set)
+
+  // Create a set of midblock links. Select all links connected to midblock
+  // nodes that are not members of the centroid connector set.
   SetLayer(llyr)
-  midblock_link_set = CreateSet("midblock")
-  SelectByNodes(midblock_link_set, Several, midblock_node_set)
-  
+  midblock_link_set = CreateSet("midblock links")
+  opts = null
+  opts.[Source Not] = cc_set
+  SelectByNodes(midblock_link_set, Several, midblock_node_set, opts)
+Throw()  
   // Adjust block volumes until all midblock nodes have been processed
   ntp = GetSetCount(midblock_node_set)
   while ntp > 0 do
@@ -116,6 +128,7 @@ EndMacro
 
 /*
 Classifies nodes as either a centroid, midblock, or intersection.
+Places them into selection sets of the same name.
 
 Input
   llyr
@@ -132,33 +145,43 @@ Macro "Classify Nodes" (llyr, cc_set)
   nlyr = GetNodeLayer(llyr)
   v_nid = GetDataVector(nlyr + "|", "ID", )
   
+  // Create node selection sets
   SetLayer(nlyr)
+  centroid_node_set = CreateSet("centroid nodes")
+  intersection_node_set = CreateSet("intersection nodes")
+  midblock_node_set = CreateSet("midblock nodes")
+  
   for n = 1 to v_nid.length do
     nid = v_nid[n]
     
     // Set node as current record and get connected links
+    SetLayer(nlyr)
     rh = ID2RH(nid)
-    SetRecord(rh)
+    SetRecord(nlyr, rh)
     a_links = GetNodeLinks(nid)
     
     // Array of CC and non-CC link IDs connected to the node
-    a_cc = 0
-    a_non_cc = 0
+    SetLayer(llyr)
+    cc = 0
+    non_cc = 0
     for l = 1 to a_links.length do
       lid = a_links[l]
       
       rh = ID2RH(lid)
-      if IsMember(cc_set) then cc = cc + 1
+      if IsMember(cc_set, rh) then cc = cc + 1
       else non_cc = non_cc + 1
     end
     
     // Classify the node based on non-centroid count
     // Add them to the appropriate selection set
-    if non_cc.length = 0 SelectRecord(centroid_node_set)
-    else if non_cc.length = 1 then SelectRecord(intersection_node_set)
-    else if non_cc.length = 2 then SelectRecord(midblock_node_set)
-    else if non_cc.length > 2 then SelectRecord(intersection_node_set)
+    SetLayer(nlyr)
+    if non_cc = 0 then SelectRecord(centroid_node_set)
+    else if non_cc = 1 then SelectRecord(intersection_node_set)
+    else if non_cc = 2 then SelectRecord(midblock_node_set)
+    else if non_cc > 2 then SelectRecord(intersection_node_set)
   end
+  
+  return({centroid_node_set, intersection_node_set, midblock_node_set})
 EndMacro
 
 /*
@@ -199,5 +222,6 @@ EndMacro
 
 Macro "Create Block Set" (llyr, nlyr, nid)
 
-  link_block_set = CreateSet(llyr, "block links")
+  SetLayer(llyr)
+  link_block_set = CreateSet("block links")
 EndMacro
