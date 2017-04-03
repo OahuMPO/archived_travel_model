@@ -25,7 +25,7 @@ Macro "Volume Adjustment"
 
   RunMacro("Copy Highway Network")
   RunMacro("Yinan's Macro")
-  RunMacro("Kyle's Macro")
+  RunMacro("Point Loading Adjustment")
 EndMacro
 
 /*
@@ -62,7 +62,7 @@ Volume adjustment based on centroid loading.
 SelectByLinks() / SelectByNodes()
 */
 
-Macro "Kyle's Macro"
+Macro "Point Loading Adjustment"
   shared hwy_dbd
   
   // Create a map of the highwa network
@@ -108,20 +108,27 @@ Macro "Kyle's Macro"
   opts = null
   opts.[Source Not] = cc_set
   SelectByNodes(midblock_link_set, Several, midblock_node_set, opts)
-Throw()  
-  // Adjust block volumes until all midblock nodes have been processed
-  ntp = GetSetCount(midblock_node_set)
-  while ntp > 0 do
+
+  // Create continuous blocks of midblock links and smooth volumes.
+  // Do this until no more midblock links remain.
+  SetLayer(llyr)
+  num_mbl = GetSetCount(midblock_link_set)
+  while num_mbl > 0 do
     
-    // create set of midblock nodes that haven't been processed
-    not_processed = SetInvert("not processed", processed_node_set)
-    target_set = SetAND("target", {midblock_node_set, not_processed})
-    a_nid = GetSetIDs(nlyr + "|" + target_set)
+    // Get the next midblock link id to start creating a block from
+    a_lid = GetSetIDs(midblock_link_set)
+    lid = a_lid[1]
     
-    nid = a_nid[1]
-    RunMacro("Create Block Set", llyr, nlyr, nid)
-  
-    ntp = GetSetCount(midblock_node_set) - GetSetCount(processed_node_set)
+    // Group all continuous midblock links into a block set
+    // (removing them from midblock link set as you do so)
+    block_set = CreateSet("block set")
+    RunMacro(
+      "Create Block", llyr, lid, midblock_link_set,
+      block_set, midblock_node_set
+    )
+    Throw()
+    
+    num_mbl = GetSetCount(midblock_link_set)
   end
   
 EndMacro
@@ -185,43 +192,82 @@ Macro "Classify Nodes" (llyr, cc_set)
 EndMacro
 
 /*
-Macro that defines a block by recursively calling "Classify Node".
+Recursive macro. Takes a starting link ID and adds it and all other connected
+midblock_link_set links into block_set.
 
-Input
-  llyr
-    String
-    Name of link layer
-  set
-    String
-    Name of centroid selection set
-  nid
-    Integer
-    Node ID
+Inputs
+llyr
+  String
+  Name of line layer
+  
+lid
+  Integer
+  Link ID
+  
+midblock_link_set
+  String
+  Set name of midblock links
 
-Returns
-  An array of link IDs that make up a block. A block is defined as the links
-  between two "intersection"-class nodes.
+block_set
+  String
+  Set name of the empty block_set to populate
+
+midblock_node_set
+  String
+  Set name of midblock nodes
 */
 
-Macro "Define Block" (llyr, set, nid)
-
-  {class, a_non_cc} = RunMacro("Classify Node", llyr, cc_set, nid)
+Macro "Create Block" (llyr, lid, midblock_link_set,
+  block_set, midblock_node_set)
   
-  if class = "midblock" then do
-    for l = 1 to a_non_cc.length do
-      lid = a_non_cc[l]
-      
-      v_nid = GetEndpoints()
+  nlyr = GetNodeLayer(llyr)
+  
+  // Move link (lid) from midblock set to block set
+  rh = ID2RH(lid)
+  SetRecord(llyr, rh)
+  SelectRecord(block_set)
+  UnselectRecord(midblock_link_set)
+  
+  // Determine which of the link's nodes are midblock nodes
+  SetLayer(llyr)
+  a_nid2 = GetEndpoints(lid)
+  SetLayer(nlyr)
+  temp_set = CreateSet("lid's nodes")
+  for n = 1 to a_nid2.length do
+    nid = a_nid2[n]
+    rh = ID2RH(nid)
+    if IsMember(midblock_node_set, rh) then a_nid = a_nid + {nid}
+  end
+
+  // For each of the link's midblock nodes, create a set of all connected links
+  for n = 1 to a_nid.length do
+    a_connected_links = a_connected_links + GetNodeLinks(a_nid[n])
+  end
+  SetLayer(llyr)
+  connected_set = CreateSet("connected links")
+  for c = 1 to a_connected_links.length do
+    clid = a_connected_links[c]
+    rh = ID2RH(clid)
+    SetRecord(llyr, rh)
+    SelectRecord(connected_set)
+  end
+  
+  // Intersect the two selection sets to determine connected midblock links
+  SetLayer(llyr)
+  connected_mb_set = "connected midblock links"
+  n = SetAND(connected_mb_set, {connected_set, midblock_link_set})
+  
+  // If a connected midblock link is found, run "Create Block" on it, too.
+  // This will recursively run until all connected midblock links are in
+  // the same block set.
+  if n > 0 then do
+    a_next_links = GetSetIDs(connected_mb_set)
+    for nl = 1 to a_next_links.length do
+      nlid = a_next_links[nl]
+      RunMacro(
+        "Create Block", llyr, nlid, midblock_link_set,
+        block_set, midblock_node_set
+      )
     end
   end
-EndMacro
-
-/*
-
-*/
-
-Macro "Create Block Set" (llyr, nlyr, nid)
-
-  SetLayer(llyr)
-  link_block_set = CreateSet("block links")
 EndMacro
