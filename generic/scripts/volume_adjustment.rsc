@@ -126,7 +126,30 @@ Macro "Point Loading Adjustment"
       "Create Block", llyr, lid, midblock_link_set,
       block_set, midblock_node_set
     )
-    Throw()
+    
+    // Adjust volume fields of the links in block set. Calculate block-level
+    // vmt and then distribute that to each link according to it's length.
+    a_fields = {"Length", "AB_FLOW_DAILY", "BA_FLOW_DAILY", "TOT_FLOW_DAILY"}
+    df = CreateObject("df")
+    opts = null
+    opts.view = llyr
+    opts.set = block_set
+    opts.fields = a_fields
+    df.read_view(opts)
+    block_length = VectorStatistic(df.tbl.("[Length]"), "sum", )
+    
+    for f = 2 to a_fields.length do
+      field = a_fields[f]
+      
+      df.mutate("vmt", df.tbl.("[Length]") * df.tbl.(field))
+      block_vmt = VectorStatistic(df.tbl.vmt, "sum", )
+      df.mutate("pct", df.tbl.("[Length]") / block_length)
+      df.mutate("pct_vmt", df.tbl.pct * block_vmt)
+      df.mutate(field, df.tbl.pct_vmt / df.tbl.("[Length]"))
+      temp = df.copy()
+      temp.select(field)
+      temp.update_view(llyr, block_set)
+    end
     
     num_mbl = GetSetCount(midblock_link_set)
   end
