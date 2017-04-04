@@ -167,6 +167,8 @@ Macro "Point Loading Adjustment"
       df.mutate(field, df.tbl.pct_vmt / df.tbl.("[Length]"))
       temp = df.copy()
       temp.select(field)
+      new_field = field + "_adj"
+      temp.rename(field, new_field)
       temp.update_view(llyr, block_set)
     end
     
