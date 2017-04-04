@@ -15,6 +15,11 @@ where traffic loads. The second adjustment is to spread the volume out around
 the centroid connection. Total VMT is maintained.
 */
 
+/*
+Simple test macro for the scripts on this page.
+Point path[2] to the scenario you want to test adjustment on.
+*/
+
 Macro "test va"
   shared path
   path = {, "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\test"}
@@ -23,9 +28,17 @@ EndMacro
 
 Macro "Volume Adjustment"
 
+  // Create progress bar
+  CreateProgressBar("temp", "true")
+  UpdateProgressBar("Volume Adjustment", 0)
+  CreateProgressBar("temp", "true")
+
   RunMacro("Copy Highway Network")
   RunMacro("Yinan's Macro")
   RunMacro("Point Loading Adjustment")
+  
+  DestroyProgressBar()
+  DestroyProgressBar()
 EndMacro
 
 /*
@@ -36,6 +49,7 @@ shares info with other macros.
 
 Macro "Copy Highway Network"
   shared path, hwy_dbd
+  UpdateProgressBar("Copy Highway Network", 0)
   
   scen_dir = path[2]
   orig_hwy = scen_dir + "/inputs/network/Scenario Line Layer.dbd"
@@ -58,16 +72,16 @@ EndMacro
 
 /*
 Volume adjustment based on centroid loading.
-
-SelectByLinks() / SelectByNodes()
 */
 
 Macro "Point Loading Adjustment"
   shared hwy_dbd
+  UpdateProgressBar("Point Loading Adjustment", 0)
   
-  // Create a map of the highwa network
+  // Create a map of the highway network
   map = RunMacro("G30 new map", hwy_dbd)
   {nlyr, llyr} = GetDBLayers(hwy_dbd)
+  MinimizeWindow(GetWindowName())
   
   // Define centroids.
   // The arrays used below mean that any link with a 12 in either
@@ -113,7 +127,12 @@ Macro "Point Loading Adjustment"
   // Do this until no more midblock links remain.
   SetLayer(llyr)
   num_mbl = GetSetCount(midblock_link_set)
+  orig_num = num_mbl
   while num_mbl > 0 do
+    UpdateProgressBar(
+      "Midblock Links to Process: " + String(num_mbl),
+      round((orig_num - num_mbl) / orig_num * 100, 0)
+    )
     
     // Get the next midblock link id to start creating a block from
     a_lid = GetSetIDs(midblock_link_set)
@@ -154,6 +173,7 @@ Macro "Point Loading Adjustment"
     num_mbl = GetSetCount(midblock_link_set)
   end
   
+  RunMacro("Close All")
 EndMacro
 
 /*
@@ -171,6 +191,7 @@ Input
 
 Macro "Classify Nodes" (llyr, cc_set)
 
+  UpdateProgressBar("Classify Nodes", 0)
   SetLayer(llyr)
   nlyr = GetNodeLayer(llyr)
   v_nid = GetDataVector(nlyr + "|", "ID", )
@@ -183,6 +204,11 @@ Macro "Classify Nodes" (llyr, cc_set)
   
   for n = 1 to v_nid.length do
     nid = v_nid[n]
+    cancel = UpdateProgressBar(
+      "Classify Node " + String(n) + " of " + String(v_nid.length),
+      round(n / v_nid.length * 100, 0)
+    )
+    if cancel then Throw("Cancelled")
     
     // Set node as current record and get connected links
     SetLayer(nlyr)
@@ -210,7 +236,7 @@ Macro "Classify Nodes" (llyr, cc_set)
     else if non_cc = 2 then SelectRecord(midblock_node_set)
     else if non_cc > 2 then SelectRecord(intersection_node_set)
   end
-  
+
   return({centroid_node_set, intersection_node_set, midblock_node_set})
 EndMacro
 
