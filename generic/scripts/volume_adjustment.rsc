@@ -22,21 +22,31 @@ Point path[2] to the scenario you want to test adjustment on.
 
 Macro "test va"
   shared path
-  path = {, "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\test"}
+  path = {, "K:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\test"}
   RunMacro("Volume Adjustment")
 EndMacro
 
 Macro "Volume Adjustment"
+  shared va_dir
 
   // Create progress bar
   CreateProgressBar("temp", "true")
   UpdateProgressBar("Volume Adjustment", 0)
   CreateProgressBar("temp", "true")
 
+  // Determine UI location, va dir
+  uiDBD = GetInterface()
+  a_path = SplitPath(uiDBD)
+  ui_dir = a_path[1] + a_path[2]
+  va_dir = "K:\\projects\\Honolulu\\Version6\\OMPORepo\\generic\\volume_adjustment"
+  //
+  //ui_dir + "/../volume_adjustment"
+  va_dir = RunMacro("Resolve Path", va_dir)
+
   RunMacro("Copy Highway Network")
   RunMacro("Yinan's Macro")
   RunMacro("Point Loading Adjustment")
-  
+
   DestroyProgressBar()
   DestroyProgressBar()
 EndMacro
@@ -50,7 +60,7 @@ shares info with other macros.
 Macro "Copy Highway Network"
   shared path, hwy_dbd
   UpdateProgressBar("Copy Highway Network", 0)
-  
+
   scen_dir = path[2]
   orig_hwy = scen_dir + "/inputs/network/Scenario Line Layer.dbd"
   output_dir = scen_dir + "/reports/volume_adjustment"
@@ -65,9 +75,31 @@ Volume adjustment based on base year model performance.
 */
 
 Macro "Yinan's Macro"
-  shared path, hwy_dbd
-  
+  shared path, hwy_dbd, va_dir
+
   scen_dir = path[2]
+
+  volumes = {"AB_FLOW_DAILY", "BA_FLOW_DAILY", "TOT_FLOW_DAILY"}
+  vw_base = OpenTable("base_link", "FFB", {scen_dir + "/inputs/network/Scenario Line Layer.bin"},)
+  df = CreateObject("df")
+  opts = null
+  opts.view = vw_base
+  df.read_view(opts)
+  df.mutate("FACTYPE", if df.tbl.("[AB FACTYPE]")>0 then df.tbl.("[AB FACTYPE]") else df.tbl.("[BA FACTYPE]") )
+  temp = df.copy()
+  temp.update_view(vw_base)
+
+  vw_lookup = OpenTable("lookup", "CSV", {va_dir + "/volume_adjustment.csv"},)
+
+  jv = JoinViewsMulti("jv", {"base_link.FACTYPE", "base_link.AB_ATYPE"}, {"lookup.FT", "lookup.AT"}, )
+
+  a_vecs = GetDataVectors(jv + "|", volumes+{"PCT"},)
+  a_vecs.filter("a_vecs.(PCT) != null")
+  for i = 1 to volumes.length do
+      a_vecs.(volumes[i]) = a_vecs.(volumes[i]) * a_vecs.PCT
+  end
+  SetDataVectors(jv + "|", a_vecs,)
+
 EndMacro
 
 /*
@@ -77,12 +109,12 @@ Volume adjustment based on centroid loading.
 Macro "Point Loading Adjustment"
   shared hwy_dbd
   UpdateProgressBar("Point Loading Adjustment", 0)
-  
+
   // Create a map of the highway network
   map = RunMacro("G30 new map", hwy_dbd)
   {nlyr, llyr} = GetDBLayers(hwy_dbd)
   MinimizeWindow(GetWindowName())
-  
+
   // Define centroids.
   // The arrays used below mean that any link with a 12 in either
   // "AB FACTYPE" or "BA FACTYPE" will be treated as a centroid.
@@ -90,29 +122,29 @@ Macro "Point Loading Adjustment"
   // may want to smooth out local street loading.
   a_type_fields = {"[AB FACTYPE]", "[BA FACTYPE]"}
   a_type_values = {12, 197}
-  
+
   // Create selection set of centroids
   SetLayer(llyr)
   qry = "Select * where"
   for f = 1 to a_type_fields.length do
     field = a_type_fields[f]
-    
+
     for v = 1 to a_type_values.length do
       value = a_type_values[v]
-      
+
       if TypeOf(value) = "string" then value = "'" + value + "'"
       else value = String(value)
-      
+
       if f + v = 2 then qry = qry + " " + field + " = " + value
       else qry = qry + " or " + field + " = " + value
     end
   end
   cc_set = "centroid connectors"
   SelectByQuery(cc_set, "several", qry)
-  
-  // Classify all nodes on network into centroid, intersection, and 
+
+  // Classify all nodes on network into centroid, intersection, and
   // midblock selection sets
-  {centroid_node_set, intersection_node_set, midblock_node_set} = 
+  {centroid_node_set, intersection_node_set, midblock_node_set} =
     RunMacro("Classify Nodes", llyr, cc_set)
 
   // Create a set of midblock links. Select all links connected to midblock
@@ -133,11 +165,11 @@ Macro "Point Loading Adjustment"
       "Midblock Links to Process: " + String(num_mbl),
       round((orig_num - num_mbl) / orig_num * 100, 0)
     )
-    
+
     // Get the next midblock link id to start creating a block from
     a_lid = GetSetIDs(midblock_link_set)
     lid = a_lid[1]
-    
+
     // Group all continuous midblock links into a block set
     // (removing them from midblock link set as you do so)
     block_set = CreateSet("block set")
@@ -145,7 +177,7 @@ Macro "Point Loading Adjustment"
       "Create Block", llyr, lid, midblock_link_set,
       block_set, midblock_node_set
     )
-    
+
     // Adjust volume fields of the links in block set. Calculate block-level
     // vmt and then distribute that to each link according to it's length.
     a_fields = {"Length", "AB_FLOW_DAILY", "BA_FLOW_DAILY", "TOT_FLOW_DAILY"}
@@ -156,10 +188,10 @@ Macro "Point Loading Adjustment"
     opts.fields = a_fields
     df.read_view(opts)
     block_length = VectorStatistic(df.tbl.("[Length]"), "sum", )
-    
+
     for f = 2 to a_fields.length do
       field = a_fields[f]
-      
+
       df.mutate("vmt", df.tbl.("[Length]") * df.tbl.(field))
       block_vmt = VectorStatistic(df.tbl.vmt, "sum", )
       df.mutate("pct", df.tbl.("[Length]") / block_length)
@@ -171,10 +203,10 @@ Macro "Point Loading Adjustment"
       temp.rename(field, new_field)
       temp.update_view(llyr, block_set)
     end
-    
+
     num_mbl = GetSetCount(midblock_link_set)
   end
-  
+
   RunMacro("Close All")
 EndMacro
 
@@ -197,13 +229,13 @@ Macro "Classify Nodes" (llyr, cc_set)
   SetLayer(llyr)
   nlyr = GetNodeLayer(llyr)
   v_nid = GetDataVector(nlyr + "|", "ID", )
-  
+
   // Create node selection sets
   SetLayer(nlyr)
   centroid_node_set = CreateSet("centroid nodes")
   intersection_node_set = CreateSet("intersection nodes")
   midblock_node_set = CreateSet("midblock nodes")
-  
+
   for n = 1 to v_nid.length do
     nid = v_nid[n]
     cancel = UpdateProgressBar(
@@ -211,25 +243,25 @@ Macro "Classify Nodes" (llyr, cc_set)
       round(n / v_nid.length * 100, 0)
     )
     if cancel then Throw("Cancelled")
-    
+
     // Set node as current record and get connected links
     SetLayer(nlyr)
     rh = ID2RH(nid)
     SetRecord(nlyr, rh)
     a_links = GetNodeLinks(nid)
-    
+
     // Array of CC and non-CC link IDs connected to the node
     SetLayer(llyr)
     cc = 0
     non_cc = 0
     for l = 1 to a_links.length do
       lid = a_links[l]
-      
+
       rh = ID2RH(lid)
       if IsMember(cc_set, rh) then cc = cc + 1
       else non_cc = non_cc + 1
     end
-    
+
     // Classify the node based on non-centroid count
     // Add them to the appropriate selection set
     SetLayer(nlyr)
@@ -250,11 +282,11 @@ Inputs
 llyr
   String
   Name of line layer
-  
+
 lid
   Integer
   Link ID
-  
+
 midblock_link_set
   String
   Set name of midblock links
@@ -270,15 +302,15 @@ midblock_node_set
 
 Macro "Create Block" (llyr, lid, midblock_link_set,
   block_set, midblock_node_set)
-  
+
   nlyr = GetNodeLayer(llyr)
-  
+
   // Move link (lid) from midblock set to block set
   rh = ID2RH(lid)
   SetRecord(llyr, rh)
   SelectRecord(block_set)
   UnselectRecord(midblock_link_set)
-  
+
   // Determine which of the link's nodes are midblock nodes
   SetLayer(llyr)
   a_nid2 = GetEndpoints(lid)
@@ -302,12 +334,12 @@ Macro "Create Block" (llyr, lid, midblock_link_set,
     SetRecord(llyr, rh)
     SelectRecord(connected_set)
   end
-  
+
   // Intersect the two selection sets to determine connected midblock links
   SetLayer(llyr)
   connected_mb_set = "connected midblock links"
   n = SetAND(connected_mb_set, {connected_set, midblock_link_set})
-  
+
   // If a connected midblock link is found, run "Create Block" on it, too.
   // This will recursively run until all connected midblock links are in
   // the same block set.
