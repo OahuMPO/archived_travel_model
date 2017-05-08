@@ -38,9 +38,7 @@ Macro "Volume Adjustment"
   uiDBD = GetInterface()
   a_path = SplitPath(uiDBD)
   ui_dir = a_path[1] + a_path[2]
-  va_dir = "K:\\projects\\Honolulu\\Version6\\OMPORepo\\generic\\volume_adjustment"
-  //
-  //ui_dir + "/../volume_adjustment"
+  va_dir = ui_dir + "/../volume_adjustment"
   va_dir = RunMacro("Resolve Path", va_dir)
 
   RunMacro("Copy Highway Network")
