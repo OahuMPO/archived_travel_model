@@ -80,26 +80,46 @@ Macro "Yinan's Macro"
   scen_dir = path[2]
 
   volumes = {"AB_FLOW_DAILY", "BA_FLOW_DAILY", "TOT_FLOW_DAILY"}
-  vw_base = OpenTable("base_link", "FFB", {scen_dir + "/inputs/network/Scenario Line Layer.bin"},)
+  new_fields = V2A(A2V(volumes) + "_adj")
+  {nlyr, llyr} = GetDBLayers(hwy_dbd)
+  AddLayerToWorkspace(llyr, hwy_dbd, llyr)
+
+  // Add new fields to hold the adjusted volumes
+  for v = 1 to new_fields.length do
+    field = new_fields[v]
+
+    a_field = {{
+      field, "Real", 10, 2,,,,
+      "Model volume adjusted based on base|" +
+      "year performance and point loading adjustment"
+    }}
+    RunMacro("Add Fields", llyr, a_field)
+  end
+
   df = CreateObject("df")
   opts = null
-  opts.view = vw_base
+  opts.view = llyr
   df.read_view(opts)
-  df.mutate("FACTYPE", if df.tbl.("[AB FACTYPE]")>0 then df.tbl.("[AB FACTYPE]") else df.tbl.("[BA FACTYPE]") )
+  df.mutate("FACTYPE", if df.tbl.("[AB FACTYPE]")>0
+    then df.tbl.("[AB FACTYPE]") else df.tbl.("[BA FACTYPE]") )
   temp = df.copy()
-  temp.update_view(vw_base)
+  temp.select("FACTYPE")
+  temp.update_view(llyr)
 
   vw_lookup = OpenTable("lookup", "CSV", {va_dir + "/volume_adjustment.csv"},)
 
-  jv = JoinViewsMulti("jv", {"base_link.FACTYPE", "base_link.AB_ATYPE"}, {"lookup.FT", "lookup.AT"}, )
+  jv = JoinViewsMulti("jv", {llyr + ".FACTYPE", llyr + ".AB_ATYPE"}, {"lookup.FT", "lookup.AT"}, )
 
-  a_vecs = GetDataVectors(jv + "|", volumes+{"PCT"},)
-  a_vecs.filter("a_vecs.(PCT) != null")
-  for i = 1 to volumes.length do
-      a_vecs.(volumes[i]) = a_vecs.(volumes[i]) * a_vecs.PCT
+  SetView(jv)
+  SelectByQuery("not_null", "several", "Select * where PCT != null")
+  cols = volumes + {"PCT"}
+  a_vecs = GetDataVectors(jv + "|not_null", cols,)
+  for i = 1 to cols.length - 1 do
+    tbl.(cols[i] + "_adj") = a_vecs[i] * a_vecs[a_vecs.length]
   end
-  SetDataVectors(jv + "|", a_vecs,)
+  SetDataVectors(jv + "|not_null", tbl, )
 
+  RunMacro("Close All")
 EndMacro
 
 /*
@@ -161,10 +181,15 @@ Macro "Point Loading Adjustment"
   num_mbl = GetSetCount(midblock_link_set)
   orig_num = num_mbl
   while num_mbl > 0 do
-    UpdateProgressBar(
+    cancel = UpdateProgressBar(
       "Midblock Links to Process: " + String(num_mbl),
       round((orig_num - num_mbl) / orig_num * 100, 0)
     )
+    if cancel then do
+      RunMacro("Close All")
+      RunMacro("Destroy Progress Bars")
+      Throw("User pressed cancel")
+    end
 
     // Get the next midblock link id to start creating a block from
     a_lid = GetSetIDs(midblock_link_set)
@@ -178,9 +203,11 @@ Macro "Point Loading Adjustment"
       block_set, midblock_node_set
     )
 
-    // Adjust volume fields of the links in block set. Calculate block-level
-    // vmt and then distribute that to each link according to it's length.
-    a_fields = {"Length", "AB_FLOW_DAILY", "BA_FLOW_DAILY", "TOT_FLOW_DAILY"}
+    // Volume fields are first adjusted based on base year performance. They are
+    // stored in the "_adj" field. Further adjust volume fields of the links in
+    // block set. Calculate block-level vmt and then distribute that to each
+    //link according to it's length.
+    a_fields = {"Length", "AB_FLOW_DAILY_adj", "BA_FLOW_DAILY_adj", "TOT_FLOW_DAILY_adj"}
     df = CreateObject("df")
     opts = null
     opts.view = llyr
@@ -199,8 +226,6 @@ Macro "Point Loading Adjustment"
       df.mutate(field, df.tbl.pct_vmt / df.tbl.("[Length]"))
       temp = df.copy()
       temp.select(field)
-      new_field = field + "_adj"
-      temp.rename(field, new_field)
       temp.update_view(llyr, block_set)
     end
 
