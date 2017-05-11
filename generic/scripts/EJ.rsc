@@ -90,11 +90,11 @@ EndMacro
 
 Macro "EJ Analysis"
 
-  RunMacro("Create EJ Trip Table")
-  RunMacro("EJ CSV to MTX")
-  RunMacro("EJ Assignment")
-  RunMacro("EJ Mapping")
-  RunMacro("Summarize HH by Income by TAZ")
+  //RunMacro("Create EJ Trip Table")
+//  RunMacro("EJ CSV to MTX")
+//  RunMacro("EJ Assignment")
+//  RunMacro("EJ Mapping")
+//  RunMacro("Summarize HH by Income by TAZ")
   RunMacro("Summarize Persons by Race by TAZ")
 EndMacro
 
@@ -603,17 +603,14 @@ Macro "Summarize Persons by Race by TAZ" (scen_dir)
   // Spread by Race
   temp_df = person_df.copy()
   temp_df.spread("race", "POP", 0)
-  v_races = race_df.unique("Value")
+  v_races = {"Asian", "HIorPI", "Other", "TwoPlus", "White"}
+  //race_df.unique("Value")
 
   temp_df.group_by("household_zone")
   agg = null
-  agg.Asian = {"sum"}
-  agg.Black = {"sum"}
-  agg.AIorAN = {"sum"}
-  agg.HIorPI = {"sum"}
-  agg.Other = {"sum"}
-  agg.TwoPlus = {"sum"}
-  agg.White = {"sum"}
+  for i = 1 to v_races.length do
+    agg.(v_races[i]) = {"sum"}
+    end
   temp_df.summarize(agg)
 
   // Group by TAZ
@@ -623,7 +620,15 @@ Macro "Summarize Persons by Race by TAZ" (scen_dir)
   person_df.summarize(agg)
 
   person_df.left_join(temp_df, "household_zone", "household_zone")
+
+  for i = 1 to v_races.length do
+  race = "sum" + "_" + v_races[i]
   person_df.mutate(
+    (race + "." + "pct"),
+    person_df.tbl.(race)/person_df.tbl.sum_POP
+  )
+  end
+/*  person_df.mutate(
   "Asian.pct",
   person_df.tbl.sum_Asian/person_df.tbl.sum_POP
   )
@@ -651,7 +656,7 @@ Macro "Summarize Persons by Race by TAZ" (scen_dir)
   "White.pct",
   person_df.tbl.sum_White/person_df.tbl.sum_POP
   )
-
+*/
 //  for i = 1 to v_races.length do
 //    race = "sum" + "_" + v_races[i]
 
@@ -663,12 +668,12 @@ Macro "Summarize Persons by Race by TAZ" (scen_dir)
 
   // write final table to csv
   v_races_pct = v_races
-  for i = 2 to v_races.length do
+  for i = 1 to v_races.length do
     v_races_pct[i] = v_races[i]+"."+"pct"
   end
-  v_races_pct[1] = "household_zone"
+  new_fields = "household_zone", v_races_pct
   person_df.select(
-  v_races_pct
+  new_fields
   )
   person_df.write_csv(output_dir + "/pop_race.csv")
 
