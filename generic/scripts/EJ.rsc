@@ -1,5 +1,15 @@
 /*
+This rsc file contains two different tools:
 
+The first is the EJ dialog box utility. It is a post-process procedures for
+viewing highway volumes and trip origins by race and income. It is not run
+automatically for every model run.
+
+The second is a summary script that creates a travel time metric originally
+requested by Christine Feiholz to support the official EJ process. This script
+is run automatically for each scenario and creates a shapefile of travel times.
+These travel times identify the auto and transit time required from every zone
+to a set number of destination zones.
 */
 
 dBox "EJ"
@@ -514,4 +524,37 @@ Macro "EJ Map Helper" (mode, od, ej, a_cats)
   RedrawMap(map)
   SaveMap(map, output_dir + "/map_" + mode + "_by_" + ej + ".map")
   CloseMap(map)
+EndMacro
+
+/*
+Creates a travel time metric originally requested by Christine Feiholz to
+support the official EJ process. This script is run automatically for each
+scenario and creates a shapefile of travel times. These travel times identify
+the auto and transit time required from every zone to a set number of
+destination zones.
+*/
+
+Macro "EJ Trav Time Shapefile"
+  shared path
+  UpdateProgressBar("EJ Trav Time Shapefile", 0)
+
+  scen_dir = path[2]
+  ej_dir = scen_dir + "/../../generic/ej"
+  ej_dir = RunMacro("Resolve Path", ej_dir)
+  output_dir = scen_dir + "/reports/ej"
+  
+  // Create a copy of the TAZ dbd and add to workspace
+  taz_in = scen_dir + "/inputs/taz/Scenario TAZ Layer.dbd"
+  taz_dbd = output_dir + "/ej_travel_times.dbd"
+  CopyDatabase(taz_in, taz_dbd)
+  {tlyr} = GetDBLayers(taz_dbd)
+  AddLayerToWorkspace(tlyr, taz_dbd, tlyr)
+  
+  // Open the equivalency table
+  
+  // Highway travel times
+  mtx_file = scen_dir + "/outputs/hwyAM_sov.mtx"
+  mtx = OpenMatrix(mtx_file, )
+  
+  
 EndMacro
