@@ -628,43 +628,6 @@ Macro "Summarize Persons by Race by TAZ" (scen_dir)
     person_df.tbl.(race)/person_df.tbl.sum_POP
   )
   end
-/*  person_df.mutate(
-  "Asian.pct",
-  person_df.tbl.sum_Asian/person_df.tbl.sum_POP
-  )
-  person_df.mutate(
-  "Black.pct",
-  person_df.tbl.sum_Black/person_df.tbl.sum_POP
-  )
-  person_df.mutate(
-  "AIorAN.pct",
-  person_df.tbl.sum_AIorAN/person_df.tbl.sum_POP
-  )
-  person_df.mutate(
-  "HIorPI.pct",
-  person_df.tbl.sum_HIorPI/person_df.tbl.sum_POP
-  )
-  person_df.mutate(
-  "Other.pct",
-  person_df.tbl.sum_Other/person_df.tbl.sum_POP
-  )
-  person_df.mutate(
-  "TwoPlus.pct",
-  person_df.tbl.sum_TwoPlus/person_df.tbl.sum_POP
-  )
-  person_df.mutate(
-  "White.pct",
-  person_df.tbl.sum_White/person_df.tbl.sum_POP
-  )
-*/
-//  for i = 1 to v_races.length do
-//    race = "sum" + "_" + v_races[i]
-
-//    person_df.mutate(
-//    (race + "." + "pct"),
-//    person_df.tbl.race/person_df.tbl.sum_POP
-//    )
-//  end
 
   // write final table to csv
   v_races_pct = v_races
