@@ -638,7 +638,7 @@ Macro "Summarize Persons by Race by TAZ" (scen_dir)
   person_df.select(
   new_fields
   )
-  person_df.write_csv(output_dir + "/pop_race.csv")
+  person_df.write_csv(output_dir + "/population_by_race_and_taz.csv")
 
 
 EndMacro
