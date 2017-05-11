@@ -90,11 +90,11 @@ EndMacro
 
 Macro "EJ Analysis"
 
-  //RunMacro("Create EJ Trip Table")
-//  RunMacro("EJ CSV to MTX")
-//  RunMacro("EJ Assignment")
-//  RunMacro("EJ Mapping")
-//  RunMacro("Summarize HH by Income by TAZ")
+  RunMacro("Create EJ Trip Table")
+  RunMacro("EJ CSV to MTX")
+  RunMacro("EJ Assignment")
+  RunMacro("EJ Mapping")
+  RunMacro("Summarize HH by Income by TAZ")
   RunMacro("Summarize Persons by Race by TAZ")
 EndMacro
 
