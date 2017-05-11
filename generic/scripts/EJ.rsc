@@ -90,10 +90,12 @@ EndMacro
 
 Macro "EJ Analysis"
 
-  RunMacro("Create EJ Trip Table")
-  RunMacro("EJ CSV to MTX")
-  RunMacro("EJ Assignment")
-  RunMacro("EJ Mapping")
+  //RunMacro("Create EJ Trip Table")
+  //RunMacro("EJ CSV to MTX")
+  //RunMacro("EJ Assignment")
+  //RunMacro("EJ Mapping")
+  //RunMacro("Summarize HH by Income by TAZ")
+  RunMacro("Summarize Persons by Race by TAZ")
 EndMacro
 
 /*
@@ -520,7 +522,7 @@ Macro "Summarize HH by Income by TAZ" (scen_dir)
   shared scen_dir, ej_dir, output_dir
 
   // Read in the households csv
-  a_fields = {"household_id", "income"}
+  a_fields = {"household_id", "household_zone", "income"}
   house_df = CreateObject("df")
   house_df.read_csv(scen_dir + "/inputs/taz/households.csv", a_fields)
 
@@ -534,11 +536,11 @@ Macro "Summarize HH by Income by TAZ" (scen_dir)
   house_df.filter("income <> null")
 
   // Spread by Income
-  house_df.mutate("HH",1)
-  house_df.spread(IncGroup, "HH", 0)
+  house_df.mutate("HH", house_df.tbl.income*0 + 1)
+  house_df.spread("IncGroup", "HH", 0)
 
   // Group by TAZ
-  house_df.group_by(household_zone)
+  house_df.group_by("household_zone")
   agg = null
   agg.Low = {"sum"}
   agg.NotLow = {"sum"}
@@ -547,22 +549,23 @@ Macro "Summarize HH by Income by TAZ" (scen_dir)
   // Calculate percentages
   house_df.mutate(
   "total",
-  house_df.tbl.Low + house_df.tbl.NotLow
+  house_df.tbl.sum_Low + house_df.tbl.sum_NotLow
   )
   house_df.mutate(
   "Low.pct",
-  house_df.tbl.Low/house_df.tbl.total
+  house_df.tbl.sum_Low/house_df.tbl.total
   )
   house_df.mutate(
   "NotLow.pct",
-  house_df.tbl.NotLow/house_df.tbl.total
+  house_df.tbl.sum_NotLow/house_df.tbl.total
   )
 
   // write final table to csv
   house_df.select(
-  "household_zone", "Low.pct", "NotLow.pct"
+  "household_zone", "[Low.pct]", "[NotLow.pct]"
   )
   house_df.write_csv(output_dir + "/hh_income.csv")
+
 
 EndMacro
 
@@ -571,7 +574,7 @@ Macro "Summarize Persons by Race by TAZ" (scen_dir)
   shared scen_dir, ej_dir, output_dir
 
   // Read in the households csv
-  a_fields = {"household_id", "income"}
+  a_fields = {"household_id", "household_zone", "income"}
   house_df = CreateObject("df")
   house_df.read_csv(scen_dir + "/inputs/taz/households.csv", a_fields)
 
@@ -595,46 +598,77 @@ Macro "Summarize Persons by Race by TAZ" (scen_dir)
   // Join the race description table
   person_df.left_join(race_df, "race_num", "Race")
   person_df.rename("Value", "race")
+  person_df.mutate("POP", person_df.tbl.income*0 + 1)
 
   // Spread by Race
-  person_df.mutate("POP",1)
-  person_df.spread(race, "POP", 0)
+  temp_df = person_df.copy()
+  temp_df.spread("race", "POP", 0)
+  v_races = race_df.unique("Value")
+
+  temp_df.group_by("household_zone")
+  agg = null
+  agg.Asian = {"sum"}
+  agg.Black = {"sum"}
+  agg.AIorAN = {"sum"}
+  agg.HIorPI = {"sum"}
+  agg.Other = {"sum"}
+  agg.TwoPlus = {"sum"}
+  agg.White = {"sum"}
+  temp_df.summarize(agg)
 
   // Group by TAZ
-  person_df.group_by(household_zone)
+  person_df.group_by("household_zone")
   agg = null
   agg.POP = {"sum"}
   person_df.summarize(agg)
 
-  // Calculate percentages
-  temp_df = person_df.copy()
-  v_races = race_df.unique("Value")
-  temp_df.gather(
-  v_races, RACE, POP
-  )
-  temp_df.group_by(household_zone)
-  agg = null
-  agg.POP = {"sum"}
-  temp_df.summarize(agg)
-
   person_df.left_join(temp_df, "household_zone", "household_zone")
-  for i = 1 to v_races.length do
-    race = v_races[i]
+  person_df.mutate(
+  "Asian.pct",
+  person_df.tbl.sum_Asian/person_df.tbl.sum_POP
+  )
+  person_df.mutate(
+  "Black.pct",
+  person_df.tbl.sum_Black/person_df.tbl.sum_POP
+  )
+  person_df.mutate(
+  "AIorAN.pct",
+  person_df.tbl.sum_AIorAN/person_df.tbl.sum_POP
+  )
+  person_df.mutate(
+  "HIorPI.pct",
+  person_df.tbl.sum_HIorPI/person_df.tbl.sum_POP
+  )
+  person_df.mutate(
+  "Other.pct",
+  person_df.tbl.sum_Other/person_df.tbl.sum_POP
+  )
+  person_df.mutate(
+  "TwoPlus.pct",
+  person_df.tbl.sum_TwoPlus/person_df.tbl.sum_POP
+  )
+  person_df.mutate(
+  "White.pct",
+  person_df.tbl.sum_White/person_df.tbl.sum_POP
+  )
 
-    person_df.mutate(
-    (race + "." + "pct"),
-    person_df.tbl.(race)/person_df.tbl.sum_POP
-    )
-  end
+//  for i = 1 to v_races.length do
+//    race = "sum" + "_" + v_races[i]
+
+//    person_df.mutate(
+//    (race + "." + "pct"),
+//    person_df.tbl.race/person_df.tbl.sum_POP
+//    )
+//  end
 
   // write final table to csv
   v_races_pct = v_races
-  for i = 1 to v_races.length do
+  for i = 2 to v_races.length do
     v_races_pct[i] = v_races[i]+"."+"pct"
   end
-
+  v_races_pct[1] = "household_zone"
   person_df.select(
-  "household_zone", v_races_pct
+  v_races_pct
   )
   person_df.write_csv(output_dir + "/pop_race.csv")
 
