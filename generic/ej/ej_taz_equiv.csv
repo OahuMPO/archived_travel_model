@@ -1,0 +1,46 @@
+TAZ,TAZ_ID,Name,Type
+64,CHAM,Chaminade,Education
+66,MANOA,UH Manoa,Education
+103,KCC,Kapiolani Community College,Education
+252,HPU,Hawaii Pacific University,Education
+334,HCC,Honolulu Community College,Education
+440,LCC,Leeward Community College,Education
+668,BYU,Brigham Young University,Education
+702,WCC,Windward Community College,Education
+755,HPUKAN,HPU Kaneohe,Education
+122,WAIKI,Waikiki,Employment
+186,MCULLY,McCully,Employment
+242,DWNTWN,Downtown Honolulu,Employment
+333,IWILEI,Iwilei,Employment
+394,PEARL,Airport - Pearl Harbor,Employment
+537,MLANI,Mililani,Employment
+589,KPLEI,Kapolei,Employment
+721,KANOHE,Kaneohe,Employment
+89,LEAHI,Leahi Hospital,Medical
+166,KAPMED,Kapiolani Medical Center,Medical
+220,STRAUB,Straub Hospital,Medical
+224,QUMED,Queens Medical Center,Medical
+296,STFRNS,St. Francis Medical Center,Medical
+300,KUKINI,Kuakini Medical Center,Medical
+362,KAISER,Kaiser Permanente Moanalua,Medical
+363,TRIPLER,Tripler Army Medical Center,Medical
+413,PALIMO,Kapiolani Medical center at Pali Momi,Medical
+519,WAHIWA,Wahiawa General Hospital,Medical
+547,STFRWS,St. Francis Medical Center West,Medical
+635,WAINAE,Waianae Coast Health Center,Medical
+667,KAHUKU,Kahuku Hospital,Medical
+702,STATE,Hawaii State Hospital,Medical
+754,CASTLE,Castle Medical Center,Medical
+11,KOMAR,Koko Marina,Shopping
+97,KAHALA,Kahala Mall,Shopping
+136,ROYHAW,Royal Hawaiian Shopping Center,Shopping
+186,ALAMO,Ala Moana Center,Shopping
+387,MNALUA,Moanalua Shopping Center,Shopping
+413,PRLCTR,Pearlridge Center,Shopping
+64,PRLCTY,Pearl City Shopping Center,Shopping
+433,PRLHGH,Pearl Highlands Center,Shopping
+462,WAIKLE,Waikele Center,Shopping
+490,MNICTR,Mililani Town Center,Shopping
+590,KAPSHP,Kapolei Shopping Center,Shopping
+636,WAIMALL,Waianae Mall,Shopping
+694,WNDMAL,Windward Mall,Shopping

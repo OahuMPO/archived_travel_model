@@ -534,27 +534,75 @@ the auto and transit time required from every zone to a set number of
 destination zones.
 */
 
-Macro "EJ Trav Time Shapefile"
+Macro "EJ Trav Time Table"
   shared path
-  UpdateProgressBar("EJ Trav Time Shapefile", 0)
+  UpdateProgressBar("EJ Trav Time Table", 0)
 
   scen_dir = path[2]
   ej_dir = scen_dir + "/../../generic/ej"
   ej_dir = RunMacro("Resolve Path", ej_dir)
   output_dir = scen_dir + "/reports/ej"
   
-  // Create a copy of the TAZ dbd and add to workspace
-  taz_in = scen_dir + "/inputs/taz/Scenario TAZ Layer.dbd"
-  taz_dbd = output_dir + "/ej_travel_times.dbd"
-  CopyDatabase(taz_in, taz_dbd)
-  {tlyr} = GetDBLayers(taz_dbd)
-  AddLayerToWorkspace(tlyr, taz_dbd, tlyr)
-  
   // Open the equivalency table
+  equiv = CreateObject("df")
+  equiv.read_csv(ej_dir + "/ej_taz_equiv.csv")
   
-  // Highway travel times
-  mtx_file = scen_dir + "/outputs/hwyAM_sov.mtx"
-  mtx = OpenMatrix(mtx_file, )
+  // Loop over highway and transit skim matrices to get times
+  a_mode = {"hwy", "trn"}
+  a_matrices = {"hwyAM_sov.mtx", "transit_wloc_AM.mtx"}
+  final = CreateObject("df") // Final data frame
+  for m = 1 to a_mode.length do
+    mode = a_mode[m]
+    file_name = a_matrices[m]
+    
+    // Open the impedance matrix
+    file = scen_dir + "/outputs/" + file_name
+    mtx = OpenMatrix(file, )
+    a_cores = GetMatrixCoreNames(mtx)
+    core_to_use = a_cores[1]
+    
+    // The first time through, start by collecting the column
+    // of TAZ IDs.
+    cur = CreateMatrixCurrency(mtx, core_to_use, , , )
+    v_ids = GetMatrixRowLabels(cur)
+    cur = null
+    final.mutate("TAZ", v_ids)
+    
+    // If the transit matrix, calculate a total time core
+    if file_name = "transit_wloc_AM.mtx" then do
+      
+      // change core to use and add if needed
+      core_to_use = "total_time"
+      if ArrayPosition(a_cores, {core_to_use}, ) = 0 then do
+        AddMatrixCore(mtx, core_to_use)
+      end
+      
+      // Calculate the total time
+      a_curs = CreateMatrixCurrencies(mtx, , , )
+      a_curs.(core_to_use) := a_curs.[Access Walk Time] +
+        a_curs.[Initial Wait Time] +
+        a_curs.[In-Vehicle Time] +
+        a_curs.[Transfer Wait Time] +
+        a_curs.[Transfer Walk Time] +
+        a_curs.[Dwelling Time]
+    end
+    
+    // Create a currency of the impedance core to use
+    cur = CreateMatrixCurrency(mtx, core_to_use, , , )
+    
+    // Get the matrix column for each TAZ listed in equiv
+    for t = 1 to equiv.nrow() do
+      taz_num = equiv.tbl.TAZ[t]
+      
+      opts = null
+      opts.Column = taz_num
+      v = GetMatrixVector(cur, opts)
+      final.mutate(mode + "_time_to_" + String(taz_num), v)
+    end
   
+  end
   
+  final.write_csv(output_dir + "/ej_travel_times.csv")
+  
+  RunMacro("Close All")
 EndMacro
