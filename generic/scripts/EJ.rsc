@@ -622,22 +622,20 @@ Macro "Summarize Persons by Race by TAZ" (scen_dir)
   person_df.left_join(temp_df, "household_zone", "household_zone")
 
   for i = 1 to v_races.length do
-  race = "sum" + "_" + v_races[i]
-  person_df.mutate(
-    (race + "." + "pct"),
-    person_df.tbl.(race)/person_df.tbl.sum_POP
-  )
+    race = "sum" + "_" + v_races[i]
+    person_df.mutate(
+      (race + "_" + "pct"),
+      person_df.tbl.(race)/person_df.tbl.sum_POP
+    )
   end
 
   // write final table to csv
   v_races_pct = v_races
   for i = 1 to v_races.length do
-    v_races_pct[i] = v_races[i]+"."+"pct"
+    v_races_pct[i] = "sum_" + v_races[i] + "_" + "pct"
   end
-  new_fields = "household_zone", v_races_pct
-  person_df.select(
-  new_fields
-  )
+  new_fields = {"household_zone"} + v_races_pct
+  person_df.select(new_fields)
   person_df.write_csv(output_dir + "/population_by_race_and_taz.csv")
 
 
