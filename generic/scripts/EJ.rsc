@@ -630,12 +630,6 @@ Macro "Summarize Persons by Race by TAZ" (scen_dir)
   end
 
   // write final table to csv
-  v_races_pct = v_races
-  for i = 1 to v_races.length do
-    v_races_pct[i] = "sum_" + v_races[i] + "_" + "pct"
-  end
-  new_fields = {"household_zone"} + v_races_pct
-  person_df.select(new_fields)
   person_df.write_csv(output_dir + "/population_by_race_and_taz.csv")
 
 
