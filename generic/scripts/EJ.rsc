@@ -94,6 +94,8 @@ Macro "EJ Analysis"
   RunMacro("EJ CSV to MTX")
   RunMacro("EJ Assignment")
   RunMacro("EJ Mapping")
+  RunMacro("Summarize HH by Income by TAZ")
+  RunMacro("Summarize Persons by Race by TAZ")
 EndMacro
 
 /*
@@ -514,4 +516,117 @@ Macro "EJ Map Helper" (mode, od, ej, a_cats)
   RedrawMap(map)
   SaveMap(map, output_dir + "/map_" + mode + "_by_" + ej + ".map")
   CloseMap(map)
+EndMacro
+
+Macro "Summarize HH by Income by TAZ" (scen_dir)
+  shared scen_dir, ej_dir, output_dir
+
+  // Read in the households csv
+  a_fields = {"household_id", "household_zone", "income"}
+  house_df = CreateObject("df")
+  house_df.read_csv(scen_dir + "/inputs/taz/households.csv", a_fields)
+
+  // Calculate income group field
+  house_df.mutate(
+    "IncGroup",
+    if (house_df.tbl.income < 25000) then "Low" else "NotLow"
+  )
+
+  // Remove any records missing income info
+  house_df.filter("income <> null")
+
+  // Spread by Income
+  house_df.mutate("HH", house_df.tbl.income*0 + 1)
+  house_df.spread("IncGroup", "HH", 0)
+
+  // Group by TAZ
+  house_df.group_by("household_zone")
+  agg = null
+  agg.Low = {"sum"}
+  agg.NotLow = {"sum"}
+  house_df.summarize(agg)
+
+  // Calculate percentages
+  house_df.mutate(
+  "total",
+  house_df.tbl.sum_Low + house_df.tbl.sum_NotLow
+  )
+  house_df.mutate(
+  "Low.pct",
+  house_df.tbl.sum_Low/house_df.tbl.total
+  )
+  house_df.mutate(
+  "NotLow.pct",
+  house_df.tbl.sum_NotLow/house_df.tbl.total
+  )
+
+  // write final table to csv
+  house_df.select(
+  "household_zone", "[Low.pct]", "[NotLow.pct]"
+  )
+  house_df.write_csv(output_dir + "/hh_income.csv")
+
+
+EndMacro
+
+
+Macro "Summarize Persons by Race by TAZ"
+  shared scen_dir, ej_dir, output_dir
+  
+  // Join household and race code data to the persons table
+  vw_per = OpenTable(
+    "per", "CSV", {scen_dir + "/inputs/taz/persons.csv", a_fields})
+  vw_hh = OpenTable(
+    "hh", "CSV", {scen_dir + "/inputs/taz/households.csv", a_fields})
+  jv = JoinViews("jv", vw_per + ".household_id", vw_hh + ".household_id", )
+  vw_race = OpenTable("race", "CSV", {ej_dir + "/race_codes.csv"})
+  jv2 = JoinViews("jv2", jv + ".race", vw_race + ".Race", )
+
+  // Read info into a data frame
+  person_df = CreateObject("df")
+  opts = null
+  opts.view = jv2
+  opts.fields = {"household_zone", "Value"}
+  person_df.read_view(opts)
+  person_df.rename("Value", "race")
+  
+  // Get unique values of race
+  v_races = person_df.unique("race")
+  
+  // Add a POP field full of 1s (each row represents 1 person)
+  person_df.mutate("POP", person_df.tbl.household_zone * 0 + 1)
+  
+  // In a separate df, calculate total pop
+  tot_df = person_df.copy()
+  tot_df.group_by("household_zone")
+  agg = null
+  agg.POP = {"sum"}
+  tot_df.summarize(agg)
+  tot_df.remove("Count")
+  
+  // Sum up population by household zone and race
+  person_df.group_by({"household_zone", "race"})
+  agg = null
+  agg.POP = {"sum"}
+  person_df.summarize(agg)
+  person_df.rename("sum_POP", "POP")
+  person_df.remove("Count")
+
+  // Spread the main table by race and join the total df
+  person_df.spread("race", "POP", 0)
+  person_df.left_join(tot_df, "household_zone", "household_zone")
+
+  // Calculate racial percentage columns
+  for i = 1 to v_races.length do
+    race = v_races[i]
+    person_df.mutate(
+      (race + "_" + "pct"),
+      person_df.tbl.(race)/person_df.tbl.sum_POP
+    )
+  end
+
+  // write final table to csv
+  person_df.write_csv(output_dir + "/population_by_race_and_taz.csv")
+  
+  RunMacro("Close All")
 EndMacro

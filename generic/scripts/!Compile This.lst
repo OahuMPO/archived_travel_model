@@ -39,6 +39,7 @@ HwyTTDistSum.rsc
 V6Summaries.rsc
 CMPAnalysis.rsc
 EJ.rsc
+volume_adjustment.rsc
 gisdk_tools/gplyr/gplyr.rsc
 gisdk_tools/ModelUtilities.rsc
 gisdk_tools/RoadProjectManagement.rsc
