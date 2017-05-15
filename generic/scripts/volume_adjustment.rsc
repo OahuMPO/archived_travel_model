@@ -22,7 +22,7 @@ Point path[2] to the scenario you want to test adjustment on.
 
 Macro "test va"
   shared path
-  path = {, "K:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\test"}
+  path = {, "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\test"}
   RunMacro("Volume Adjustment")
 EndMacro
 
