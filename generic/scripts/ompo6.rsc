@@ -303,7 +303,9 @@ Macro "OMPO6" (path, Options, jump)
    // New V6 summaries
    // Creates summaries of transit and highway
     ret_value = RunMacro("V6 Summaries", scenarioDirectory)
-    if !ret_value then Throw()
+    if !ret_value then Throw("Error running V6 Summaries")
+    // Run the ej travel time macro
+    RunMacro("EJ Trav Time Table")
     if stop_after_each_step then do
       DestroyProgressBar()
       Return(ShowMessage("Done with 'Summaries'"))

@@ -1,5 +1,15 @@
 /*
+This rsc file contains two different tools:
 
+The first is the EJ dialog box utility. It is a post-process procedures for
+viewing highway volumes and trip origins by race and income. It is not run
+automatically for every model run.
+
+The second is a summary script that creates a travel time metric originally
+requested by Christine Feiholz to support the official EJ process. This script
+is run automatically for each scenario and creates a shapefile of travel times.
+These travel times identify the auto and transit time required from every zone
+to a set number of destination zones.
 */
 
 dBox "EJ"
@@ -566,7 +576,7 @@ Macro "Summarize HH by Income by TAZ" (scen_dir)
   )
   house_df.write_csv(output_dir + "/hh_income.csv")
 
-
+  RunMacro("Close All")
 EndMacro
 
 
@@ -627,6 +637,87 @@ Macro "Summarize Persons by Race by TAZ"
 
   // write final table to csv
   person_df.write_csv(output_dir + "/population_by_race_and_taz.csv")
+  
+  RunMacro("Close All")
+EndMacro  
+
+/*
+Creates a travel time metric originally requested by Christine Feiholz to
+support the official EJ process. This script is run automatically for each
+scenario and creates a shapefile of travel times. These travel times identify
+the auto and transit time required from every zone to a set number of
+destination zones.
+*/
+
+Macro "EJ Trav Time Table"
+  shared path
+  UpdateProgressBar("EJ Trav Time Table", 0)
+
+  scen_dir = path[2]
+  ej_dir = scen_dir + "/../../generic/ej"
+  ej_dir = RunMacro("Resolve Path", ej_dir)
+  output_dir = scen_dir + "/reports/ej"
+  
+  // Open the equivalency table
+  equiv = CreateObject("df")
+  equiv.read_csv(ej_dir + "/ej_taz_equiv.csv")
+  
+  // Loop over highway and transit skim matrices to get times
+  a_mode = {"hwy", "trn"}
+  a_matrices = {"hwyAM_sov.mtx", "transit_wloc_AM.mtx"}
+  final = CreateObject("df") // Final data frame
+  for m = 1 to a_mode.length do
+    mode = a_mode[m]
+    file_name = a_matrices[m]
+    
+    // Open the impedance matrix
+    file = scen_dir + "/outputs/" + file_name
+    mtx = OpenMatrix(file, )
+    a_cores = GetMatrixCoreNames(mtx)
+    core_to_use = a_cores[1]
+    
+    // The first time through, start by collecting the column
+    // of TAZ IDs.
+    cur = CreateMatrixCurrency(mtx, core_to_use, , , )
+    v_ids = GetMatrixRowLabels(cur)
+    cur = null
+    final.mutate("TAZ", v_ids)
+    
+    // If the transit matrix, calculate a total time core
+    if file_name = "transit_wloc_AM.mtx" then do
+      
+      // change core to use and add if needed
+      core_to_use = "total_time"
+      if ArrayPosition(a_cores, {core_to_use}, ) = 0 then do
+        AddMatrixCore(mtx, core_to_use)
+      end
+      
+      // Calculate the total time
+      a_curs = CreateMatrixCurrencies(mtx, , , )
+      a_curs.(core_to_use) := a_curs.[Access Walk Time] +
+        a_curs.[Initial Wait Time] +
+        a_curs.[In-Vehicle Time] +
+        a_curs.[Transfer Wait Time] +
+        a_curs.[Transfer Walk Time] +
+        a_curs.[Dwelling Time]
+    end
+    
+    // Create a currency of the impedance core to use
+    cur = CreateMatrixCurrency(mtx, core_to_use, , , )
+    
+    // Get the matrix column for each TAZ listed in equiv
+    for t = 1 to equiv.nrow() do
+      taz_num = equiv.tbl.TAZ[t]
+      
+      opts = null
+      opts.Column = taz_num
+      v = GetMatrixVector(cur, opts)
+      final.mutate(mode + "_time_to_" + String(taz_num), v)
+    end
+  
+  end
+  
+  final.write_csv(output_dir + "/ej_travel_times.csv")
   
   RunMacro("Close All")
 EndMacro
