@@ -311,8 +311,6 @@ Macro "OMPO6" (path, Options, jump)
       Return(ShowMessage("Done with 'Summaries'"))
     end
 
-   // ret_value = RunMacro("Calculate Environmental Justice", scenarioDirectory, nzones)
-
     DestroyProgressBar()
     // Do not show a complete message if the model is being
     // run repeatedly by a wrapper function.

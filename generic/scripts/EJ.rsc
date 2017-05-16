@@ -653,15 +653,21 @@ Macro "EJ Trav Time Table"
   shared path
   UpdateProgressBar("EJ Trav Time Table", 0)
 
-  scen_dir = path[2]
-  ej_dir = scen_dir + "/../../generic/ej"
+  // Use the ui location to find the ej directory
+  uiDBD = GetInterface()
+  a_path = SplitPath(uiDBD)
+  uiDir = a_path[1] + a_path[2]
+  ej_dir = uiDir + "../ej"
   ej_dir = RunMacro("Resolve Path", ej_dir)
+
+  scen_dir = path[2]
   output_dir = scen_dir + "/reports/ej"
-  
+  if GetDirectoryInfo(output_dir, "All") = null then CreateDirectory(output_dir)
+
   // Open the equivalency table
   equiv = CreateObject("df")
   equiv.read_csv(ej_dir + "/ej_taz_equiv.csv")
-  
+
   // Loop over highway and transit skim matrices to get times
   a_mode = {"hwy", "trn"}
   a_matrices = {"hwyAM_sov.mtx", "transit_wloc_AM.mtx"}
