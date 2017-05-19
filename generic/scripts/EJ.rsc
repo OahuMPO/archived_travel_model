@@ -528,7 +528,7 @@ Macro "EJ Map Helper" (mode, od, ej, a_cats)
   CloseMap(map)
 EndMacro
 
-Macro "Summarize HH by Income by TAZ" (scen_dir)
+Macro "Summarize HH by Income by TAZ"
   shared scen_dir, ej_dir, output_dir
 
   // Read in the households csv
@@ -562,17 +562,17 @@ Macro "Summarize HH by Income by TAZ" (scen_dir)
   house_df.tbl.sum_Low + house_df.tbl.sum_NotLow
   )
   house_df.mutate(
-  "Low.pct",
+  "Low_pct",
   house_df.tbl.sum_Low/house_df.tbl.total
   )
   house_df.mutate(
-  "NotLow.pct",
+  "NotLow_pct",
   house_df.tbl.sum_NotLow/house_df.tbl.total
   )
 
   // write final table to csv
   house_df.select(
-  "household_zone", "[Low.pct]", "[NotLow.pct]"
+  {"household_zone", "Low_pct", "NotLow_pct"}
   )
   house_df.write_csv(output_dir + "/hh_income.csv")
 
