@@ -552,17 +552,22 @@ Macro "Summarize HH by Income by TAZ"
   house_df.tbl.sum_Low + house_df.tbl.sum_NotLow
   )
   house_df.mutate(
-  "Low_pct",
+  "Low_income_pct",
   house_df.tbl.sum_Low/house_df.tbl.total
   )
   house_df.mutate(
-  "NotLow_pct",
+  "NotLow__income_pct",
   house_df.tbl.sum_NotLow/house_df.tbl.total
   )
 
+  // Rename variables
+  house_df.rename("sum_Low", "Low_income")
+  house_df.rename("sum_NotLow", "NotLow_income")
+
   // write final table to csv
   house_df.select(
-  {"household_zone", "Low_pct", "NotLow_pct"}
+  {"household_zone", "Low_income", "NotLow_income",
+   "Low_income_pct", "NotLow__income_pct"}
   )
   house_df.write_csv(output_dir + "/hh_income.csv")
 
@@ -603,8 +608,7 @@ Macro "Summarize Persons by Race by TAZ"
   // Spread by Race
   temp_df = person_df.copy()
   temp_df.spread("race", "POP", 0)
-  v_races = {"Asian", "HIorPI", "Other", "TwoPlus", "White"}
-  //race_df.unique("Value")
+  v_races = race_df.unique("Value")
 
   temp_df.group_by("household_zone")
   agg = null
