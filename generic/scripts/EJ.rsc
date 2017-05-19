@@ -671,10 +671,10 @@ Macro "EJ Trav Time Table"
   // Loop over highway and transit skim matrices to get times
   a_mode = {"hwy", "trn"}
   a_matrices = {"hwyAM_sov.mtx", "transit_wloc_AM.mtx"}
-  final = CreateObject("df") // Final data frame
   for m = 1 to a_mode.length do
     mode = a_mode[m]
     file_name = a_matrices[m]
+    final = CreateObject("df") // Final data frame
     
     // Open the impedance matrix
     file = scen_dir + "/outputs/" + file_name
@@ -714,16 +714,17 @@ Macro "EJ Trav Time Table"
     // Get the matrix column for each TAZ listed in equiv
     for t = 1 to equiv.nrow() do
       taz_num = equiv.tbl.TAZ[t]
+      taz_name = equiv.tbl.TAZ_ID[t]
       
       opts = null
       opts.Column = taz_num
       v = GetMatrixVector(cur, opts)
-      final.mutate(mode + "_time_to_" + String(taz_num), v)
+      final.mutate(taz_name, v)
     end
   
+    final.write_csv(output_dir + "/ej_travel_times_" + mode + ".csv")
   end
   
-  final.write_csv(output_dir + "/ej_travel_times.csv")
   
   RunMacro("Close All")
 EndMacro
