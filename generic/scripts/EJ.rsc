@@ -1,5 +1,15 @@
 /*
+This rsc file contains two different tools:
 
+The first is the EJ dialog box utility. It is a post-process procedures for
+viewing highway volumes and trip origins by race and income. It is not run
+automatically for every model run.
+
+The second is a summary script that creates a travel time metric originally
+requested by Christine Feiholz to support the official EJ process. This script
+is run automatically for each scenario and creates a shapefile of travel times.
+These travel times identify the auto and transit time required from every zone
+to a set number of destination zones.
 */
 
 dBox "EJ"
@@ -94,6 +104,8 @@ Macro "EJ Analysis"
   RunMacro("EJ CSV to MTX")
   RunMacro("EJ Assignment")
   RunMacro("EJ Mapping")
+  RunMacro("Summarize HH by Income by TAZ")
+  RunMacro("Summarize Persons by Race by TAZ")
 EndMacro
 
 /*
@@ -514,4 +526,210 @@ Macro "EJ Map Helper" (mode, od, ej, a_cats)
   RedrawMap(map)
   SaveMap(map, output_dir + "/map_" + mode + "_by_" + ej + ".map")
   CloseMap(map)
+EndMacro
+
+Macro "Summarize HH by Income by TAZ"
+  shared scen_dir, ej_dir, output_dir
+
+  // Read in the households csv
+  a_fields = {"household_id", "household_zone", "income"}
+  house_df = CreateObject("df")
+  house_df.read_csv(scen_dir + "/inputs/taz/households.csv", a_fields)
+
+  // Calculate income group field
+  house_df.mutate(
+    "IncGroup",
+    if (house_df.tbl.income < 25000) then "Low" else "NotLow"
+  )
+
+  // Remove any records missing income info
+  house_df.filter("income <> null")
+
+  // Spread by Income
+  house_df.mutate("HH", house_df.tbl.income*0 + 1)
+  house_df.spread("IncGroup", "HH", 0)
+
+  // Group by TAZ
+  house_df.group_by("household_zone")
+  agg = null
+  agg.Low = {"sum"}
+  agg.NotLow = {"sum"}
+  house_df.summarize(agg)
+
+  // Calculate percentages
+  house_df.mutate(
+  "total",
+  house_df.tbl.sum_Low + house_df.tbl.sum_NotLow
+  )
+  house_df.mutate(
+  "Low_income_pct",
+  house_df.tbl.sum_Low/house_df.tbl.total
+  )
+  house_df.mutate(
+  "NotLow__income_pct",
+  house_df.tbl.sum_NotLow/house_df.tbl.total
+  )
+
+  // Rename variables
+  house_df.rename("sum_Low", "Low_income")
+  house_df.rename("sum_NotLow", "NotLow_income")
+
+  // write final table to csv
+  house_df.select(
+  {"household_zone", "Low_income", "NotLow_income",
+   "Low_income_pct", "NotLow__income_pct"}
+  )
+  house_df.write_csv(output_dir + "/hh_income.csv")
+
+  RunMacro("Close All")
+EndMacro
+
+
+Macro "Summarize Persons by Race by TAZ"
+  shared scen_dir, ej_dir, output_dir
+  
+  // Join household and race code data to the persons table
+  vw_per = OpenTable(
+    "per", "CSV", {scen_dir + "/inputs/taz/persons.csv", a_fields})
+  vw_hh = OpenTable(
+    "hh", "CSV", {scen_dir + "/inputs/taz/households.csv", a_fields})
+  jv = JoinViews("jv", vw_per + ".household_id", vw_hh + ".household_id", )
+  vw_race = OpenTable("race", "CSV", {ej_dir + "/race_codes.csv"})
+  jv2 = JoinViews("jv2", jv + ".race", vw_race + ".Race", )
+
+  // Read info into a data frame
+  person_df = CreateObject("df")
+  opts = null
+  opts.view = jv2
+  opts.fields = {"household_zone", "Value"}
+  person_df.read_view(opts)
+  person_df.rename("Value", "race")
+  
+  // Get unique values of race
+  v_races = person_df.unique("race")
+  
+  // Add a POP field full of 1s (each row represents 1 person)
+  person_df.mutate("POP", person_df.tbl.household_zone * 0 + 1)
+  
+  // In a separate df, calculate total pop
+  tot_df = person_df.copy()
+  tot_df.group_by("household_zone")
+  agg = null
+  agg.POP = {"sum"}
+  tot_df.summarize(agg)
+  tot_df.remove("Count")
+  
+  // Sum up population by household zone and race
+  person_df.group_by({"household_zone", "race"})
+  agg = null
+  agg.POP = {"sum"}
+  person_df.summarize(agg)
+  person_df.rename("sum_POP", "POP")
+  person_df.remove("Count")
+
+  // Spread the main table by race and join the total df
+  person_df.spread("race", "POP", 0)
+  person_df.left_join(tot_df, "household_zone", "household_zone")
+
+  // Calculate racial percentage columns
+  for i = 1 to v_races.length do
+    race = v_races[i]
+    person_df.mutate(
+      (race + "_" + "pct"),
+      person_df.tbl.(race)/person_df.tbl.sum_POP
+    )
+  end
+
+  // write final table to csv
+  person_df.write_csv(output_dir + "/population_by_race_and_taz.csv")
+  
+  RunMacro("Close All")
+EndMacro  
+
+/*
+Creates a travel time metric originally requested by Christine Feiholz to
+support the official EJ process. This script is run automatically for each
+scenario and creates a shapefile of travel times. These travel times identify
+the auto and transit time required from every zone to a set number of
+destination zones.
+*/
+
+Macro "EJ Trav Time Table"
+  shared path
+  UpdateProgressBar("EJ Trav Time Table", 0)
+
+  // Use the ui location to find the ej directory
+  uiDBD = GetInterface()
+  a_path = SplitPath(uiDBD)
+  uiDir = a_path[1] + a_path[2]
+  ej_dir = uiDir + "../ej"
+  ej_dir = RunMacro("Resolve Path", ej_dir)
+
+  scen_dir = path[2]
+  output_dir = scen_dir + "/reports/ej"
+  if GetDirectoryInfo(output_dir, "All") = null then CreateDirectory(output_dir)
+
+  // Open the equivalency table
+  equiv = CreateObject("df")
+  equiv.read_csv(ej_dir + "/ej_taz_equiv.csv")
+
+  // Loop over highway and transit skim matrices to get times
+  a_mode = {"hwy", "trn"}
+  a_matrices = {"hwyAM_sov.mtx", "transit_wloc_AM.mtx"}
+  for m = 1 to a_mode.length do
+    mode = a_mode[m]
+    file_name = a_matrices[m]
+    final = CreateObject("df") // Final data frame
+    
+    // Open the impedance matrix
+    file = scen_dir + "/outputs/" + file_name
+    mtx = OpenMatrix(file, )
+    a_cores = GetMatrixCoreNames(mtx)
+    core_to_use = a_cores[1]
+    
+    // The first time through, start by collecting the column
+    // of TAZ IDs.
+    cur = CreateMatrixCurrency(mtx, core_to_use, , , )
+    v_ids = GetMatrixRowLabels(cur)
+    cur = null
+    final.mutate("TAZ", v_ids)
+    
+    // If the transit matrix, calculate a total time core
+    if file_name = "transit_wloc_AM.mtx" then do
+      
+      // change core to use and add if needed
+      core_to_use = "total_time"
+      if ArrayPosition(a_cores, {core_to_use}, ) = 0 then do
+        AddMatrixCore(mtx, core_to_use)
+      end
+      
+      // Calculate the total time
+      a_curs = CreateMatrixCurrencies(mtx, , , )
+      a_curs.(core_to_use) := a_curs.[Access Walk Time] +
+        a_curs.[Initial Wait Time] +
+        a_curs.[In-Vehicle Time] +
+        a_curs.[Transfer Wait Time] +
+        a_curs.[Transfer Walk Time] +
+        a_curs.[Dwelling Time]
+    end
+    
+    // Create a currency of the impedance core to use
+    cur = CreateMatrixCurrency(mtx, core_to_use, , , )
+    
+    // Get the matrix column for each TAZ listed in equiv
+    for t = 1 to equiv.nrow() do
+      taz_num = equiv.tbl.TAZ[t]
+      taz_name = equiv.tbl.TAZ_ID[t]
+      
+      opts = null
+      opts.Column = taz_num
+      v = GetMatrixVector(cur, opts)
+      final.mutate(taz_name, v)
+    end
+  
+    final.write_csv(output_dir + "/ej_travel_times_" + mode + ".csv")
+  end
+  
+  
+  RunMacro("Close All")
 EndMacro
