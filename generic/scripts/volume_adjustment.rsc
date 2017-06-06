@@ -100,20 +100,22 @@ Macro "Base Year Adjustment"
   df.read_view(opts)
   df.mutate("FACTYPE", if df.tbl.("[AB FACTYPE]")>0
     then df.tbl.("[AB FACTYPE]") else df.tbl.("[BA FACTYPE]") )
+  df.mutate("ATYPE", if df.tbl.("AB_ATYPE")>0
+    then df.tbl.("AB_ATYPE") else df.tbl.("BA_ATYPE") )
   temp = df.copy()
-  temp.select("FACTYPE")
+  temp.select({"FACTYPE", "ATYPE"})
   temp.update_view(llyr)
 
   vw_lookup = OpenTable("lookup", "CSV", {va_dir + "/volume_adjustment.csv"},)
 
-  jv = JoinViewsMulti("jv", {llyr + ".FACTYPE", llyr + ".AB_ATYPE"}, {"lookup.FT", "lookup.AT"}, )
+  jv = JoinViewsMulti("jv", {llyr + ".FACTYPE", llyr + ".ATYPE"}, {"lookup.FT", "lookup.AT"}, )
 
   SetView(jv)
   SelectByQuery("not_null", "several", "Select * where PCT != null")
   cols = volumes + {"PCT"}
   a_vecs = GetDataVectors(jv + "|not_null", cols,)
   for i = 1 to cols.length - 1 do
-    tbl.(cols[i] + "_adj") = a_vecs[i] * a_vecs[a_vecs.length]
+    tbl.(cols[i] + "_adj") = a_vecs[i]/( a_vecs[a_vecs.length] + 1)
   end
   SetDataVectors(jv + "|not_null", tbl, )
 
