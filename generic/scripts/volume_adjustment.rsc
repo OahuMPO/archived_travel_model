@@ -42,7 +42,7 @@ Macro "Volume Adjustment"
   va_dir = RunMacro("Resolve Path", va_dir)
 
   RunMacro("Copy Highway Network")
-  RunMacro("Yinan's Macro")
+  RunMacro("Base Year Adjustment")
   RunMacro("Point Loading Adjustment")
 
   DestroyProgressBar()
@@ -72,7 +72,7 @@ EndMacro
 Volume adjustment based on base year model performance.
 */
 
-Macro "Yinan's Macro"
+Macro "Base Year Adjustment"
   shared path, hwy_dbd, va_dir
 
   scen_dir = path[2]
