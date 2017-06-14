@@ -22,7 +22,7 @@ Point path[2] to the scenario you want to test adjustment on.
 
 Macro "test va"
   shared path
-  path = {, "K:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\test"}
+  path = {, "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\test"}
   RunMacro("Volume Adjustment")
 EndMacro
 
@@ -38,13 +38,11 @@ Macro "Volume Adjustment"
   uiDBD = GetInterface()
   a_path = SplitPath(uiDBD)
   ui_dir = a_path[1] + a_path[2]
-  va_dir = "K:\\projects\\Honolulu\\Version6\\OMPORepo\\generic\\volume_adjustment"
-  //
-  //ui_dir + "/../volume_adjustment"
+  va_dir = ui_dir + "/../volume_adjustment"
   va_dir = RunMacro("Resolve Path", va_dir)
 
   RunMacro("Copy Highway Network")
-  RunMacro("Yinan's Macro")
+  RunMacro("Base Year Adjustment")
   RunMacro("Point Loading Adjustment")
 
   DestroyProgressBar()
@@ -74,7 +72,7 @@ EndMacro
 Volume adjustment based on base year model performance.
 */
 
-Macro "Yinan's Macro"
+Macro "Base Year Adjustment"
   shared path, hwy_dbd, va_dir
 
   scen_dir = path[2]
@@ -102,20 +100,22 @@ Macro "Yinan's Macro"
   df.read_view(opts)
   df.mutate("FACTYPE", if df.tbl.("[AB FACTYPE]")>0
     then df.tbl.("[AB FACTYPE]") else df.tbl.("[BA FACTYPE]") )
+  df.mutate("ATYPE", if df.tbl.("AB_ATYPE")>0
+    then df.tbl.("AB_ATYPE") else df.tbl.("BA_ATYPE") )
   temp = df.copy()
-  temp.select("FACTYPE")
+  temp.select({"FACTYPE", "ATYPE"})
   temp.update_view(llyr)
 
   vw_lookup = OpenTable("lookup", "CSV", {va_dir + "/volume_adjustment.csv"},)
 
-  jv = JoinViewsMulti("jv", {llyr + ".FACTYPE", llyr + ".AB_ATYPE"}, {"lookup.FT", "lookup.AT"}, )
+  jv = JoinViewsMulti("jv", {llyr + ".FACTYPE", llyr + ".ATYPE"}, {"lookup.FT", "lookup.AT"}, )
 
   SetView(jv)
   SelectByQuery("not_null", "several", "Select * where PCT != null")
   cols = volumes + {"PCT"}
   a_vecs = GetDataVectors(jv + "|not_null", cols,)
   for i = 1 to cols.length - 1 do
-    tbl.(cols[i] + "_adj") = a_vecs[i] * a_vecs[a_vecs.length]
+    tbl.(cols[i] + "_adj") = a_vecs[i]/( a_vecs[a_vecs.length] + 1)
   end
   SetDataVectors(jv + "|not_null", tbl, )
 
