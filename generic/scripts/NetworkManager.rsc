@@ -168,9 +168,9 @@ Macro "Create Network"(path, Options, year)
     RunMacro("Close All")
     proj_csv = ScenarioDirectory + "/ProjectList.csv"
     opts = null
-    opts.hwyDBD = tempFile
-    opts.projList = proj_csv
-    opts.masterDBD = masterNetworkDirectory + masterLineFile
+    opts.hwy_dbd = tempFile
+    opts.proj_list = proj_csv
+    opts.master_dbd = masterNetworkDirectory + masterLineFile
     RunMacro("Road Project Management", opts)
 
     extractPNRString = "("+String(currentYear)+">=[Start Year_PNR Lot] & "+String(currentYear)+"<=[End Year_PNR Lot])"
@@ -570,11 +570,18 @@ Macro "Export Transit Routes" (masterRouteFile,masterLineFile,scenarioLineFile,s
      // Kyle: Never modify the master networks from the script.  Instead, check and throw error.
      //       User must fix manually if there is an issue (so they know about the change).
     dbLayers = GetDBLayers(masterLineFile)
-    // ModifyRouteSystem(masterRouteFile, {{"Geography", masterLineFile, dbLayers[2]}})
     a_rsInfo = GetRouteSystemInfo(masterRouteFile)
+    // Handle a small bug when running the model on a windows vm from mac
+    check = "\\\\Mac\\Home\\"
+    if Left(a_rsInfo[1], 11) = check then do
+      path = a_rsInfo[1]
+      length = StringLength(path)
+      path = Right(path, length - 11)
+      drive = masterLineFile[1]
+      a_rsInfo[1] = drive + ":\\" + path
+    end
     if a_rsInfo[1] <> masterLineFile then do
-        ShowMessage("The master route system is not based on the master highway network. Use 'Route Systems' -> 'Utilities' -> 'Move' to fix. ")
-        ShowMessage(1)
+        Throw("The master route system is not based on the master highway network. Use 'Route Systems' -> 'Utilities' -> 'Move' to fix. ")
     end
 
 
@@ -675,8 +682,8 @@ Macro "Fill Stop Attributes" (hwyfile, rtsfile, rstopfile)
 
     Return(1)
 
-    
-    
+
+
 EndMacro
 
 Macro "Assign PNR Lots" (tempFile,currentYear,extractPNRString)
@@ -710,8 +717,8 @@ Macro "Assign PNR Lots" (tempFile,currentYear,extractPNRString)
     CloseView(nodeLayer)
     Return(tempFile)
 
-    
-    
+
+
 
 EndMacro
 
