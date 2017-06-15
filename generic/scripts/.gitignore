@@ -1,8 +1,8 @@
 # Ignore the compiled UI file. It must be compiled locally.
-ompo6.1
-ompo6.2
-ompo6.3
-ompo6.4
-ompo6.5
-ompo6.6
-ompo6.dbd
+*.1
+*.2
+*.3
+*.4
+*.5
+*.6
+*.dbd
