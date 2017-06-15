@@ -565,28 +565,17 @@ EndMacro
 */
 Macro "Export Transit Routes" (masterRouteFile,masterLineFile,scenarioLineFile,scenarioNetworkDirectory,extractString)
 
+    // Add the transit layers
+    {rs_lyr, stop_lyr, ph_lyr} = RunMacro("TCB Add RS Layers",masterRouteFile, "ALL",)
 
      // Make sure route system references master line layer
      // Kyle: Never modify the master networks from the script.  Instead, check and throw error.
      //       User must fix manually if there is an issue (so they know about the change).
     dbLayers = GetDBLayers(masterLineFile)
     a_rsInfo = GetRouteSystemInfo(masterRouteFile)
-    // Handle a small bug when running the model on a windows vm from mac
-    check = "\\\\Mac\\Home\\"
-    if Left(a_rsInfo[1], 11) = check then do
-      path = a_rsInfo[1]
-      length = StringLength(path)
-      path = Right(path, length - 11)
-      drive = masterLineFile[1]
-      a_rsInfo[1] = drive + ":\\" + path
-    end
     if a_rsInfo[1] <> masterLineFile then do
         Throw("The master route system is not based on the master highway network. Use 'Route Systems' -> 'Utilities' -> 'Move' to fix. ")
     end
-
-
-    // Add the transit layers
-    {rs_lyr, stop_lyr, ph_lyr} = RunMacro("TCB Add RS Layers",masterRouteFile, "ALL",)
 
     // The new route file name
     scenarioRouteFile=scenarioNetworkDirectory+"\\Scenario Route System"
