@@ -24,7 +24,7 @@ dbox "Oahu Model"
     uiDir = a_path[1] + a_path[2]
     bmpDir = uiDir + "../bmp"
     init_dir = uiDir + "../../scenarios"
-    init_dir = RunMacro("Resolve Path", init_dir)
+    init_dir = RunMacro("Normalize Path", init_dir)
 
     // Check to see if any script files (rsc or lst) have a later date than the
     // compiled UI.  If so, show a warning.

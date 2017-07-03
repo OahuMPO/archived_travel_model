@@ -39,7 +39,7 @@ Macro "Volume Adjustment"
   a_path = SplitPath(uiDBD)
   ui_dir = a_path[1] + a_path[2]
   va_dir = ui_dir + "/../volume_adjustment"
-  va_dir = RunMacro("Resolve Path", va_dir)
+  va_dir = RunMacro("Normalize Path", va_dir)
 
   RunMacro("Copy Highway Network")
   RunMacro("Base Year Adjustment")

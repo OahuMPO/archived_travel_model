@@ -34,9 +34,9 @@ dBox "EJ"
     a_path = SplitPath(uiDBD)
     ui_dir = a_path[1] + a_path[2]
     init_dir = ui_dir + "../../scenarios"
-    init_dir = RunMacro("Resolve Path", init_dir)
+    init_dir = RunMacro("Normalize Path", init_dir)
     ej_dir = ui_dir + "/../ej"
-    ej_dir = RunMacro("Resolve Path", ej_dir)
+    ej_dir = RunMacro("Normalize Path", ej_dir)
   enditem
 
   // Explanatory text
@@ -587,7 +587,7 @@ EndMacro
 
 Macro "Summarize Persons by Race by TAZ"
   shared scen_dir, ej_dir, output_dir
-  
+
   // Join household and race code data to the persons table
   vw_per = OpenTable(
     "per", "CSV", {scen_dir + "/inputs/taz/persons.csv", a_fields})
@@ -604,13 +604,13 @@ Macro "Summarize Persons by Race by TAZ"
   opts.fields = {"household_zone", "Value"}
   person_df.read_view(opts)
   person_df.rename("Value", "race")
-  
+
   // Get unique values of race
   v_races = person_df.unique("race")
-  
+
   // Add a POP field full of 1s (each row represents 1 person)
   person_df.mutate("POP", person_df.tbl.household_zone * 0 + 1)
-  
+
   // In a separate df, calculate total pop
   tot_df = person_df.copy()
   tot_df.group_by("household_zone")
@@ -618,7 +618,7 @@ Macro "Summarize Persons by Race by TAZ"
   agg.POP = {"sum"}
   tot_df.summarize(agg)
   tot_df.remove("Count")
-  
+
   // Sum up population by household zone and race
   person_df.group_by({"household_zone", "race"})
   agg = null
@@ -642,9 +642,9 @@ Macro "Summarize Persons by Race by TAZ"
 
   // write final table to csv
   person_df.write_csv(output_dir + "/population_by_race_and_taz.csv")
-  
+
   RunMacro("Close All")
-EndMacro  
+EndMacro
 
 /*
 Creates a travel time metric originally requested by Christine Feiholz to
@@ -663,7 +663,7 @@ Macro "EJ Trav Time Table"
   a_path = SplitPath(uiDBD)
   uiDir = a_path[1] + a_path[2]
   ej_dir = uiDir + "../ej"
-  ej_dir = RunMacro("Resolve Path", ej_dir)
+  ej_dir = RunMacro("Normalize Path", ej_dir)
 
   scen_dir = path[2]
   output_dir = scen_dir + "/reports/ej"
@@ -680,29 +680,29 @@ Macro "EJ Trav Time Table"
     mode = a_mode[m]
     file_name = a_matrices[m]
     final = CreateObject("df") // Final data frame
-    
+
     // Open the impedance matrix
     file = scen_dir + "/outputs/" + file_name
     mtx = OpenMatrix(file, )
     a_cores = GetMatrixCoreNames(mtx)
     core_to_use = a_cores[1]
-    
+
     // The first time through, start by collecting the column
     // of TAZ IDs.
     cur = CreateMatrixCurrency(mtx, core_to_use, , , )
     v_ids = GetMatrixRowLabels(cur)
     cur = null
     final.mutate("TAZ", v_ids)
-    
+
     // If the transit matrix, calculate a total time core
     if file_name = "transit_wloc_AM.mtx" then do
-      
+
       // change core to use and add if needed
       core_to_use = "total_time"
       if ArrayPosition(a_cores, {core_to_use}, ) = 0 then do
         AddMatrixCore(mtx, core_to_use)
       end
-      
+
       // Calculate the total time
       a_curs = CreateMatrixCurrencies(mtx, , , )
       a_curs.(core_to_use) := a_curs.[Access Walk Time] +
@@ -712,24 +712,24 @@ Macro "EJ Trav Time Table"
         a_curs.[Transfer Walk Time] +
         a_curs.[Dwelling Time]
     end
-    
+
     // Create a currency of the impedance core to use
     cur = CreateMatrixCurrency(mtx, core_to_use, , , )
-    
+
     // Get the matrix column for each TAZ listed in equiv
     for t = 1 to equiv.nrow() do
       taz_num = equiv.tbl.TAZ[t]
       taz_name = equiv.tbl.TAZ_ID[t]
-      
+
       opts = null
       opts.Column = taz_num
       v = GetMatrixVector(cur, opts)
       final.mutate(taz_name, v)
     end
-  
+
     final.write_csv(output_dir + "/ej_travel_times_" + mode + ".csv")
   end
-  
-  
+
+
   RunMacro("Close All")
 EndMacro
