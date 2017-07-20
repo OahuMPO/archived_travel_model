@@ -274,7 +274,7 @@ Macro "Transit Skim" (scenarioDirectory, hwyfile, rtsfile, rstopfile, modefile, 
  //   Opts.Global.[Network Options].[Stop Attributes].UserID = {stp_lyr+".UserID"}
     Opts.Global.[Network Options].[Stop Attributes].RTE_NUMBER = {stp_lyr+".RTE_NUMBER"}
     Opts.Global.[Network Options].[Stop Attributes].MODE = {stp_lyr+".MODE"}
-    Opts.Global.[Network Options].[Stop Attributes].STOP_FLAG = {stp_lyr+".STOP_FLAG"}
+    Opts.Global.[Network Options].[Stop Attributes].Stop_Flag = {stp_lyr+".Stop_Flag"}
     Opts.Global.[Network Options].[Stop Attributes].NODENUMBER = {stp_lyr+".NODENUMBER"}
     Opts.Global.[Network Options].Overide = {stp_lyr+".ID", stp_lyr+".NODENUMBER"}
     Opts.Output.[Network File] = trn_pk

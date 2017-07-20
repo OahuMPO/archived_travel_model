@@ -656,7 +656,7 @@ Macro "Fill Stop Attributes" (hwyfile, rtsfile, rstopfile)
     Opts = null
 
     Opts.Input.[Dataview Set] = {{stp_lyr, rtsfile1, {"Route_ID"}, {"Route_ID"}}, "joinedvw111"}
-        Opts.Global.Fields = {stp_lyr+".STOP_FLAG"}                           // the field to fill
+        Opts.Global.Fields = {stp_lyr+".Stop_Flag"}                           // the field to fill
     Opts.Global.Method = "Value"                                          // the fill method
     Opts.Global.Parameter = {1}                                // the column in the fspdfile
 
