@@ -4,7 +4,7 @@
 "UserID",I,5,4,0,8,0,,"","",,"Blank",
 "RTE_NUMBER",C,9,16,0,16,0,,"","",,"Blank",
 "RTE_NAME",C,25,35,0,35,0,,"","",,"Blank",
-"MODE",S,60,2,0,4,0,,"","",,"Blank",
+"MODE",I,60,2,0,4,0,,"","",,"Blank",
 "EA_HEADWAY",R,62,8,0,8,2,,"","",,"Blank",
 "AM_HEADWAY",R,70,8,0,8,2,,"","",,"Blank",
 "MD_HEADWAY",R,78,8,0,8,2,,"","",,"Blank",
