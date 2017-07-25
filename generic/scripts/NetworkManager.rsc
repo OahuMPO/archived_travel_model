@@ -163,10 +163,10 @@ Macro "Create Network"(path, Options, year)
     UpdateProgressBar("Select from Master Line Layer",0)
     tempFile = RunMacro("Select from Master Line Layer",masterLine,extractLineString,tempDirectory)
 
-    // Run the project management library in gisdk_tools
+    // Run the roadway project management library in gisdk_tools
     UpdateProgressBar("Update Project Links",0)
     RunMacro("Close All")
-    proj_csv = ScenarioDirectory + "/ProjectList.csv"
+    proj_csv = ScenarioDirectory + "/HighwayProjectList.csv"
     opts = null
     opts.hwy_dbd = tempFile
     opts.proj_list = proj_csv
@@ -182,12 +182,20 @@ Macro "Create Network"(path, Options, year)
     UpdateProgressBar("Export Highway Line Layer",0)
     RunMacro("Export Highway Line Layer",tempFile,scenarioLineFile)
 
-    extractRouteString = "[begin year] <= "+String(currentYear)+" and [end year]>= "+String(currentYear)
-
    // Select the transit routes, and copy the transit layer to the scenario directory
-
     UpdateProgressBar("Export Transit Routes",0)
-    RunMacro("Export Transit Routes",masterRoute,originalMasterLine,scenarioLineFile,scenarioNetworkDirectory,extractRouteString)
+
+    // Kyle: replaced the previous approach with the new, simplified transit
+    // project manager.
+    // https://github.com/pbsag/gisdk_tools/wiki/Transit-Manager
+    RunMacro("Close All")
+    opts = null
+    opts.master_rts = masterRoute
+    opts.scen_hwy = scenarioNetworkDirectory + "/Scenario Line Layer.dbd"
+    opts.proj_list = ScenarioDirectory + "/TransitProjectList.csv"
+    opts.centroid_qry = "[Zone Centroid] = 'Y'"
+    opts.output_rts_file = "Scenario Route System.rts"
+    RunMacro("Transit Project Management", opts)
 
     UpdateProgressBar("Fill Stop Attributes",0)
     hwyfile = scenarioLineFile
@@ -495,74 +503,6 @@ Macro "Copy Layer Settings" (originFile,scenarioFile)
     Return(1)
 EndMacro
 
- /*
-Macro "Select Transit Routes" (masterLine,routeFile,future)
-
-    // Check that the files exist
-    if GetFileInfo(routeFile) = null then do
-        ShowMessage("File not found: " + routeFile)
-        Return()
-    end
-
-    // Check that the files exist
-    if GetFileInfo(masterLine) = null then do
-        ShowMessage("File not found: " + masterLine)
-        Return()
-    end
-
-    // Use the master line scope to create a temporary map
-    dbInfo = GetDBInfo(masterLine)
-    newmap = CreateMap("TempMap",{{"Scope",dbInfo[1]}})
-
-    dbLayers = GetDBLayers(masterLine)
-
-    // Add the Nodes layer to the map and make it visible
-    nodeLayer = AddLayer("TempMap","Nodes",masterLine,dbLayers[1])
-    SetLayerVisibility(nodeLayer,"True")
-
-    // Add the Network Roads layer to the map and make it visible
-    lineLayer = AddLayer("TempMap","Links",masterLine,dbLayers[2])
-    SetLayerVisibility(lineLayer,"True")
-
-    // Make sure route system references master line layer
-    ModifyRouteSystem(routeFile, {{"Geography", masterLine, dbLayers[2]}})
-
-    info = GetRouteSystemInfo(routeFile)
-
-     // Add the route system to it
-    routeLayer = AddRouteSystemLayer("TempMap", "Route System", routeFile,)
-    routes = routeLayer[1]
-    stops = routeLayer[2]
-    SetLayerVisibility(routes,"True")
-
-    // Get the names of all of the routes in the route system
-    names = GetRouteNames(routes)
-
-    // Get the name of the route system fields
-    routeFields= GetRouteSystemFields(routes)
-
-    // Iterate through the route system fields, find the "[future year flag]" field
-    for i = 1 to routeFields[1][1].length do
-        if routeFields[1][1][i] = "[future year flag]" then futureYearField=i
-    end
-
-    // There are two fixed route fields, so the extra attribute field is i - 2
-    futureYearField = futureYearField - 2
-
-    //Cycle through the routes, check if it is future, if so delete it
-    for i = 1 to names.length do
-        attr = GetRouteAttributes(routes, names[i])
-        if attr[futureYearField] = "y" and future="False" then DeleteRoute(routes,names[i])
-        if attr[futureYearField] = null and future="True" then DeleteRoute(routes,names[i])
-
-    end
-
-   CloseMap("TempMap")
-
-    Return(1)
-
-EndMacro
-*/
 Macro "Export Transit Routes" (masterRouteFile,masterLineFile,scenarioLineFile,scenarioNetworkDirectory,extractString)
 
     // Add the transit layers
@@ -628,6 +568,19 @@ Macro "Fill Stop Attributes" (hwyfile, rtsfile, rstopfile)
     {rte_lyr,stp_lyr,} = RunMacro("TCB Add RS Layers", rtsfile, "ALL", )
 
     rtsfile1_nm=ParseString(rtsfile1,"\\.")
+
+    // Add fields to the stop layer
+    a_fields = {
+      {"RTE_NUMBER", "String", 30, ,,,,},
+      {"RTE_NAME", "String", 30, ,,,,},
+      {"MODE", "Integer", 10, ,,,,},
+      {"EA_HEADWAY", "Integer", 10, ,,,,},
+      {"AM_HEADWAY", "Integer", 10, ,,,,},
+      {"MD_HEADWAY", "Integer", 10, ,,,,},
+      {"PM_HEADWAY", "Integer", 10, ,,,,},
+      {"EV_HEADWAY", "Integer", 10, ,,,,}
+    }
+    RunMacro("Add Fields", stp_lyr, a_fields)
 
     Opts = null
     Opts.Input.[Dataview Set] = {{stp_lyr, rtsfile1, {"Route_ID"}, {"Route_ID"}}, "joinedvw111"}
