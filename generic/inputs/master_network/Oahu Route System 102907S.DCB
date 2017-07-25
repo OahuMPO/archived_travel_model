@@ -1,10 +1,10 @@
 
-129
+133
 "STOP_ID",I,1,4,0,9,0,,"","",,"Blank",
 "UserID",I,5,4,0,8,0,,"","",,"Blank",
 "RTE_NUMBER",C,9,16,0,16,0,,"","",,"Blank",
 "RTE_NAME",C,25,35,0,35,0,,"","",,"Blank",
-"MODE",I,60,2,0,4,0,,"","",,"Blank",
+"MODE",S,60,2,0,4,0,,"","",,"Blank",
 "EA_HEADWAY",R,62,8,0,8,2,,"","",,"Blank",
 "AM_HEADWAY",R,70,8,0,8,2,,"","",,"Blank",
 "MD_HEADWAY",R,78,8,0,8,2,,"","",,"Blank",
@@ -12,3 +12,4 @@
 "EV_HEADWAY",R,94,8,0,8,2,,"","",,"Blank",
 "NODENUMBER",I,102,4,0,8,0,,"","",,"Blank",
 "Stop Name",C,106,24,0,24,0,,"","",,"Blank",
+"shape_stop",I,130,4,0,8,0,,"","Stops flagged with a 1 are not actual stops. Instead, they are used|to improve the performance of the transit manager's shortest path|process. In the scenario folder, they will be removed automatically.",,"Blank",
