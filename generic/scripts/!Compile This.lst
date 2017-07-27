@@ -42,8 +42,8 @@ EJ.rsc
 volume_adjustment.rsc
 gisdk_tools/gplyr/gplyr.rsc
 gisdk_tools/ModelUtilities.rsc
-gisdk_tools/RoadProjectManagement.rsc
-gisdk_tools/TransitProjectManagement.rsc
 gisdk_tools/Summaries.rsc
-gisdk_tools/net_tools/load_counts.rsc
-gisdk_tools/net_tools/net_utilities.rsc
+gisdk_tools/network_tools/load_counts.rsc
+gisdk_tools/network_tools/network_utilities.rsc
+gisdk_tools/network_tools/HighwayProjectManagement.rsc
+gisdk_tools/network_tools/TransitProjectManagement.rsc
