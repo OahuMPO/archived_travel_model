@@ -240,14 +240,18 @@ Dbox "Scenario Manager"
     Frame 1, .5, 65, 4.25 Prompt: "INPUTS"
 
     Edit Int "rdwy year item" 15, 1.75, 10, 1
-        prompt: "Transit Year"
+        prompt: "PNR Year"
     variable: year
     Edit Int "rdwy year item" same, after, 10, 1
         prompt: "SE Year"
     variable: seYear
     button "?" 26, 1.75, 3 do
-        ShowMessage("The transit routes and PNR lots\nhave a start and stop year.")
-        ShowMessage("The highway projects are controlled\nwith the ProjectList.csv")
+        ShowMessage(
+          "The PNR lots have a start and stop year.\n" +
+          "The highway/transit projects are controlled with csv files:\n" +
+          "HighwayProjectList.csv\n" +
+          "TransitProjectList.csv"
+        )
     enditem
 	button "Inputs" 34, 2, 29, 1.5 do
 	    RunDbox("Inputs")
