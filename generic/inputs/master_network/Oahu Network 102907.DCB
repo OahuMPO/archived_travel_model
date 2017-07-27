@@ -2,7 +2,7 @@
 322
 "ID",I,1,4,0,4,0,,"","",,"Blank",
 "Road Name",C,5,21,0,21,0,,"","New Road Name including centroid designation|",,"Copy",
-"Road_Name2",C,26,21,0,21,0,,"","Contains secondary information (like if it is a zipper lane)",,"Blank",
+"Road_Name2",C,26,21,0,21,0,,"","Contains secondary information (like if it is a zipper lane)",,"Copy",
 "CountID",I,47,4,0,8,0,,"","ID of count station",,"Copy",
 "Obs-Flow",I,51,4,0,8,0,,"","Daily count volume (AADT)",,"Copy",
 "Scr_Line",I,199,4,0,8,0,,"","this screenline comes from the count layer and is used in summaries for the model.  However, some of the links included in this column do not have counts and therefore are used for person travel and transit   (note*-for now scrln23 is a dummy so that reports dont have to be redone.)",,"Copy",
