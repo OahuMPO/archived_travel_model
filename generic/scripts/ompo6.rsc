@@ -306,6 +306,8 @@ Macro "OMPO6" (path, Options, jump)
     if !ret_value then Throw("Error running V6 Summaries")
     // Run the ej travel time macro
     RunMacro("EJ Trav Time Table")
+    // Run the volume adjustment macro
+    RunMacro("Volume Adjustment")
     if stop_after_each_step then do
       DestroyProgressBar()
       Return(ShowMessage("Done with 'Summaries'"))

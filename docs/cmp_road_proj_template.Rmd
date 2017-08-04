@@ -56,7 +56,7 @@ In the map below, the blue line shows the extent of the project as modeled.
 The link or links highlighted red are the ones selected to report changes in
 volume and volume-to-capacity (V/C) ratios.
 ```{r}
-dir <- paste0(model_dir, "/scenarios/CMP_2016/cmp_proj_", id)
+dir <- paste0(cmp_dir, "/cmp_proj_", id)
 shp <- paste0(dir, "/reports/proj_shapefile.shp")
   
 shp <- readShapeSpatial(shp, proj4string = CRS("+init=nad83:5101"))

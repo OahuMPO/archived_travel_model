@@ -169,6 +169,11 @@ Macro "Initial Setup" (scenarioDirectory, hwyfile, rtsfile,fixgdwy)
     link_lyr = lyrs[5]
 
 	  //*********************************Tag Route Stops to Line Layer Nodes*************************************************
+    a_fields = {
+      {"NODENUMBER", "Integer", 10, ,,,,}
+    }
+    RunMacro("Add Fields", stp_lyr, a_fields)
+
    n = TagRouteStopsWithNode(rte_lyr, , "NODENUMBER", .1)
    if n > 0 then Throw(String(n) + " stops not tagged with node ID")
 
