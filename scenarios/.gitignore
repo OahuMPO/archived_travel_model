@@ -1,5 +1,8 @@
-# Ignore everything in this folder
+# Ignore everything except the project lists in official scenario folders
 *
-# Except the .gitignore file
-!.gitignore
-# This is done to keep the repository as small as possible
+!Base_2012/
+!Base_2012/HighwayProjectList.csv
+!Base_2012/TransitProjectList.csv
+!LRTP2040/
+!LRTP2040/HighwayProjectList.csv
+!LRTP2040/TransitProjectList.csv
