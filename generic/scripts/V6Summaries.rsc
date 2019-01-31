@@ -14,6 +14,7 @@ Macro "V6 Summaries" (scenarioDirectory)
   RunMacro("Transit Boardings", scenarioDirectory)
   RunMacro("Lane Miles by LOS", scenarioDirectory)
   RunMacro("Trips by Mode", scenarioDirectory)
+  RunMacro("Detailed Modal Summaries", scenarioDirectory)
 
   Return(1)
 
@@ -1035,3 +1036,158 @@ Macro "Trips by Mode" (scenarioDirectory)
   df = CreateObject("df", TBL)
   df.write_csv(rep_dir + "/trips by class and mode.csv")
 EndMacro
+
+/*
+Appends skim info to the trip tables and uses them to create summaries.
+*/
+
+Macro "Detailed Modal Summaries" (scenarioDirectory)
+
+  output_dir = scenarioDirectory + "\\outputs"
+  report_dir = scenarioDirectory + "\\reports"
+  
+  // Export the trip csv file to a bin so it can be modified and
+  // add a skim length field.
+  trip_csv = output_dir + "\\trips.csv"
+  vw = OpenTable("trips", "CSV", {trip_csv})
+  trip_bin = output_dir + "\\trips.bin"
+  ExportView(vw + "|", "FFB", trip_bin, , )
+  CloseView(vw)
+  vw_trips = OpenTable("trips", "FFB", {trip_bin})
+  a_fields = {
+    {"skim_length", "Real", 10, 2}
+  }
+  RunMacro("Add Fields", vw_trips, a_fields, {null})
+
+  // Export matrix to table for joining
+  skim_mtx_file = output_dir + "\\hwyAM_sov.mtx"
+  skim_mtx = OpenMatrix(skim_mtx_file, )
+  opts = null
+  opts.Tables = "Length (Skim)"
+  skim_bin = output_dir + "\\hwyAM_sov.bin"
+  CreateTableFromMatrix(skim_mtx, skim_bin, "FFB", opts)
+  vw_skim = OpenTable("skim", "FFB", {skim_bin})
+
+  // Fill the skim info
+  jv = JoinViewsMulti(
+    "jv",
+    {vw_trips + ".originTaz", vw_trips + ".destinationTaz"},
+    {vw_skim + ".Origin", vw_skim + ".Destination"},
+  )
+  v = GetDataVector(jv + "|", vw_skim + ".[Length (Skim)]", )
+  SetDataVector(jv + "|", vw_trips + ".skim_length", v, )
+  CloseView(jv)
+  CloseView(vw_skim)
+  
+
+  trip_bin = output_dir + "\\trips.bin"
+  vw_trips = OpenTable("trips", "FFB", {trip_bin})
+
+  // Prep data frame for summary
+  df = CreateObject("df")
+  opts = null
+  opts.view = vw_trips
+  df.read_view(opts)
+
+  /* The mode codes from the model documentation
+  Trip Mode: Trip Mode:
+  1 Drive Alone no toll – 1-occupant auto (SOV) no toll
+  2 Drive Alone toll – 1-occupant auto (SOV) toll lane
+  3 Shared Ride 2 no toll – 2-occupant auto (HOV) no toll
+  4 Shared Ride 2 toll – 2-occupant auto (HOV) toll lane
+  5 Shared Ride 3+ no toll – 3-or-more-occupant auto (HOV) no toll
+  6 Shared Ride 3+ toll – 3-or-more-occupant auto (HOV) toll lane
+  7 Walk – Walk to destination (Auxiliary
+  8 Bike – Bike to destination (Auxiliary
+  9 WK-Local – Walk to a local bus-only transit path (Walk to
+  Transit)
+  10 WK-Exp – Walk to a local or premium bus transit path (Walk
+  to Transit)
+  11 WK-FG – Walk to a fixed-guideway transit path (Walk to
+  Transit)
+  12 KNR – Get dropped off at a transit stop and take transit (Drive
+  to Transit)
+  13 PNR-Informal – Drive to an informal park-n-ride lot and taking
+  transit (Drive to Transit)
+  14 PNR-Formal – Drive to a formal park-n-ride lot and taking
+  transit (Drive to Transit)
+  15 School Bus – School bus for school tours only
+ */
+
+  df.tbl.mode = 
+    if df.tbl.tripMode <= 2 then "drive"
+    else if df.tbl.tripMode <= 6 then "carpool"
+    else if df.tbl.tripMode <= 8 then "bike/walk"
+    else if df.tbl.tripMode <= 11 then "transit"
+    else "other"
+  
+  // See line 102 of ompo_tbm.properties for the order of purpose, but the
+  // firstPurposeNumber is not correct. A tabulation of origin purposes
+  // confirmed the true equivalency:
+  //
+  // originPurpose	Count	
+  // -1	            915665	Home
+  // 0	            288001	Work
+  // 1	            28579	  University
+  // 2	            125804	School
+  // 3	            304160	Escort
+  // 4	            464942	Maintanence
+  // 5	            285314	Discretionary
+  // 6	            38783	  At-work
+  df.tbl.originPurpose =
+    if df.tbl.originPurpose = -1 then "Home"
+    else if df.tbl.originPurpose = 0 then "Work"
+    else if df.tbl.originPurpose = 2 then "School"
+    else "Other"
+  df.tbl.destinationPurpose =
+    if df.tbl.destinationPurpose = -1 then "Home"
+    else if df.tbl.destinationPurpose = 0 then "Work"
+    else if df.tbl.destinationPurpose = 2 then "School"
+    else "Other"  
+  // Work takes precedence over school. In other words, if either end is work,
+  // then assign it as work, even if the other end is school.
+  df.tbl.purpose = 
+    if df.tbl.originPurpose = "Work" or df.tbl.destinationPurpose = "Work" then "Work"
+    else if df.tbl.originPurpose = "School" or df.tbl.destinationPurpose = "School" then "School"
+    else "Other"
+
+  // Percentages by purpose and mode
+  df2 = df.copy()
+  df2.group_by({"purpose", "mode"})
+  agg = null
+  agg.expansionFactor = {"sum"}
+  df2.summarize(agg)
+  df2.rename("sum_expansionFactor", "trips")
+  temp = df2.copy()
+  temp.group_by("purpose")
+  agg = null
+  agg.trips = {"sum"}
+  temp.summarize(agg)
+  df2.left_join(temp, "purpose", "purpose")
+  df2.mutate("percent", df2.tbl.trips / df2.tbl.sum_trips * 100)
+  df2.write_csv(report_dir + "\\trips_by_purpose_and_mode.csv")
+
+  // Average trip length by mode
+  df3 = df.copy()
+  df3.group_by("mode")
+  agg = null
+  agg.skim_length = {"avg"}
+  df3.summarize(agg)
+  df3.write_csv(report_dir + "\\average_trip_length_by_mode.csv")
+
+  // Modal percent for all trips less than three miles
+  df4 = df.copy()
+  df4.filter("skim_length < 3")
+  df4.group_by("mode")
+  agg = null
+  agg.expansionFactor = {"sum"}
+  df4.summarize(agg)
+  df4.rename("sum_expansionFactor", "trips")
+  df4.mutate(
+    "percent",
+    df4.tbl.trips / VectorStatistic(df4.tbl.trips, "sum", ) * 100
+  )
+  df4.write_csv(report_dir + "\\trips_under_3_miles_by_mode.csv")
+
+  RunMacro("Close All")
+endmacro
