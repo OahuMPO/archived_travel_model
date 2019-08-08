@@ -1,9 +1,6 @@
 
 Macro "V6 Summaries" (scenarioDirectory)
 
-  // for testing
-  // scenarioDirectory = "C:\\projects\\Honolulu\\Version6\\OMPORepo\\scenarios\\LRTP2040"
-
   RunMacro("Close All")
   RunMacro("Additional Network Calculations", scenarioDirectory)
   RunMacro("Summarize by FT and AT", scenarioDirectory)
@@ -16,7 +13,7 @@ Macro "V6 Summaries" (scenarioDirectory)
   RunMacro("Trips by Mode", scenarioDirectory)
   RunMacro("Append Skims to Trip Table", scenarioDirectory)
   RunMacro("Detailed Modal Summaries", scenarioDirectory)
-  RunMacro("Close All", scenarioDirectory)
+  RunMacro("Close All", scenarioDirectory + "\\..\\..")
 
   Return(1)
 
