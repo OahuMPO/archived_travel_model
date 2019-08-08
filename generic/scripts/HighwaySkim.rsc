@@ -231,6 +231,7 @@ Macro "Highway Skim" (scenarioDirectory, hwyfile,  tpen, nzones, iftoll, iterati
     end
     
     for i = 1 to periods.length do
+      period = periods[i]
     // Link selection for skimming:
     //
     // Limit field:
@@ -307,19 +308,27 @@ Macro "Highway Skim" (scenarioDirectory, hwyfile,  tpen, nzones, iftoll, iterati
      		Opts.Global.[Update Network Fields].[Link Type] = {"*_FACTYPE", link_lyr+".[AB FACTYPE]", link_lyr+".[BA FACTYPE]"}
      		Opts.Global.[Update Network Fields].Formulas = {}
      		
+        // kyle: updating this to always include travel time info
+        Opts.Global.[Update Network Fields].Links = {
+          {"time_" + period,{ link_lyr+".AB_"+period+"TIME",  link_lyr+".BA_"+period+"TIME", , , "True"}}
+        }
+        ret_value = RunMacro("TCB Run Operation", "Highway Network Setting", Opts, &Ret)
+        if !ret_value then Throw()
+
      		if(iteration>1) then do
      	    
      	    //update the highway network with the fields from the line layer (that were computed based on the flow table)
      	    if(iftoll=0) then do
-     	      Opts.Global.[Update Network Fields].Links = {{costField[i],{ link_lyr+".AB_"+periods[i]+"SKIMCOST",  link_lyr+".BA_"+periods[i]+"SKIMCOST", , , "True"}}}     
-            end
-            else do
+     	      Opts.Global.[Update Network Fields].Links = {
+               {costField[i],{ link_lyr+".AB_"+periods[i]+"SKIMCOST",  link_lyr+".BA_"+periods[i]+"SKIMCOST", , , "True"}}
+            }
+          end
+          else do
      	      Opts.Global.[Update Network Fields].Links = {{costField[i],        { link_lyr+".AB_"+periods[i]+"SKIMCOST",  link_lyr+".BA_"+periods[i]+"SKIMCOST", , , "True"}},
      	                                                   {costField[i]+"_DATL",{ link_lyr+".AB_"+periods[i]+"SKIMCOST_DATL",  link_lyr+".BA_"+periods[i]+"SKIMCOST_DATL", , , "True"}},
      	                                                   {costField[i]+"_S2TL",{ link_lyr+".AB_"+periods[i]+"SKIMCOST_S2TL",  link_lyr+".BA_"+periods[i]+"SKIMCOST_S2TL", , , "True"}},
      	                                                   {costField[i]+"_S3TL",{ link_lyr+".AB_"+periods[i]+"SKIMCOST_S3TL",  link_lyr+".BA_"+periods[i]+"SKIMCOST_S3TL", , , "True"}}}     
-     
-            end
+          end
         end
 
     		ret_value = RunMacro("TCB Run Operation", "Highway Network Setting", Opts, &Ret)
@@ -357,7 +366,11 @@ Macro "Highway Skim" (scenarioDirectory, hwyfile,  tpen, nzones, iftoll, iterati
     		Opts.Field.Nodes = node_lyr+".ID"
 	    
 	    	// always skim length
-	    	skmfld={{"Length","All"}}
+        // kyle: and travel time
+	    	skmfld={
+          {"Length","All"},
+          {"time_" + period, "All"}
+        }
         
     		// skim toll length
     		set = "Toll Length"
