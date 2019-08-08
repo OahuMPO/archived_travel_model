@@ -310,7 +310,7 @@ Macro "Highway Skim" (scenarioDirectory, hwyfile,  tpen, nzones, iftoll, iterati
      		
         // kyle: updating this to always include travel time info
         Opts.Global.[Update Network Fields].Links = {
-          {"time_" + period,{ link_lyr+".AB_"+period+"TIME",  link_lyr+".BA_"+period+"TIME", , , "True"}}
+          {"time", { link_lyr+".AB_"+period+"TIME",  link_lyr+".BA_"+period+"TIME", , , "True"}}
         }
         ret_value = RunMacro("TCB Run Operation", "Highway Network Setting", Opts, &Ret)
         if !ret_value then Throw()
@@ -369,7 +369,7 @@ Macro "Highway Skim" (scenarioDirectory, hwyfile,  tpen, nzones, iftoll, iterati
         // kyle: and travel time
 	    	skmfld={
           {"Length","All"},
-          {"time_" + period, "All"}
+          {"time", "All"}
         }
         
     		// skim toll length

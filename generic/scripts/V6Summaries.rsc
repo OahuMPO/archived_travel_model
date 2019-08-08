@@ -14,7 +14,9 @@ Macro "V6 Summaries" (scenarioDirectory)
   RunMacro("Transit Boardings", scenarioDirectory)
   RunMacro("Lane Miles by LOS", scenarioDirectory)
   RunMacro("Trips by Mode", scenarioDirectory)
+  RunMacro("Append Skims to Trip Table", scenarioDirectory)
   RunMacro("Detailed Modal Summaries", scenarioDirectory)
+  RunMacro("Close All", scenarioDirectory)
 
   Return(1)
 
@@ -1038,7 +1040,102 @@ Macro "Trips by Mode" (scenarioDirectory)
 EndMacro
 
 /*
-Appends skim info to the trip tables and uses them to create summaries.
+Not doing transit skims. The multi-part path approach makes it impossible.
+(You don't know which stops they took).
+*/
+
+Macro "Append Skims to Trip Table" (scenarioDirectory)
+  output_dir = scenarioDirectory + "\\outputs"
+  ej_dir = RunMacro("Normalize Path", scenarioDirectory + "\\..\\..")
+  trip_csv = output_dir + "\\trips.csv"
+  mode_csv = ej_dir + "\\generic\\ej\\mode_codes.csv"
+  period_csv = ej_dir + "\\generic\\ej\\period_codes.csv"
+
+  // Export the trip csv file to a FFB table so it can be modified
+  vw = OpenTable("trips", "CSV", {trip_csv})
+  temp_file = GetTempFileName(".bin")
+  ExportView(vw + "|", "FFB", temp_file, , )
+  vw_trips = OpenTable("trips", "FFB", {temp_file})
+  CloseView(vw)
+  
+  // // Translate mode and period into strings
+  RunMacro(
+    "Add Fields", vw_trips, {
+      {"mode2", "character", 10},
+      {"period2", "character", 10}
+    },
+  )
+  vw_mode = OpenTable("mode", "CSV", {mode_csv})
+  jv = JoinViews("jv", vw_trips + ".tripMode", vw_mode + ".Mode", )
+  v = GetDataVector(jv + "|", vw_mode + ".mode2", )
+  SetDataVector(jv + "|", vw_trips + ".mode2", v, )
+  CloseView(jv)
+  CloseView(vw_mode)
+  vw_period = OpenTable("mode", "CSV", {period_csv})
+  jv = JoinViews("jv", vw_trips + ".period", vw_period + ".Period", )
+  v = GetDataVector(jv + "|", vw_period + ".Value", )
+  SetDataVector(jv + "|", vw_trips + ".period2", v, )
+  CloseView(jv)
+  CloseView(vw_period)
+ 
+  // join skim info
+  SetView(vw_trips)
+  current_trips = CreateSet("current_trips")
+  RunMacro(
+    "Add Fields", vw_trips,
+    {
+      {"skim_time", "Real", 10, 2},
+      {"skim_length", "Real", 10, 2}
+    },
+  )
+  a_tod = {"EA", "AM", "MD", "PM", "EV"}
+  // a_mode = {"hwy", "transit"}
+  a_mode = {"hwy"}
+  a_submode.hwy = {"sov", "hov2", "hov3", }
+  a_submode.transit = {"ktw", "ptw", "wexp", "wfxg", "wloc", "wtk", "wtp"}
+  for tod in a_tod do
+    for mode in a_mode do
+      for submode in a_submode.(mode) do
+        
+        // Select the trips to fill info for
+        query = "Select * where mode2 = '" + submode + "_notoll' and period2 = '" + tod + "'"
+        n = SelectByQuery(current_trips, "several", query)
+        if n = 0 then continue
+      
+        // Open the appropriate matrix
+        mtx_file = output_dir + "\\" + mode + tod + "_" + submode + ".mtx"
+        mtx = OpenMatrix(mtx_file, )
+
+        // This method is available in TC 7.0 and above
+        // c_time = CreateMatrixCurrency(mtx, "time (Skim)", , , )
+        // c_length = CreateMatrixCurrency(mtx, "Length (Skim)", , , )
+        // FillViewFromMatrix(vw_trips + "|" + current_trips, vw_trips + ".originTaz", vw_trips + ".destinationTaz", {
+        //   {vw_trips + ".skim_time", c_time},
+        //   {vw_trips + ".skim_length", c_length}
+        // })
+
+        // In TC 6, must use this approach
+        temp_file = GetTempFileName(".bin")
+        CreateTableFromMatrix(mtx, temp_file, "FFB", )
+        vw_temp = OpenTable("temp", "FFB", {temp_file})
+        jv = JoinViewsMulti("jv", {vw_trips + ".originTaz", vw_trips + ".destinationTAZ"}, {vw_temp + ".Origin", vw_temp + ".Destination"}, )
+        v_time = GetDataVector(jv + "|" + current_trips, "time (Skim)", )
+        v_length = GetDataVector(jv + "|" + current_trips, "Length (Skim)", )
+        SetDataVector(jv + "|" + current_trips, "skim_time", v_time, )
+        SetDataVector(jv + "|" + current_trips, "skim_length", v_length, )
+      end
+    end
+  end
+  
+  CloseView(jv)
+  CloseView(vw_temp)
+  trip_bin = output_dir + "\\trips.bin"
+  ExportView(vw_trips + "|", "FFB", trip_bin, , )
+  CloseView(vw_trips)
+endmacro
+
+/*
+Uses the trip list to create modal summaries.
 */
 
 Macro "Detailed Modal Summaries" (scenarioDirectory)
@@ -1046,40 +1143,6 @@ Macro "Detailed Modal Summaries" (scenarioDirectory)
   output_dir = scenarioDirectory + "\\outputs"
   report_dir = scenarioDirectory + "\\reports"
   
-  // Export the trip csv file to a bin so it can be modified and
-  // add a skim length field.
-  trip_csv = output_dir + "\\trips.csv"
-  vw = OpenTable("trips", "CSV", {trip_csv})
-  trip_bin = output_dir + "\\trips.bin"
-  ExportView(vw + "|", "FFB", trip_bin, , )
-  CloseView(vw)
-  vw_trips = OpenTable("trips", "FFB", {trip_bin})
-  a_fields = {
-    {"skim_length", "Real", 10, 2}
-  }
-  RunMacro("Add Fields", vw_trips, a_fields, {null})
-
-  // Export matrix to table for joining
-  skim_mtx_file = output_dir + "\\hwyAM_sov.mtx"
-  skim_mtx = OpenMatrix(skim_mtx_file, )
-  opts = null
-  opts.Tables = "Length (Skim)"
-  skim_bin = output_dir + "\\hwyAM_sov.bin"
-  CreateTableFromMatrix(skim_mtx, skim_bin, "FFB", opts)
-  vw_skim = OpenTable("skim", "FFB", {skim_bin})
-
-  // Fill the skim info
-  jv = JoinViewsMulti(
-    "jv",
-    {vw_trips + ".originTaz", vw_trips + ".destinationTaz"},
-    {vw_skim + ".Origin", vw_skim + ".Destination"},
-  )
-  v = GetDataVector(jv + "|", vw_skim + ".[Length (Skim)]", )
-  SetDataVector(jv + "|", vw_trips + ".skim_length", v, )
-  CloseView(jv)
-  CloseView(vw_skim)
-  
-
   trip_bin = output_dir + "\\trips.bin"
   vw_trips = OpenTable("trips", "FFB", {trip_bin})
 
