@@ -1061,7 +1061,7 @@ Macro "Append Skims to Trip Table" (scenarioDirectory)
   // // Translate mode and period into strings
   RunMacro(
     "Add Fields", vw_trips, {
-      {"mode2", "character", 10},
+      {"mode2", "character", 12},
       {"period2", "character", 10}
     },
   )
