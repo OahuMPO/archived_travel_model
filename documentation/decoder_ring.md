@@ -82,3 +82,47 @@ The remaining seven values are still somewhat of a mystery. There are 10 stop
 purposes coded for stop frequency and location models (see Table 28 on page 82
 of the _Final . Moreover, they're reasons for stopping, which is subtly
 different from the activity undertaken at the stop location.
+
+### Mode
+
+The following mode codes are used to define both the primary mode for tours and
+the mode for individual trips.
+
+| Code | Mode         |
+|------|--------------|
+| 1    | sov_notoll   |
+| 2    | sov_toll     |
+| 3    | hov2_notoll  |
+| 4    | hov2_toll    |
+| 5    | hov3_notoll  |
+| 6    | hov3_toll    |
+| 7    | walk         |
+| 8    | bike         |
+| 9    | w_loc        |
+| 10   | w_exp        |
+| 11   | w_fg         |
+| 12   | knr          |
+| 13   | pnr_informal |
+| 14   | pnr_formal   |
+| 15   | school_bus   |
+
+### Race
+
+The following racial codes are found on the synthetic person records. The
+categories line up with the PUMS data on which the synthetic data is based.
+
+  * AIorAN: American Indian or Alaskan Native
+  * HIorPI: Hawaiian or Pacific Islander
+
+| Code | Race    |
+|------|---------|
+| 1    | White   |
+| 2    | Black   |
+| 3    | AIorAN  |
+| 4    | Asian   |
+| 5    | HIorPI  |
+| 6    | Other   |
+| 7    | TwoPlus |
+
+These were determined by comparing the synthetic population racial distribution
+back to the PUMS data and infering.
