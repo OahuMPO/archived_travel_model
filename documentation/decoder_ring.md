@@ -85,26 +85,25 @@ different from the activity undertaken at the stop location.
 
 ### Mode
 
-The following mode codes are used to define both the primary mode for tours and
-the mode for individual trips.
+The following mode codes are used to define both the primary mode for tours and the mode for individual trips (tour segments). The `Mode` code was used in V6 model development and current applications, while the `trip_mode` identifier will be used in future updates. Note that the auto `trip_mode`s will include a `T` suffix for toll facilities, and that all multi-occupant vehicle are eligible to use HOV lanes.  
 
-| Code | Mode         |
-|------|--------------|
-| 1    | sov_notoll   |
-| 2    | sov_toll     |
-| 3    | hov2_notoll  |
-| 4    | hov2_toll    |
-| 5    | hov3_notoll  |
-| 6    | hov3_toll    |
-| 7    | walk         |
-| 8    | bike         |
-| 9    | w_loc        |
-| 10   | w_exp        |
-| 11   | w_fg         |
-| 12   | knr          |
-| 13   | pnr_informal |
-| 14   | pnr_formal   |
-| 15   | school_bus   |
+| Code | Mode         | trip_mode  | description                         |
+|------|--------------|------------|-------------------------------------|
+| 1    | sov_notoll   | sov        | Single occupancy auto               |
+| 2    | sov_toll     | sov_T      | Single occupancy auto - toll        |
+| 3    | hov2_notoll  | a2p        | Auto with 2 persons                 |
+| 4    | hov2_toll    | a2p_T      | Auto with 2 persons - toll          |
+| 5    | hov3_notoll  | a3p        | Auto with 3+ persons                |
+| 6    | hov3_toll    | a3p_T      | Auto with 3+ persons - toll         |
+| 7    | walk         | walk       | Walk                                |
+| 8    | bike         | bike       | Bicycle                             |
+| 9    | w_loc        | w_loc      | Walk access to local bus            |
+| 10   | w_exp        | w_exp      | Walk access to express bus          |
+| 11   | w_fg         | w_rail     | Walk access to rail                 |
+| 12   | knr          | knr        | Kiss-n-ride transit access          |
+| 13   | pnr_informal | pnr_i      | Informal park-n-ride transit access |
+| 14   | pnr_formal   | pnr_f      | Formal park-n-ride transit access   |
+| 15   | school_bus   | school_bus | School bus                          |
 
 ### Race
 
