@@ -50,38 +50,33 @@ temporal_offsets <- tibble(hour = repeater, period = c(0, 43:48, 1:42))
 
 ### Origin and destination purpose
 
-The activities at the origin and destination can be used to classify trips (tour
-segments) by traditional home-based and non-home-based trip purposes. These data
-are coded as `originPurpose` and `destinationPurpose` in the trip list built
-from tour lists, as well as `ORIG_PURP` and `DEST_PURP` in some of the model
-estimation scripts and data files. There are eight levels associated with these
-variables, ranging from -1 to 6. However, there is no reference anywhere to what
-these integer indices correspond to. Both are of course defined in the 2012
-Household Travel Survey data and documentation used to build the model, but they
-used 27 definitions (see OHTS pp. 93-94) that were apparently condensed to the
-eight values used in the model. The code that made the translations is not found
-in the project archives, nor is an equivalency table found anywhere in the
-documentation. One can only include that the omission was intentional, or that
-their definition was systematically removed from the archives before we started
-on the project.
+The activities at the origin and destination can be used to classify trips (tour segments) by traditional home-based and non-home-based trip purposes. These data are coded as `originPurpose` and `destinationPurpose` in the trip list built from tour lists, as well as `ORIG_PURP` and `DEST_PURP` in some of the older model estimation scripts and data files. There are eight levels associated with these variables, ranging from -1 to 6. However, there is no reference anywhere to what these integer indices correspond to. By tracing through [ResidentTrip.java](https://github.com/wsp-sag/ompo_v6/blob/master/com/pb/ompo/residentmodel/ResidentTrip.java) in the V6 repo we infer that the purposes match a list of tour purposes in draft documentation that inexplicably never made it into the final version. The values of this variable appear to correspond to the following purposes:
 
-(The trip records are also devoid of any information about tour purpose, or even
-broad classification such as mandatory or discretionary. I've never come across
-a travel model where such information is not coded on corresponding trip
-records, but we'll leave discussion of that for another time.)
+| Code | Description                     |
+|:----:|---------------------------------|
+|  -1  | Home (tour anchor)              |
+|   0  | Work                            |
+|   1  | University/college              |
+|   2  | School (K-12)                   |
+|   3  | Escorting (transporting others) |
+|   4  | Maintenance                     |
+|   5  | Discretionary                   |
+|   6  | At-work sub-tour                |
 
-About two-thirds of the trip records have -1, which is often used to portably
-code missing values, coded for either origin or destination purpose. Curiously,
-none have that coded for both purposes. Cross-tabulating these variables with
-`firstOrigin` and `lastDestination` variables on the trip record revealed that
--1 is coded for the tour origin, which since is the household the traveler
-belongs to since all tours coded in the model are closed (i.e., begin and end at
-home). Thus, -1 can be replaced with a 'home' label.
+With this understanding we can map combinations of `originPurpose` and `destinationPurpose` to the trip purposes shown below. 
 
-The remaining seven values are still somewhat of a mystery. There are 10 stop
-purposes coded for stop frequency and location models (see Table 28 on page 82
-of the _Final . Moreover, they're reasons for stopping, which is subtly
-different from the activity undertaken at the stop location.
+<img src="trip-purpose-mapping.png" width="640">
+
+The trip purposes follow traditional definitions: home-based work (HBW), home-based university (HBU), home-based school (HBS), home-based other (HBO), work-related non-home-based (NHBW), and other non-home-based (NHBO) trips. If comparing these data to AirSage data only HBW, HBO (as an aggregation of other home-based purposes), and NHB are defined.
+
+Strictly speaking a trip between home and at-work sub-tour is invalid:
+
+```{r}
+originPurpose == -1 & destinationPurpose == 6   # and vice-versa
+```
+
+If a traveler really did visit home during the middle of the day that would close the tour, with the return to the office (and presumably home again in the evening) coded as a second mandatory tour. In this case we assume that the original developers allowed that as an exception to traditional tour definition to simplify their handling in the model (i.e., obviating the need to run tour mode choice a second time, with possibility of choosing a different mode in the afternoon than they did in the morning).
+
 
 ### Mode
 
