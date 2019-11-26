@@ -3,6 +3,7 @@ Macro "V6 Summaries" (scenarioDirectory)
 
   RunMacro("Close All")
   RunMacro("Additional Network Calculations", scenarioDirectory)
+  RunMacro("Tag Links with TAZ", scenarioDirectory)
   RunMacro("Summarize by FT and AT", scenarioDirectory)
   RunMacro("Emission Estimation", scenarioDirectory)
   RunMacro("V/C Map", scenarioDirectory)
@@ -109,6 +110,29 @@ Macro "Additional Network Calculations" (scenarioDirectory)
   SetDataVector(lLyr + "|", "BA_Delay_Total", TOTAL.BA, )
 
 EndMacro
+
+/*
+Tags the highway links with the nearest TAZ
+*/
+
+Macro "Tag Links with TAZ" (scenarioDirectory)
+
+  inputDir = scenarioDirectory + "\\inputs"
+  hwyDBD = inputDir + "\\network\\Scenario Line Layer.dbd"
+  tazDBD = inputDir + "\\taz\\Scenario TAZ Layer.dbd"
+
+  opts.file = hwyDBD
+  {map, {nlyr, llyr}} = RunMacro("Create Map", opts)
+  {tlyr} = GetDBLayers(tazDBD)
+  tlyr = AddLayer(map, tlyr, tazDBD, tlyr, )
+
+  a_fields = {{"TAZ", "Integer", 10, }}
+  RunMacro("Add Fields", llyr, a_fields)
+  SetLayer(llyr)
+  TagLayer("Value", llyr + "|", llyr + ".TAZ", tlyr, tlyr + ".TAZ")
+
+  RunMacro("Close All")
+endmacro
 
 /*
   This macro provides additional summaries including:
