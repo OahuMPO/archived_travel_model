@@ -4,6 +4,7 @@ Macro "V6 Summaries" (scenarioDirectory)
   RunMacro("Close All")
   RunMacro("Additional Network Calculations", scenarioDirectory)
   RunMacro("Tag Links with TAZ", scenarioDirectory)
+  RunMacro("Create Count Comparison Map", scenarioDirectory)
   RunMacro("Summarize by FT and AT", scenarioDirectory)
   RunMacro("Emission Estimation", scenarioDirectory)
   RunMacro("V/C Map", scenarioDirectory)
@@ -132,6 +133,36 @@ Macro "Tag Links with TAZ" (scenarioDirectory)
   TagLayer("Value", llyr + "|", llyr + ".TAZ", tlyr, tlyr + ".TAZ")
 
   RunMacro("Close All")
+endmacro
+
+/*
+Creates a map of model volumes compared to count volumes. Is only a valid map for the base year
+scenario.
+*/
+
+Macro "Create Count Comparison Map" (scenarioDirectory)
+  inputDir = scenarioDirectory + "\\inputs"
+  hwyDBD = inputDir + "\\network\\Scenario Line Layer.dbd"
+
+  opts.output_file = scenarioDirectory + "\\reports\\count_comparison_map.map"
+  opts.hwy_dbd = hwyDBD
+  opts.count_id_field = "CountID"
+  opts.count_field = "Obs-Flow"
+  opts.vol_field = "TOT_FLOW_DAILY"
+  opts.field_suffix = "all"
+  RunMacro("Count Difference Map", opts)
+
+  // Open the map and hide centroid connectors and walk access links
+  map = OpenMap(opts.output_file, )
+  llyr = GetLayer()
+  SetLayer(llyr)
+  qry = "Select * where [AB FACTYPE] = 197 or [AB FACTYPE] = 12"
+  n = SelectByQuery("to hide", "several", qry)
+  if n > 0 then SetDisplayStatus(llyr + "|to hide", "Invisible")
+  RedrawMap(map)
+  RestoreWindow(GetWindowName())
+  SaveMap(map, opts.output_file)
+  CloseMap(map)
 endmacro
 
 /*
