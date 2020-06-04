@@ -1098,10 +1098,17 @@ Not doing transit skims. The multi-part path approach makes it impossible.
 
 Macro "Append Skims to Trip Table" (scenarioDirectory)
   output_dir = scenarioDirectory + "\\outputs"
-  ej_dir = RunMacro("Normalize Path", scenarioDirectory + "\\..\\..")
+
+  // Use the ui location to find the ej directory
+  uiDBD = GetInterface()
+  a_path = SplitPath(uiDBD)
+  uiDir = a_path[1] + a_path[2]
+  ej_dir = uiDir + "../ej"
+  ej_dir = RunMacro("Normalize Path", ej_dir)
+
   trip_csv = output_dir + "\\trips.csv"
-  mode_csv = ej_dir + "\\generic\\ej\\mode_codes.csv"
-  period_csv = ej_dir + "\\generic\\ej\\period_codes.csv"
+  mode_csv = ej_dir + "\\mode_codes.csv"
+  period_csv = ej_dir + "\\period_codes.csv"
 
   // Export the trip csv file to a FFB table so it can be modified
   vw = OpenTable("trips", "CSV", {trip_csv})
