@@ -18,7 +18,7 @@ dBox "CMP"
   init do
     shared year, seYear, ec_list, nonec_list
     year = 2020
-    seYear = 2040
+    seYear = 2020
 
     // Determine UI location
     uiDBD = GetInterface()
@@ -59,7 +59,7 @@ dBox "CMP"
   // Specify other EC conditions
   text 2, 6 variable: "Specify other EC conditions"
   Edit Int "rdwy year item" same, after, 10, 1
-    prompt: "EC Transit Year" variable: year
+    prompt: "EC PNR Year" variable: year
   Edit Int "rdwy year item" same, after, 10, 1
     prompt: "EC SE Year" variable: seYear
 
@@ -117,10 +117,11 @@ Macro "CMP Wrapper"
     skip:
     on error default
 
-    // Create the project list csv for that scenario
+    // Create the project list csvs for that scenario
     df = df_ec.copy()
     df.mutate("ProjID", V2A(df.tbl.ProjID) + {proj_id})
-    df.write_csv(scen_dir + "/ProjectList.csv")
+    df.write_csv(scen_dir + "/HighwayProjectList.csv")
+    CopyFile(ec_dir + "TransitProjectList.csv", scen_dir + "\\TransitProjectList.csv")
 
     // Run scenario manager steps
     RunMacro("SetDirectoryDefaults")
