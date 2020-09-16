@@ -802,6 +802,10 @@ Macro "Trav Time Map - Zonal" (scenarioDirectory)
   CloseMap(map)
 EndMacro
 
+/*
+This macro calculates daily boardings/alightings at each stop. Excel/R/Python can be used to quickly
+summarize by route, node id, or other dimensions.
+*/
 
 Macro "Transit Boardings" (scenarioDirectory)
 
@@ -819,6 +823,11 @@ Macro "Transit Boardings" (scenarioDirectory)
   map = RunMacro("G30 new map", hwyDBD, "False")
   {nLyr,lLyr} = GetDBLayers(hwyDBD)
   {rLyr,sLyr} = AddRouteSystemLayer(map,"Routes",rtsFile,)
+
+  // Get list of every stop ID and its route ID
+  v_stopID = GetDataVector(sLyr + "|","ID",)
+  v_stopRouteID = GetDataVector(sLyr + "|","Route_ID",)
+  v_stopNodeID = GetDataVector(sLyr + "|","NODENUMBER",)
 
   // Get list of all route names, numbers, and modes
   v_rtsID   = GetDataVector(rLyr + "|","Route_ID",)
@@ -838,36 +847,40 @@ Macro "Transit Boardings" (scenarioDirectory)
   a_tod = {"EA","AM","MD","PM","EV"}
 
   // Loop over the various transit tables to aggregate boardings
-  // Sample table name of ON/OFF tale collapsed by route
-  // PNR-FML_MD_ONOFF_COLL_JOIN.bin
+  // Sample table name of ON/OFF table:
+  // PNR-FML_MD_ONOFF.bin
 
   for t = 1 to a_tod.length do
     tod = a_tod[t]
 
-    // Create vector to store boardings across access modes for current tod
+    // Create vector to store boardings by stop across access modes for current tod
     opts = null
     opts.Constant = 0
-    v_rtsOn = Vector(v_rtsID.length, "Double", opts)
+    v_stopsOn = Vector(v_stopID.length, "Double", opts)
+    v_stopsOff = Vector(v_stopID.length, "Double", opts)
 
     for a = 1 to a_access.length do
       access = a_access[a]
-      fileName = outputDir + "\\" + access + "_" + tod + "_ONOFF_COLL_JOIN.bin"
+      fileName = outputDir + "\\" + access + "_" + tod + "_ONOFF.bin"
 
       // Open table and collect the ID and "ON" columns
       tbl = OpenTable("OnTbl","FFB",{fileName})
-      v_tblID = GetDataVector(tbl + "|","ROUTE",)
+      v_tblStopID = GetDataVector(tbl + "|","STOP",)
+      v_tblRoute = GetDataVector(tbl + "|","ROUTE",)
       v_tblOn = GetDataVector(tbl + "|","On",)
+      v_tblOff = GetDataVector(tbl + "|","Off",)
 
-      // Add them to the v_rtsOn vector
+      // Add on/offs to the v_stopsOn/Off vectors
       // GISDK cannot compare vectors of different lengths - must loop
-      for i = 1 to v_rtsID.length do
-        id = v_rtsID[i]
+      for i = 1 to v_stopID.length do
+        id = v_stopID[i]
 
-        pos = ArrayPosition(V2A(v_tblID),{id},)
+        pos = ArrayPosition(V2A(v_tblStopID),{id},)
         if pos <> 0 then do
-           test1 = v_rtsOn[i]
-           test2 = v_tblOn[pos]
-           v_rtsOn[i] = v_rtsOn[i] + v_tblOn[pos]
+          //  test1 = v_stopsOn[i]
+          //  test2 = v_tblOn[pos]
+           v_stopsOn[i] = v_stopsOn[i] + v_tblOn[pos]
+           v_stopsOff[i] = v_stopsOff[i] + v_tblOff[pos]
         end
       end
     end
@@ -875,16 +888,28 @@ Macro "Transit Boardings" (scenarioDirectory)
     // Write out the results to a CSV
     if t = 1 then do
       transitCSV = OpenFile(transitCSV, "w")
-      WriteLine(transitCSV,"Route ID,Route Name,Mode,Period,Boardings")
+      WriteLine(transitCSV,"Stop ID,Node ID,Route ID,Route Name,Mode,Period,Boardings,Alightings")
     end
-    for i = 1 to v_rtsID.length do
+    for i = 1 to v_stopID.length do
+      stop_id = v_stopID[i]
+      node_id = v_stopNodeID[i]
+      route_id = v_stopRouteID[i]
+      route_name = v_rtsName[ArrayPosition(V2A(v_rtsID), {route_id}, )]
+      route_mode = v_rtsMode[ArrayPosition(V2A(v_rtsID), {route_id}, )]
+      stop_on = v_stopsOn[i]
+      stop_off = v_stopsOff[i]
+
       WriteLine(
         transitCSV,
-        String(v_rtsID[i]) + "," +
-        v_rtsName[i] + "," +
-        v_rtsMode[i] + "," +
+        String(stop_id) + "," + 
+        String(node_id) + "," + 
+        String(route_id) + "," +
+        route_name + "," +
+        route_mode + "," +
         tod + "," +
-        String(v_rtsOn[i]))
+        String(stop_on) + "," +
+        String(stop_off)
+      )
     end
   end
 
