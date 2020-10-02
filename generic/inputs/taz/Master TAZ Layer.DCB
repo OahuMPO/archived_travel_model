@@ -5,7 +5,7 @@
 "COUNTY_DIV",C,7,16,0,16,0,,"","Census county division",,"Sum",
 "TRACT",C,23,16,0,16,0,,"","Census tract",,"Sum",
 "TAZ762",S,39,2,0,4,0,,"","Not sure this is used for anything, but should leave in the table|so that the table structure stays constant for java models.",,"Blank",
-"scp_areas",I,41,4,0,8,0,,"","Sustainable Community Plan areas",,"Sum",
+"scp_areas",I,41,4,0,8,0,,"","Sustainable Community Plan areas||Source for districts:|https://geoportal.hawaii.gov/datasets/cchnl::sustainable-communities-plans-1",,"Sum",
 "AREA_SQFT",R,45,8,0,19,5,,"","",,"Blank",
 "Section",C,53,15,0,15,0,,"","",,"Blank",
 "TD",S,68,2,0,4,0,,"","",,"Blank",
