@@ -6,10 +6,11 @@ library(readxl)
 library(rmarkdown)
 library(maptools)
 library(rgdal)
+library(leaflet)
 
 # Set up common directories
 model_dir <- normalizePath("../../..")
-cmp_dir <- normalizePath(paste0(model_dir, "/scenarios/CMP_2016"))
+cmp_dir <- normalizePath(paste0(model_dir, "/scenarios/cmp_2020"))
 out_dir <- paste0(model_dir, "/docs") # where html pages are written
 
 # project info table
@@ -22,19 +23,19 @@ proj_info <- proj_info %>%
     `Cost (000s)` = format(Cost / 1000, big.mark = ",")
     ) %>%
   select(-c(
-    `TIP ID`, `PROJECT NO 2040`, `Project Status (@2012)`, FROM, TO,
+    `TIP ID`, `PROJECT NO 2040`, `Project Status`, FROM, TO,
     Cost
     ))
 
 # read the list of non-ec projects and
 # create a score column to hold final scores
-non_ec_file <- paste0(cmp_dir, "/non_ec_project_list.csv")
+non_ec_file <- paste0(cmp_dir, "/non_ec_list.csv")
 non_ec <- read_csv(non_ec_file)
 non_ec$score <- 0
 
 # purp equiv table
 purp_labels <- c("HBW", "HBSC", "HBU", "HBES", "HBO", "NHB", "Total")
-purp_equiv <- data_frame(
+purp_equiv <- tibble(
   purp_num = c(-1, 0, 1, 2, 3, 4, 5, 6),
   purp_name = c("HB", "W", "U", "SC", "ES", "O", "O", "WB")
 )
@@ -129,7 +130,7 @@ marg_2d <- function(table, d1, d2){
 }
 
 # read in and process ec-related data once to reduce build time
-ec_dir <- paste0(cmp_dir, "/EC")
+ec_dir <- paste0(cmp_dir, "/_ec")
 ec_trips <- read_csv(paste0(ec_dir, "/outputs/trips.csv"))
 ec_mc_summary <- summarize_mc(ec_trips) %>%
   mutate(Scenario = "ec")

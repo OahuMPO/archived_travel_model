@@ -146,10 +146,19 @@ Macro "CMP Wrapper"
     jump = "HighwayAssign"
     RunMacro("OMPO6", path, Options, jump)
 
-    // Run the various reporting macros
+    // Run the various reporting macros. Don't run all of the V6 summaries.
+    // The "Transit Boardings" macro will crash. Other mode/transit will give
+    // bad info. (This is highway focused.)
     RunMacro("AppendAssign", scen_dir, 1)
     RunMacro("Highway Assignment Summary", scen_dir)
-    RunMacro("V6 Summaries", scen_dir)
+    RunMacro("Additional Network Calculations", scen_dir)
+    RunMacro("Tag Links with TAZ", scen_dir)
+    RunMacro("Summarize by FT and AT", scen_dir)
+    RunMacro("V/C Map", scen_dir)
+    RunMacro("Trav Time Map", scen_dir)
+    RunMacro("Trav Time Map - Zonal", scen_dir)
+    RunMacro("Lane Miles by LOS", scen_dir)
+    RunMacro("Trips by Mode", scen_dir)
 
     // Create a shapefile of the project links
     RunMacro("Create Project Shape", proj_id)
