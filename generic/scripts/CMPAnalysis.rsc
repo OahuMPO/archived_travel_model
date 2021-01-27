@@ -18,7 +18,7 @@ dBox "CMP"
   init do
     shared year, seYear, ec_list, nonec_list
     year = 2020
-    seYear = 2040
+    seYear = 2020
 
     // Determine UI location
     uiDBD = GetInterface()
@@ -59,7 +59,7 @@ dBox "CMP"
   // Specify other EC conditions
   text 2, 6 variable: "Specify other EC conditions"
   Edit Int "rdwy year item" same, after, 10, 1
-    prompt: "EC Transit Year" variable: year
+    prompt: "EC PNR Year" variable: year
   Edit Int "rdwy year item" same, after, 10, 1
     prompt: "EC SE Year" variable: seYear
 
@@ -117,10 +117,11 @@ Macro "CMP Wrapper"
     skip:
     on error default
 
-    // Create the project list csv for that scenario
+    // Create the project list csvs for that scenario
     df = df_ec.copy()
     df.mutate("ProjID", V2A(df.tbl.ProjID) + {proj_id})
-    df.write_csv(scen_dir + "/ProjectList.csv")
+    df.write_csv(scen_dir + "/HighwayProjectList.csv")
+    CopyFile(ec_dir + "TransitProjectList.csv", scen_dir + "\\TransitProjectList.csv")
 
     // Run scenario manager steps
     RunMacro("SetDirectoryDefaults")
@@ -145,10 +146,19 @@ Macro "CMP Wrapper"
     jump = "HighwayAssign"
     RunMacro("OMPO6", path, Options, jump)
 
-    // Run the various reporting macros
+    // Run the various reporting macros. Don't run all of the V6 summaries.
+    // The "Transit Boardings" macro will crash. Other mode/transit will give
+    // bad info. (This is highway focused.)
     RunMacro("AppendAssign", scen_dir, 1)
     RunMacro("Highway Assignment Summary", scen_dir)
-    RunMacro("V6 Summaries", scen_dir)
+    RunMacro("Additional Network Calculations", scen_dir)
+    RunMacro("Tag Links with TAZ", scen_dir)
+    RunMacro("Summarize by FT and AT", scen_dir)
+    RunMacro("V/C Map", scen_dir)
+    RunMacro("Trav Time Map", scen_dir)
+    RunMacro("Trav Time Map - Zonal", scen_dir)
+    RunMacro("Lane Miles by LOS", scen_dir)
+    RunMacro("Trips by Mode", scen_dir)
 
     // Create a shapefile of the project links
     RunMacro("Create Project Shape", proj_id)
