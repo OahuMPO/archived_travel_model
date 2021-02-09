@@ -1,0 +1,116 @@
+Table    10.01
+ 
+***** AVG WEEKDAY ROUTE UTILIZATION ZONE BY (PRODUCTION-END) ACCESS TYPE ************
+Comparison of Route Boardings by Scenario and Zone (Production-End) Mode-of-Access
+Total Transit Trips
+                                                                 Y2017 EXISTING                          Y2017 NO-BUILD                          Y2017 BUILD                            
+                                                                 ======================================= ======================================= =======================================
+Route_ID                 --Route Name                    Count      WLK       KNR       PNR       ALL       WLK       KNR       PNR       ALL       WLK       KNR       PNR       ALL   
+======================================================= ======== ========= ========= ========= ========= ========= ========= ========= ========= ========= ========= ========= =========
+1                        --1-Kaimuki-Kalihi                12127      8807       117         0      8925      8807       117         0      8925      8807       117         0      8925
+10                       --10-Kalihi-Alewa Heights           461       281         3         0       284       281         3         0       284       281         3         0       284
+102                      --1L-School Street-Hawaii Kai      4267      8384       142         0      8526      8384       142         0      8526      8384       142         0      8526
+103                      --23-Hawaii Kai-Sea Life Park      2520      2656        65         0      2721      2656        65         0      2721      2656        65         0      2721
+107                      --234-Kahala Mall-Waialae Nui        14        61         0         0        61        61         0         0        61        61         0         0        61
+108                      --235-Kahala Mall-Waialae Iki        12         0         0         0         0         0         0         0         0         0         0         0         0
+109                      --E-Country Express! E             5588     12137       494         0     12631     12137       494         0     12631     12137       494         0     12631
+11                       --11-Makalapa-Halawa-Aiea Heig     1105      1639        44         0      1683      1639        44         0      1683      1639        44         0      1683
+112                      --414-Palahia-Makakilo-Kapolei      353       415         0         0       415       415         0         0       415       415         0         0       415
+113                      --501-Mililani Mauka                530       121        18         0       139       121        18         0       139       121        18         0       139
+114                      --503-Mililani-Laulani Valley         0        78         0         0        79        78         0         0        79        78         0         0        79
+115                      --504-Mililani South                285       131         1         0       132       131         1         0       132       131         1         0       132
+117                      --94-Villages of Kapolei-Kaupe      127         0         0         0         0         0         0         0         0         0         0         0         0
+118                      --PH1-Waianae Coast-Pearl Harb       60         0         0         0         0         0         0         0         0         0         0         0         0
+119                      --PH2-Mililani Town-Pearl Harb       49         0         0         0         0         0         0         0         0         0         0         0         0
+120                      --PH3-Wahiawa Heights-Pearl Ha       51         0         0         0         0         0         0         0         0         0         0         0         0
+121                      --PH4-Kaneohe-Kahaluu-Pearl Ha       52         0         0         0         0         0         0         0         0         0         0         0         0
+122                      --PH5-Windward-Pearl Harbor Ex       34         0         0         0         0         0         0         0         0         0         0         0         0
+123                      --PH6-Hawaii Kai-Pearl Harbor        90         0         0         0         0         0         0         0         0         0         0         0         0
+124                      --57A-Kailua-Enchanted Lake        1007      1449        82         0      1532      1449        82         0      1532      1449        82         0      1532
+125                      --9S-Palolo Valley                 1393      1457         6         0      1463      1457         6         0      1463      1457         6         0      1463
+126                      --9-Kaimuki-Pearl Harbor           5379      4197        65         0      4262      4197        65         0      4262      4197        65         0      4262
+127                      --13-Liliha-Waikiki-University    13012      6210        92         0      6301      6210        92         0      6301      6210        92         0      6301
+128                      --24-Kapahulu-Aina Haina            632       465         4         0       470       465         4         0       470       465         4         0       470
+129                      --52-Honolulu-Mililani-Wahiawa     4067      5310       250         0      5560      5310       250         0      5560      5310       250         0      5560
+13                       --14-St. Louis-Kahala-Maunalan      755       911        18         0       928       911        18         0       928       911        18         0       928
+130                      --55-Honolulu-Kaneohe-Wahiawa      4243      4522       310         0      4832      4522       310         0      4832      4522       310         0      4832
+131                      --62-Honolulu-Wahiawa              5527      5804       123         0      5927      5804       123         0      5927      5804       123         0      5927
+132                      --2L-Waikiki-School-Middle Lim     1415      1235         7         0      1243      1235         7         0      1243      1235         7         0      1243
+134                      --416-Kapolei Circulator            279        45         6         0        52        45         6         0        52        45         6         0        52
+135                      --99-Wahiawa-Mililani-Waipahu-      162        14         0         0        15        14         0         0        15        14         0         0        15
+136                      --PH7-Ewa Beach-Pearl Harbor E        0         0         0         0         0         0         0         0         0         0         0         0         0
+137                      --87-Windward Express-Kailua        214        15         0         0        15        15         0         0        15        15         0         0        15
+14                       --15-Makiki-Pacific Heights         523       770        11         0       781       770        11         0       781       770        11         0       781
+15                       --16-Moanalua Valley                 54        13         0         0        13        13         0         0        13        13         0         0        13
+16                       --17-Makiki-Ala Moana              1307       243         5         0       247       243         5         0       247       243         5         0       247
+17                       --18-University-Ala Moana           688       957        25         0       982       957        25         0       982       957        25         0       982
+18                       --19-Waikiki-Airport-Hickam        4423      3914        62         0      3976      3914        62         0      3976      3914        62         0      3976
+19                       --20-Waikiki-Pearlridge            3291      3656        31         0      3687      3656        31         0      3687      3656        31         0      3687
+2                        --2-Waikiki-School-Middle         14720     15871       147         0     16018     15871       147         0     16018     15871       147         0     16018
+21                       --22-Beach Bus                     1245      1340        46         0      1386      1340        46         0      1386      1340        46         0      1386
+22                       --A-City Express! A               12957     15125       350         0     15475     15125       350         0     15475     15125       350         0     15475
+24                       --31-Tripler-Mapunapuna             507       209         4         0       213       209         4         0       213       209         4         0       213
+25                       --32-Kalihi-Pearlridge             1397       892         9         0       901       892         9         0       901       892         9         0       901
+26                       --40-Honolulu-Makaha               9580      5943       206         0      6149      5943       206         0      6149      5943       206         0      6149
+27                       --41-Kapolei-Ewa Beach             1326      1395        27         0      1421      1395        27         0      1421      1395        27         0      1421
+28                       --42-Ewa Beach-Waikiki             9362      7143       184         0      7327      7143       184         0      7327      7143       184         0      7327
+29                       --43-Waipahu-Honolulu-Ala Moan     2170      5198       165         0      5364      5198       165         0      5364      5198       165         0      5364
+3                        --3-Kaimuki-Salt Lake             11159     10021       176         0     10197     10021       176         0     10197     10021       176         0     10197
+30                       --44-Waipahu-Ewa Beach              957       693         1         0       693       693         1         0       693       693         1         0       693
+32                       --53-Honolulu-Pacific Palisade     2371      4599       553         0      5152      4599       553         0      5152      4599       553         0      5152
+33                       --54-Honolulu-Pearl City           2739      3131       259         0      3390      3131       259         0      3390      3131       259         0      3390
+35                       --56-Honolulu-Kailua-Kaneohe       2459      2383       172         0      2556      2383       172         0      2556      2383       172         0      2556
+36                       --57-Kailua-Waimanalo-Sea Life     3082      3347       167         0      3515      3347       167         0      3515      3347       167         0      3515
+39                       --65-Honolulu-Kahaluu              1193      1419        72         0      1492      1419        72         0      1492      1419        72         0      1492
+4                        --4-Nuuanu-Punahou                 6421      5787       108         0      5895      5787       108         0      5895      5787       108         0      5895
+40                       --C-Country Express! C             5885      7118       405         0      7523      7118       405         0      7523      7118       405         0      7523
+41                       --70-Lanikai-Maunawili              337       247         2         0       250       247         2         0       250       247         2         0       250
+42                       --71-Pearlridge-Newtown              78        75        11         0        85        75        11         0        85        75        11         0        85
+43                       --72-Schofield-Wahiawa-Whitmor      456       288         5         0       294       288         5         0       294       288         5         0       294
+44                       --73-Leeward Community College      612       338        27         0       365       338        27         0       365       338        27         0       365
+45                       --74-Aiea-Halawa Heights             59        26         0         0        26        26         0         0        26        26         0         0        26
+46                       --76-Waialua-Haleiwa                366       341        31         0       372       341        31         0       372       341        31         0       372
+47                       --77-Waimanalo-Kaneohe              314       454        20         0       474       454        20         0       474       454        20         0       474
+48                       --80-Hawaii Kai Park & Ride Ex      277       321        13         0       334       321        13         0       334       321        13         0       334
+49                       --81-Waipahu Express               1241      1224        21         0      1245      1224        21         0      1245      1224        21         0      1245
+5                        --5-Ala Moana-Manoa                 894      1109        13         0      1123      1109        13         0      1123      1109        13         0      1123
+50                       --82-Hawaii Kai Park & Ride Ex      164        52         1         0        53        52         1         0        53        52         1         0        53
+51                       --83-Wahiawa Town Express           539       210         7         0       217       210         7         0       217       210         7         0       217
+52                       --84-Mililani Express-North         251        26         1         0        28        26         1         0        28        26         1         0        28
+53                       --85-Windward Express-Kaneohe       203         0         0         0         1         0         0         0         1         0         0         0         1
+55                       --88-Kahaluu-Ahuimanu Express       115        11         0         0        11        11         0         0        11        11         0         0        11
+56                       --89-Waimanalo-Kailua Express        96         3         0         0         3         3         0         0         3         3         0         0         3
+57                       --90-Pearl City Express             176        55         1         0        56        55         1         0        56        55         1         0        56
+58                       --91-Ewa Beach Express              849      1952        72         0      2024      1952        72         0      2024      1952        72         0      2024
+59                       --92-Makakilo City Express          181        11         0         0        11        11         0         0        11        11         0         0        11
+6                        --6-Pauoa-Woodlawn                 5264      3959       114         0      4073      3959       114         0      4073      3959       114         0      4073
+60                       --93-Waianae Coast Express-CBD      929      1298        46         0      1343      1298        46         0      1343      1298        46         0      1343
+62                       --96-Waipio Gentry Express          140         0         0         0         0         0         0         0         0         0         0         0         0
+63                       --97-Village Park Express           271        57         0         0        57        57         0         0        57        57         0         0        57
+64                       --98-Wahiawa-Mililani Park & R      178         0         0         0         0         0         0         0         0         0         0         0         0
+65                       --101-Ewa Gentry Express            483         9         0         0         9         9         0         0         9         9         0         0         9
+66                       --102-Villages of Kapolei Expr      183        67         0         0        67        67         0         0        67        67         0         0        67
+67                       --103-Paiwa-Waikele Express         102         0         0         0         0         0         0         0         0         0         0         0         0
+69                       --80A-Hawaii Kai Park & Ride E      143       547        13         0       560       547        13         0       560       547        13         0       560
+7                        --7-Kalihi Valley                  3276      2719       156         0      2875      2719       156         0      2875      2719       156         0      2875
+71                       --84A-Mililani Express-South        296       451         9         0       459       451         9         0       459       451         9         0       459
+72                       --85A-Windward Express-Haiku        115        81         3         0        84        81         3         0        84        81         3         0        84
+74                       --88A-North Shore Express           209         3         0         0         3         3         0         0         3         3         0         0         3
+76                       --98A-Wahiawa-Mililani Transit      198         0         0         0         0         0         0         0         0         0         0         0         0
+77                       --W1-Waipahu via Farrington Ex      616         3         0         0         3         3         0         0         3         3         0         0         3
+78                       --W2-Waipahu via Paiwa Express      238         0         0         0         0         0         0         0         0         0         0         0         0
+79                       --W3-Kalihi via School Street       181         0         0         0         0         0         0         0         0         0         0         0         0
+8                        --8-Waikiki-Ala Moana              3507      1277        23         0      1299      1277        23         0      1299      1277        23         0      1299
+80                       --80B-Upper Aina Haina Express       14         3         0         0         3         3         0         0         3         3         0         0         3
+81                       --401-Waianae Valley                387       632         9         0       641       632         9         0       641       632         9         0       641
+82                       --402-Lualualei Homestead           305       400         8         0       408       400         8         0       408       400         8         0       408
+83                       --403-Nanakuli-Maili-Waianae        551       694         9         0       702       694         9         0       702       694         9         0       702
+84                       --411-Makakilo Heights              836       835         3         0       837       835         3         0       837       835         3         0       837
+86                       --413-Campbell Industrial Park      129       130         3         0       132       130         3         0       132       130         3         0       132
+87                       --415-Kapolei Transit Center-K       55        48         0         0        48        48         0         0        48        48         0         0        48
+88                       --432-East-West Waipahu            1509       301         6         0       306       301         6         0       306       301         6         0       306
+89                       --433-Waipahu-Waikele Shopping     1418      1496        17         0      1513      1496        17         0      1513      1496        17         0      1513
+90                       --434-Waipahu-Village Park         1266       797         7         0       804       797         7         0       804       797         7         0       804
+               Total                                      195633    190060      5686         0    195747    190060      5686         0    195747    190060      5686         0    195747
+ 
+
