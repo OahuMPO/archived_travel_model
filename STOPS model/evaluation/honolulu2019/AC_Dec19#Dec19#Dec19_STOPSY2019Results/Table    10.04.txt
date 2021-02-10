@@ -1,0 +1,119 @@
+Table    10.04
+ 
+***** OFF-PEAK TRIPS, MILES AND HOURS BY ROUTE ************
+Comparison of Weekday Operating Statistics by Scenario
+OFF-PEAK=any trip serving one or more stops between 10:00 am and 2:15 pm
+ 
+                                                        Y2019 EXISTING                   Y2019 NO-BUILD                   Y2019 BUILD                     
+                                                        ================================ ================================ ================================
+Route_ID                 --Route Name                   #Trips     Miles        Hours    #Trips     Miles        Hours    #Trips     Miles        Hours   
+======================================================= ====== ============ ============ ====== ============ ============ ====== ============ ============
+1                        --1-Kaimuki-Kalihi                 53       370.23        47.17     53       370.23        47.17     53       370.23        47.17
+10                       --10-Kalihi-Alewa Heights          16        67.81         6.95     16        67.81         6.95     16        67.81         6.95
+102                      --1L-School Street-Hawaii Kai      21       423.74        33.87     21       423.74        33.87     21       423.74        33.87
+103                      --23-Hawaii Kai-Sea Life Park      13       208.71        19.07     13       208.71        19.07     13       208.71        19.07
+107                      --234-Kahala Mall-Waialae Nui       0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+108                      --235-Kahala Mall-Waialae Iki       0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+109                      --E-Country Express! E             23       517.03        37.98     23       517.03        37.98     23       517.03        37.98
+11                       --11-Makalapa-Halawa-Aiea Heig     10       140.38         9.22     10       140.38         9.22     10       140.38         9.22
+112                      --414-Palahia-Makakilo-Kapolei      9        34.03         2.52      9        34.03         2.52      9        34.03         2.52
+113                      --501-Mililani Mauka               11        49.21         3.12     11        49.21         3.12     11        49.21         3.12
+114                      --503-Mililani-Laulani Valley       9        40.06         2.95      9        40.06         2.95      9        40.06         2.95
+115                      --504-Mililani South               12        48.43         3.53     12        48.43         3.53     12        48.43         3.53
+117                      --94-Villages of Kapolei-Kaupe      0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+118                      --PH1-Waianae Coast-Pearl Harb      0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+119                      --PH2-Mililani Town-Pearl Harb      0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+120                      --PH3-Wahiawa Heights-Pearl Ha      0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+121                      --PH4-Kailua-Kahaluu-Pearl Har      0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+123                      --PH6-Hawaii Kai-Pearl Harbor       0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+125                      --9S-Palolo Valley                 18        39.57         3.33     18        39.57         3.33     18        39.57         3.33
+126                      --9-Kaimuki-Pearl Harbor           21       219.05        23.60     21       219.05        23.60     21       219.05        23.60
+127                      --13-Liliha-Waikiki-University     56       411.48        55.64     56       411.48        55.64     56       411.48        55.64
+128                      --24-Kapahulu-Aina Haina           12        75.26         5.22     12        75.26         5.22     12        75.26         5.22
+129                      --52-Honolulu-Mililani-Wahiawa     33       714.37        39.97     33       714.37        39.97     33       714.37        39.97
+13                       --14-St. Louis-Kahala-Maunalan     19       108.81         8.75     19       108.81         8.75     19       108.81         8.75
+131                      --51-Honolulu-Wahiawa              41       537.39        40.35     41       537.39        40.35     41       537.39        40.35
+132                      --2L-Waikiki-School-Middle Lim      0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+134                      --416-Kapolei Circulator           10        55.26         4.35     10        55.26         4.35     10        55.26         4.35
+135                      --99-Wahiawa-Mililani-Waipahu-      0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+136                      --PH7-Ewa Beach-Pearl Harbor E      0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+137                      --87-Windward Express-Kailua        0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+139                      --60-Honolulu-Kaneohe-Haleiwa      33      1460.81        80.00     33      1460.81        80.00     33      1460.81        80.00
+14                       --15-Makiki-Pacific Heights        12        58.48         4.70     12        58.48         4.70     12        58.48         4.70
+140                      --69-Kaneohe-Waimanalo-Sea Lif     10       132.74         8.08     10       132.74         8.08     10       132.74         8.08
+141                      --86-Windward Express-Haiku         0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+142                      --61-Kalihi-Kaneohe-Aikahi         21       313.67        23.49     21       313.67        23.49     21       313.67        23.49
+143                      --66-Downtown-Kailua-Aikahi        20       246.49        16.45     20       246.49        16.45     20       246.49        16.45
+144                      --67-Honolulu-Kailua-Waimanalo     33       500.29        34.15     33       500.29        34.15     33       500.29        34.15
+145                      --651-Kaneohe Circulator           26        68.85         6.84     26        68.85         6.84     26        68.85         6.84
+146                      --671-Kailua-Lanikai               18        52.96         4.50     18        52.96         4.50     18        52.96         4.50
+147                      --672-Kailua-Maunawili              9        32.49         2.32      9        32.49         2.32      9        32.49         2.32
+148                      --673-Kailua-Enchanted Lake         9        34.49         2.72      9        34.49         2.72      9        34.49         2.72
+149                      --674-Kailua-Aikahi                 9        21.47         1.62      9        21.47         1.62      9        21.47         1.62
+15                       --16-Moanalua Valley                0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+16                       --17-Makiki-Ala Moana              13        22.23         3.07     13        22.23         3.07     13        22.23         3.07
+17                       --18-University-Ala Moana           9        38.11         4.18      9        38.11         4.18      9        38.11         4.18
+18                       --19-Waikiki-Airport-Hickam        22       259.25        26.83     22       259.25        26.83     22       259.25        26.83
+19                       --20-Waikiki-Pearlridge            24       285.23        30.20     24       285.23        30.20     24       285.23        30.20
+2                        --2-Waikiki-School-Middle          74       534.48        71.27     74       534.48        71.27     74       534.48        71.27
+21                       --22-Beach Bus                     11       145.51         8.15     11       145.51         8.15     11       145.51         8.15
+22                       --A-City Express! A                46       815.80        71.45     46       815.80        71.45     46       815.80        71.45
+24                       --31-Tripler-Mapunapuna            12        44.26         4.33     12        44.26         4.33     12        44.26         4.33
+25                       --32-Kalihi-Pearlridge             10       105.48         9.08     10       105.48         9.08     10       105.48         9.08
+26                       --40-Honolulu-Makaha               38       975.73        73.02     38       975.73        73.02     38       975.73        73.02
+27                       --41-Kapolei-Ewa Beach             19       168.56        12.10     19       168.56        12.10     19       168.56        12.10
+28                       --42-Ewa Beach-Waikiki             36       658.52        61.03     36       658.52        61.03     36       658.52        61.03
+29                       --43-Waipahu-Honolulu-Ala Moan     23       387.95        29.35     23       387.95        29.35     23       387.95        29.35
+3                        --3-Kaimuki-Salt Lake              47       407.12        43.20     47       407.12        43.20     47       407.12        43.20
+30                       --44-Waipahu-Ewa Beach             10       133.13         9.57     10       133.13         9.57     10       133.13         9.57
+32                       --53-Honolulu-Pacific Palisade     23       250.53        18.37     23       250.53        18.37     23       250.53        18.37
+33                       --54-Honolulu-Pearl City           20       250.67        18.13     20       250.67        18.13     20       250.67        18.13
+39                       --65-Honolulu-Kaneohe-Ahuimanu     10       169.74        11.70     10       169.74        11.70     10       169.74        11.70
+4                        --4-Nuuanu-Punahou                 37       269.02        28.94     37       269.02        28.94     37       269.02        28.94
+40                       --C-Country Express! C             31       787.27        43.57     31       787.27        43.57     31       787.27        43.57
+42                       --71-Pearlridge-Newtown             0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+43                       --72-Schofield-Wahiawa-Whitmor      8        46.05         4.58      8        46.05         4.58      8        46.05         4.58
+44                       --73-Leeward Community College     15        49.28         3.70     15        49.28         3.70     15        49.28         3.70
+45                       --74-Aiea-Halawa Heights            0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+46                       --76-Waialua-Haleiwa               13        53.62         3.25     13        53.62         3.25     13        53.62         3.25
+48                       --80-Hawaii Kai Park & Ride Ex      0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+49                       --81-Waipahu Express                0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+5                        --5-Ala Moana-Manoa                11        42.89         4.42     11        42.89         4.42     11        42.89         4.42
+50                       --82-Hawaii Kai Park & Ride Ex      0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+51                       --83-Wahiawa Town Express           0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+52                       --84-Mililani Express-North         0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+53                       --85-Windward Express-Kaneohe       0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+55                       --88-Kahaluu-Ahuimanu Express       0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+56                       --89-Waimanalo-Kailua Express       0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+57                       --90-Pearl City Express             0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+58                       --91-Ewa Beach Express              0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+59                       --92-Makakilo City Express          0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+6                        --6-Pauoa-Woodlawn                 36       256.52        31.77     36       256.52        31.77     36       256.52        31.77
+60                       --93-Waianae Coast Express-CBD      0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+62                       --96-Waipio Gentry Express          0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+63                       --97-Village Park Express           0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+64                       --98-Wahiawa-Mililani Park & R      0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+65                       --101-Ewa Gentry Express            0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+66                       --102-Villages of Kapolei Expr      0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+67                       --103-Paiwa-Waikele Express         0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+69                       --80A-Hawaii Kai Park & Ride E      0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+7                        --7-Kalihi Valley                  17        88.02         8.87     17        88.02         8.87     17        88.02         8.87
+71                       --84A-Mililani Express-South        0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+74                       --88A-North Shore Express           0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+76                       --98A-Wahiawa-Mililani Transit      0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+77                       --W1-Waipahu via Farrington Ex      0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+78                       --W2-Waipahu via Paiwa Express      0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+79                       --W3-Kalihi via School Street       0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+8                        --8-Waikiki-Ala Moana              62       174.83        26.27     62       174.83        26.27     62       174.83        26.27
+80                       --80B-Upper Aina Haina Express      0         0.00         0.00      0         0.00         0.00      0         0.00         0.00
+81                       --401-Waianae Valley                8        32.13         2.07      8        32.13         2.07      8        32.13         2.07
+82                       --402-Lualualei Homestead           8        25.06         1.40      8        25.06         1.40      8        25.06         1.40
+83                       --403-Nanakuli-Maili-Waianae        9        64.30         3.68      9        64.30         3.68      9        64.30         3.68
+84                       --411-Makakilo Heights             18        65.86         5.40     18        65.86         5.40     18        65.86         5.40
+86                       --413-Campbell Industrial Park     17        67.15         4.03     17        67.15         4.03     17        67.15         4.03
+87                       --415-Kapolei Transit Center-K     18        44.32         3.30     18        44.32         3.30     18        44.32         3.30
+88                       --432-East-West Waipahu            29        68.90         6.95     29        68.90         6.95     29        68.90         6.95
+89                       --433-Waipahu-Waikele Shopping     18        95.22         7.55     18        95.22         7.55     18        95.22         7.55
+90                       --434-Waipahu-Village Park         13        40.43         3.47     13        40.43         3.47     13        40.43         3.47
+                                                  Total   1402     14906.74      1230.70   1402     14906.74      1230.70   1402     14906.74      1230.70
+

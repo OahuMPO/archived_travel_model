@@ -1,0 +1,118 @@
+Table    11.04
+ 
+SUMMARY OF TRIPS BY SUBMODE, ACCESS MODE, AUTO OWNERSHIP, AND SCENARIO
+Purpose All Purposes        
+ STOPS Model Application Model Application AFTER Station Boarding Calibration                    
+                                         | Y2017 EXISTING | Y2017 NO-BUILD | Y2017 BUILD    | Y2017 BUILD    |
+ HH Cars Sub-mode            Access mode |  Model  Survey |  Model  Survey |  Model  Survey | Project Survey |
+======= =================== =============| ======= =======| ======= =======| ======= =======| ======= =======|
+ 0 car H Fixed Guideway Only Walk Access |       0       0|       0       0|       0       0|       0       0|
+ 0 car H Fixed Guideway Only KNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 0 car H Fixed Guideway Only PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 0 car H Fixed Guideway Only All Access  |       0       0|       0       0|       0       0|       0       0|
+ 
+ 0 car H Fixed Guideway+Bus  Walk Access |       0       0|       0       0|       0       0|       0       0|
+ 0 car H Fixed Guideway+Bus  KNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 0 car H Fixed Guideway+Bus  PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 0 car H Fixed Guideway+Bus  All Access  |       0       0|       0       0|       0       0|       0       0|
+ 
+ 0 car H Bus Only            Walk Access |   60605       0|   60605       0|   60605       0|       0       0|
+ 0 car H Bus Only            KNR Access  |    1025       0|    1025       0|    1025       0|       0       0|
+ 0 car H Bus Only            PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 0 car H Bus Only            All Access  |   61630       0|   61630       0|   61630       0|       0       0|
+ 
+ 0 car H All Transit         Walk Access |   60605       0|   60605       0|   60605       0|       0       0|
+ 0 car H All Transit         KNR Access  |    1025       0|    1025       0|    1025       0|       0       0|
+ 0 car H All Transit         PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 0 car H All Transit         All Access  |   61630       0|   61630       0|   61630       0|       0       0|
+ 
+ 0 car H All Fixed Guideway  Walk Access |       0       0|       0       0|       0       0|       0       0|
+ 0 car H All Fixed Guideway  KNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 0 car H All Fixed Guideway  PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 0 car H All Fixed Guideway  All Access  |       0       0|       0       0|       0       0|       0       0|
+------- ------------------- -------------| ------- -------| ------- -------| ------- -------| ------- -------|
+ 1 car H Fixed Guideway Only Walk Access |       0       0|       0       0|       0       0|       0       0|
+ 1 car H Fixed Guideway Only KNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 1 car H Fixed Guideway Only PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 1 car H Fixed Guideway Only All Access  |       0       0|       0       0|       0       0|       0       0|
+ 
+ 1 car H Fixed Guideway+Bus  Walk Access |       0       0|       0       0|       0       0|       0       0|
+ 1 car H Fixed Guideway+Bus  KNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 1 car H Fixed Guideway+Bus  PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 1 car H Fixed Guideway+Bus  All Access  |       0       0|       0       0|       0       0|       0       0|
+ 
+ 1 car H Bus Only            Walk Access |   48569       0|   48569       0|   48569       0|       0       0|
+ 1 car H Bus Only            KNR Access  |    1771       0|    1771       0|    1771       0|       0       0|
+ 1 car H Bus Only            PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 1 car H Bus Only            All Access  |   50340       0|   50340       0|   50340       0|       0       0|
+ 
+ 1 car H All Transit         Walk Access |   48569       0|   48569       0|   48569       0|       0       0|
+ 1 car H All Transit         KNR Access  |    1771       0|    1771       0|    1771       0|       0       0|
+ 1 car H All Transit         PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 1 car H All Transit         All Access  |   50340       0|   50340       0|   50340       0|       0       0|
+ 
+ 1 car H All Fixed Guideway  Walk Access |       0       0|       0       0|       0       0|       0       0|
+ 1 car H All Fixed Guideway  KNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 1 car H All Fixed Guideway  PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 1 car H All Fixed Guideway  All Access  |       0       0|       0       0|       0       0|       0       0|
+------- ------------------- -------------| ------- -------| ------- -------| ------- -------| ------- -------|
+ 2+ car  Fixed Guideway Only Walk Access |       0       0|       0       0|       0       0|       0       0|
+ 2+ car  Fixed Guideway Only KNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 2+ car  Fixed Guideway Only PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 2+ car  Fixed Guideway Only All Access  |       0       0|       0       0|       0       0|       0       0|
+ 
+ 2+ car  Fixed Guideway+Bus  Walk Access |       0       0|       0       0|       0       0|       0       0|
+ 2+ car  Fixed Guideway+Bus  KNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 2+ car  Fixed Guideway+Bus  PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 2+ car  Fixed Guideway+Bus  All Access  |       0       0|       0       0|       0       0|       0       0|
+ 
+ 2+ car  Bus Only            Walk Access |   47516       0|   47516       0|   47516       0|       0       0|
+ 2+ car  Bus Only            KNR Access  |    2108       0|    2108       0|    2108       0|       0       0|
+ 2+ car  Bus Only            PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 2+ car  Bus Only            All Access  |   49624       0|   49624       0|   49624       0|       0       0|
+ 
+ 2+ car  All Transit         Walk Access |   47516       0|   47516       0|   47516       0|       0       0|
+ 2+ car  All Transit         KNR Access  |    2108       0|    2108       0|    2108       0|       0       0|
+ 2+ car  All Transit         PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 2+ car  All Transit         All Access  |   49624       0|   49624       0|   49624       0|       0       0|
+ 
+ 2+ car  All Fixed Guideway  Walk Access |       0       0|       0       0|       0       0|       0       0|
+ 2+ car  All Fixed Guideway  KNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 2+ car  All Fixed Guideway  PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ 2+ car  All Fixed Guideway  All Access  |       0       0|       0       0|       0       0|       0       0|
+------- ------------------- -------------| ------- -------| ------- -------| ------- -------| ------- -------|
+ All car Fixed Guideway Only Walk Access |       0       0|       0       0|       0       0|       0       0|
+ All car Fixed Guideway Only KNR Access  |       0       0|       0       0|       0       0|       0       0|
+ All car Fixed Guideway Only PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ All car Fixed Guideway Only All Access  |       0       0|       0       0|       0       0|       0       0|
+ 
+ All car Fixed Guideway+Bus  Walk Access |       0       0|       0       0|       0       0|       0       0|
+ All car Fixed Guideway+Bus  KNR Access  |       0       0|       0       0|       0       0|       0       0|
+ All car Fixed Guideway+Bus  PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ All car Fixed Guideway+Bus  All Access  |       0       0|       0       0|       0       0|       0       0|
+ 
+ All car Bus Only            Walk Access |  156690       0|  156690       0|  156690       0|       0       0|
+ All car Bus Only            KNR Access  |    4904       0|    4904       0|    4904       0|       0       0|
+ All car Bus Only            PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ All car Bus Only            All Access  |  161594       0|  161594       0|  161594       0|       0       0|
+ 
+ All car All Transit         Walk Access |  156690       0|  156690       0|  156690       0|       0       0|
+ All car All Transit         KNR Access  |    4904       0|    4904       0|    4904       0|       0       0|
+ All car All Transit         PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ All car All Transit         All Access  |  161594       0|  161594       0|  161594       0|       0       0|
+ 
+ All car All Fixed Guideway  Walk Access |       0       0|       0       0|       0       0|       0       0|
+ All car All Fixed Guideway  KNR Access  |       0       0|       0       0|       0       0|       0       0|
+ All car All Fixed Guideway  PNR Access  |       0       0|       0       0|       0       0|       0       0|
+ All car All Fixed Guideway  All Access  |       0       0|       0       0|       0       0|       0       0|
+======= =================== =============| ======= =======| ======= =======| ======= =======| ======= =======|
+
+=================================================================================================================================
+Program STOPS - FTA Simplified Trips-on-Project Software                                                               Page    59
+Version: STOPS-v2.50 - 10/10/2019                                                                                       6/23/2020
+Run:    Honolulu_2017_Calibration                                                                                        15:32:30
+System: Oahu Transit/HART
+SECTION   12: SUMMARY OF CTPP WORKERS AND EMPLOYEES AND MPO ESTIMATES OF POPULATION AND EMPLOYMENT BY SCENARIO
+=================================================================================================================================
+ 
+
