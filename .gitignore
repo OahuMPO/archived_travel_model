@@ -3,3 +3,4 @@
 .RData
 .Ruserdata
 *.dcc
+.DS_Store
