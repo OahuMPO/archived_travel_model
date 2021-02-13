@@ -10,15 +10,15 @@ Several scenarios were built as part of PAO 6, Transit Model Evaluation and Impr
 
 Each link above is associated with a compressed archive file approximately 500 MB in size. It contains all of the input and output files associated with that scenario. A control file for running the program is included in the top-level directory of each of the compressed archives. The folders included in each scenario are defined by the STOPS program, with the `Inputs` and `Districts` folders being created for each scenario and the remainder created by STOPS to hold intermediate working or output files:
 
-+ `Districts`
-+ `GTFOutput`
-+ `Inputs` contains required input files to run the scenario.
-+ `Logfiles`
-+ `OutputData`
-+ `Reports`
-+ `Scratch`
-+ `Skims`
-+ `Stops`
++ `Districts` is a folder created during a STOPS application that contains the shape file and data file that describe the districts for the particular scenario.
++ `GTFOutput` is a folder created during a STOPS application containing GTFS files for a particular scenario, saved by period (PK or OP) and network (Existing, Nobuild Build)
++ `Inputs` is a folder provided by the user that contains required input files to run the STOPS application for a given scenario.  These files are important to carry forward from one scenario to another to ensure consistency of input data and networks.
++ `Logfiles` is a folder created during a STOPS application that contains STOPS program logfiles generated for a given scenario to determine the completion status of each step.
++ `OutputData`is a folder created during a STOPS application that contains various output data in formats needed for STOPS reporting of results for a given scenario.
++ `Reports`is a folder created during a STOPS application that contains the results for a scenario.  Of particular importance in this folder is the file ending in results.PRN. It is a text file that includes all of the STOPS output for a given scenario.
++ `Scratch` is a folder created during a STOPS application containing temporarty working files for a particular scencario. Files in this folder can be deleted after each STOPS run once it is completed and checked for accuracy.
++ `Skims`is a folder created during a STOPS application that contains the skim files created for and utilized during a particularly scenario.
++ `Stops`is a folder created during a STOPS application but remains empty after the scenario run is completed.
 
 STOPS version 2.5 was used to run these scenarios. An installer and draft user guide are stored in the `software` folder in this repository. This is a newer version of the software than available for public download on the [STOPS software webpage](https://www.transit.dot.gov/funding/grant-programs/capital-investments/stops).
 
