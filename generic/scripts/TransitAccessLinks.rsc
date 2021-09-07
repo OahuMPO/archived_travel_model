@@ -854,10 +854,10 @@ Macro "KNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
     record = GetFirstRecord(view_name+ "|", {{"Orig", "Ascending"},{"Length", "Ascending"},{"Dest", "Ascending"}})
     numberConnected=0
     railConnected=0
-
-    /**************************************
-    Kyle: Rewriting to speed up the process
-    **************************************/
+/*
+    //
+    // Kyle: Rewriting to speed up the process
+    //
 
     // Create an array of attribute information wanted
     a_fields = {"Orig","Dest","Length","Route_ID","EATime","AMTime","MDTime","PMTime","EVTime","Mode"}
@@ -957,10 +957,10 @@ Macro "KNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
 
     // Set Values
     SetDataVectors(view_name + "|",result,)
+*/
 
 
 
-/*
 //  Iterate through the zone -> stop list
 //  EnableProgressBar("Generating KNR links...", 1)     // Allow only a single progress bar
     CreateProgressBar("Generating KNR links...", "True")
@@ -1035,9 +1035,9 @@ Macro "KNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
     n= SelectByQuery("ValidLink", "Several", "Select * where AMTime != null",)
     ExportView(view_name+"|ValidLink", "FFB", tempfile6,,)
     CloseView(view_name)
-*/
+
     //*********************** Convert to KNR Matrix ***********************
-    // view_name = OpenTable("valid", "FFB", {tempfile6,})
+    view_name = OpenTable("valid", "FFB", {tempfile6,})
     SetView(view_name)
     m = CreateMatrixFromView("KNR Matrix", view_name+"|", "Orig", "Dest", {"Length", "EATime", "AMTime", "MDTime", "PMTime", "EVTime"}, {{ "File Name", KNRfile},{ "Sparse", "No"}})
 
