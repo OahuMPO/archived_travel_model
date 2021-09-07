@@ -889,15 +889,16 @@ Macro "KNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
         origSet = "current origin"
         SelectByQuery(origSet,"Several","Select * where Orig = " + String(origin))
 
-        // Get unique list of route IDs
-        v_allRouteIDs = GetDataVector(view_name + "|" + origSet,"Route_ID",)
+        // For the current origin, get the column of route IDs in order of
+        // distance away. The route IDs are frequently repeated, so only
+        // process the first occurence.
         opts = null
-        opts.Unique = "True"
-        v_uniqRouteIDs = SortVector(v_allRouteIDs,opts)
-
-        // loop over each unique route for the current origin
-        for r = 1 to v_uniqRouteIDs.length do
-            routeID = v_uniqRouteIDs[r]
+        opts.[Sort Order] = {{"Length", "Ascending"}}
+        v_allRouteIDs = GetDataVector(view_name + "|" + origSet,"Route_ID", opts)
+        prev_route_id = ""
+        for r = 1 to v_allRouteIDs.length do
+            routeID = v_allRouteIDs[r]
+            if routeID = prev_route_id then continue
 
             // Select all records for current origin and route id (use "Source And" to reduce search space for speed)
             oNrSet = "current origin and route"
@@ -915,7 +916,8 @@ Macro "KNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
                 data.(a_fields[i]) = a_data[i]
             end
 
-            // for each row of the orig+route set (which moves from shortest distance to longest)
+            // for each row of the orig+route set (which moves from shortest distance to longest),
+            // find the first/nearest suitable KNR node.
             for onr = 1 to data.Orig.length do
 
                 // check to make sure that, if the current record is rail, that the max rail connections
@@ -932,10 +934,9 @@ Macro "KNR Access Link Generation" (cond, scenarioDirectory, hwyfile, rtsfile, n
                 end
             end
 
-
-
+            prev_route_id = routeID
             numSelected = numSelected + 1
-            if numSelected = maxLinks then r = v_uniqRouteIDs.length + 1    // stop looping once max connections are made
+            if numSelected = maxLinks then r = v_allRouteIDs.length + 1    // stop looping once max connections are made
         end
     end
     DestroyProgressBar()
