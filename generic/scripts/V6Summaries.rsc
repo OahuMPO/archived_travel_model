@@ -1322,19 +1322,28 @@ Macro "Detailed Modal Summaries" (scenarioDirectory)
   df3.summarize(agg)
   df3.write_csv(report_dir + "\\average_trip_length_by_mode.csv")
 
-  // Modal percent for all trips less than three miles
-  df4 = df.copy()
-  df4.filter("skim_length < 3")
-  df4.group_by("mode")
+  // // Modal percent for all trips less than three miles
+  // // This won't work until walk and transit distances are also appended to trip table
+  // df4 = df.copy()
+  // df4.filter("skim_length < 3")
+  // df4.group_by("mode")
+  // agg = null
+  // agg.expansionFactor = {"sum"}
+  // df4.summarize(agg)
+  // df4.rename("sum_expansionFactor", "trips")
+  // df4.mutate(
+  //   "percent",
+  //   df4.tbl.trips / VectorStatistic(df4.tbl.trips, "sum", ) * 100
+  // )
+  // df4.write_csv(report_dir + "\\trips_under_3_miles_by_mode.csv")
+
+  // Mode by zone
+  df5 = df.copy()
+  df5.group_by({"originTaz", "mode"})
   agg = null
   agg.expansionFactor = {"sum"}
-  df4.summarize(agg)
-  df4.rename("sum_expansionFactor", "trips")
-  df4.mutate(
-    "percent",
-    df4.tbl.trips / VectorStatistic(df4.tbl.trips, "sum", ) * 100
-  )
-  df4.write_csv(report_dir + "\\trips_under_3_miles_by_mode.csv")
+  df5.summarize(agg)
+  df5.write_csv(report_dir + "\\mode_split_by_zone.csv")
 
   RunMacro("Close All")
 endmacro
