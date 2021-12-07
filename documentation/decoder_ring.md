@@ -119,4 +119,26 @@ categories line up with the PUMS data on which the synthetic data is based.
 | 7    | TwoPlus |
 
 These were determined by comparing the synthetic population racial distribution
-back to the PUMS data and infering.
+back to the PUMS data and inference.
+
+### Household income ranges
+
+The income intervals used for the `income_group` variable in the `households.csv` file are:
+
+| Group |  Minimum |  Maximum |
+|:-----:|---------:|---------:|
+|   1   |       $0 |  $14,999 |
+|   2   |  $15,000 |  $24,999 |
+|   3   |  $25,000 |  $34,999 |
+|   4   |  $35,000 |  $44,999 |
+|   5   |  $45,000 |  $59,999 |
+|   6   |  $60,000 |  $99,999 |
+|   7   | $100,000 | $149,999 |
+|   8   | $150,000 |      Inf |
+
+Note that the first group includes households that refused to report income (i.e., `income` coded as less than zero), which will lead to misleading tabulations. If you don't remove those records with missing values you might want to recode them to separate category:
+
+```
+income_group = ifelse(income < 0, 0, income_group)
+```
+ 
