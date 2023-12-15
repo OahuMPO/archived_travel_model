@@ -1,4 +1,5 @@
-# client_oahu_mpo_travel_model
-Travel Model for the Oahu Metropolitan Planning Organization
+# Archive Notice
 
-See the GitHub wiki for introductory information.
+This is the previous travel demand model for the Oahu MPO and is longer being 
+developed. The new model repository is located here:
+https://github.com/Caliper-Corporation/OahuTDFM
